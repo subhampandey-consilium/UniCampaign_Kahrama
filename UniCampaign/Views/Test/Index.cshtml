@@ -1,0 +1,240 @@
+﻿@using UniCampaignE.Core.Localization;
+@{
+    Layout = "~/Views/Shared/_UniCampaignLayout.cshtml";
+}
+@model UniCampaignE.Core.Models.PlainTextContactList
+@section page_content{
+    <div class="content-heading">
+        Filter Test
+    </div>
+    <div class="row hidden">
+        <div class="col-xs-5 hidden">
+            @using (Html.BeginForm())
+            {
+            <div id="unicampaign_filter" class="unicampaign-filter hidden">
+                <div class="form-group btn-group-sm pull-right p0 m0">
+                    <button class="btn btn-primary btn-add-filter" type="button"><i class="fa fa-plus"></i><span>&nbsp;&nbsp;Add Filter</span></button>
+                </div>
+                <div class="clearfix"></div>
+                <div class="filter-collection">
+                    <div class="panel panel-primary panel-flat mt-sm filter-expression">
+                        <div class="panel-body">
+                            <div role="form">
+                                <div class="form-group pull-right btn-group-sm">
+                                    <button type="button" class="btn btn-default btn-reset-filter"><i class="fa fa-close"></i><span>&nbsp;&nbsp;Reset</span></button>
+                                    <button type="button" class="btn btn-danger hidden btn-remove-filter"><i class="fa fa-remove"></i><span>&nbsp;&nbsp;Remove</span></button>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="form-group pull-left">
+                                    <div class="form-inline">
+                                        <div class="form-group">
+                                            <label class="control-label">Type&nbsp;&nbsp;</label>
+                                            <select class="form-control input-sm filter-type"><option>And</option><option>Or</option></select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                                <div class="form-group pull-right">
+                                    <span class="btn btn-link btn-add-filter-condition text-bold">Add Condition</span>
+                                </div>
+                                <div class="form-group filter-condition-collection" role="form">
+                                    <label class="control-label">Conditions</label>
+                                    <div class="form-group form-group-sm filter-condition">
+                                        <div class="form-inline">
+                                            <select class="form-control filter-condition-attribute">
+                                                <option>FirstName</option>
+                                                <option>LastName</option>
+                                            </select>
+                                            <select class="form-control filter-condition-operator">
+                                                <option>Equals</option>
+                                                <option>NotEqual</option>
+                                            </select>
+                                            <input type="text" class="form-control filter-condition-value" />
+                                            <span class="btn btn-link btn-remove-filter-condition hidden">Remove</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @Html.EditorFor(mod => mod.FilterCriteria, "ContactFilter")
+            <div class="form-group">
+                <button id="btn_submit" type="button" class="btn btn-primary btn-block mt-sm">Submit</button>
+            </div>
+            }
+        </div>
+        <div class="col-xs-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label">Name</label>
+                    @Html.TextBoxFor(mod => mod.Name, new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    <label>Source</label>
+                    @Html.DropDownListFor(mod => mod.Source.Id, new List<SelectListItem>() { new SelectListItem() { Text = "SalesforceCRM", Value = "SalesforceCRM" }, new SelectListItem() { Text = "DynamicsCRM" } }, new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    <label>Purpose</label>
+                    <div class="input-group">
+                        <label class="radio-inline">@Html.RadioButtonFor(mod => mod.Purpose, UniCampaignE.Core.Constants.ListPurpose.Voice) Voice</label>
+                        <label class="radio-inline">@Html.RadioButtonFor(mod => mod.Purpose, UniCampaignE.Core.Constants.ListPurpose.Email) Email</label>
+                        <label class="radio-inline">@Html.RadioButtonFor(mod => mod.Purpose, UniCampaignE.Core.Constants.ListPurpose.SMS) SMS</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Delimiter</label>
+                    @Html.EnumDropDownListFor(mod => mod.Delimiter, new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    <label>Contains Headers</label>
+                    <div class="input-group">
+                        <label class="checkbox-inline">@Html.CheckBoxFor(mod => mod.ContainsHeaders) Yes</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>File</label>
+                    <input type="file" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="form-inline">
+                <button type="button" class="btn btn-link btn-placeholder">Add Placeholder</button>
+                <div id="dialog" class="hidden" title="New Placeholder">
+                    <div data-role="body">
+                        <div class="col-lg-12">
+                            <div class="form-horizontal">
+                                <div class="form-group-sm">
+                                    <label class="control-label">Type</label>
+                                    <select class="form-control placeholder-type">
+                                        <option>Date</option>
+                                        <option>Number</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-sm">
+                                    <label class="control-label">Format</label>
+                                    <input type="text" class="form-control placeholder-format" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div data-role="footer">
+                        <button class="btn btn-sm" data-role="close">Cancel</button>
+                        <button class="btn btn-sm btn-primary btn-add-placeholder" data-role="close">OK</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">FileName</label>
+                    <input type="text" id="message_text" style="width:400px;" class="form-control" />
+                    <button class="btn btn-default" id="save_placeholder">Save</button>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+}
+@section page_scripts{
+    <script type="text/javascript">
+        $(function () {
+            $('.btn-placeholder').popover({
+                trigger: 'manual',
+                title: 'Add Placeholder',
+                template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title primary"></h3><div class="popover-content"></div></div>',
+                html: true,
+                content: '<div class="placeholder-container"><div class="row"><div class="col-xs-12 "><select class="form-control input-sm placeholder-type"><option>Date</option><option>Number</option></select><input type="text" class="ml-sm form-control input-sm placeholder-format" /></div></div><div class="row mt-sm"><div class="col-xs-12"><button class="btn btn-primary pull-right" type="button"><i class="fa fa-check"></i></button></div></div></div>',
+                viewport: 'body'
+            });
+            $(document).on('click', '.btn-placeholder', function (e) {
+                $(this).popover('toggle');
+            })
+            var placeholderCollection = [];
+            $(document).on('click', '.placeholder-container button', function (e) {
+                var $context = $(this).parents('.placeholder-container').first();
+                var placeholder = _.uniqueId('placeholder_');
+                $('#message_text').focus();
+                var startPosition = $('#message_text').prop("selectionStart");
+                var currentText = $('#message_text').val();
+                var textToPrepend = currentText.substring(0, startPosition);
+                var textToAppend = currentText.substring(startPosition, currentText.length);
+                var newText = textToPrepend + '{{' + placeholder + '}}' + textToAppend;
+                var placeholderType = $('.placeholder-type', $context).val();
+                var placeholderFormat = $('.placeholder-format', $context).val();
+                var placeholderValue = placeholderType + '(' + placeholderFormat + ')';
+                placeholderCollection.push({ key: placeholder, value: placeholderValue });
+                $('#message_text').val(newText);
+                console.log(placeholderCollection);
+                $('.btn-placeholder').popover('hide');
+            });
+            function cleanedPlaceholderCollection() {
+                var placeholdersFound = $('#message_text').val().match(/{{placeholder_\d+}}/g);
+                return _.filter(placeholderCollection, function (item) {
+                    return _.contains(placeholdersFound, '{{' + item.key + '}}');
+                });
+            }
+            $(document).on('click', '#save_placeholder', function () {
+                var placeholders = cleanedPlaceholderCollection();
+            });
+
+            $(document).on('click', '.unicampaign-filter .filter-expression .btn-add-filter-condition', function (e) {
+                var collectionElement = $(this).parentsUntil('.filter-expression').parent().find('.filter-condition-collection').first();
+                var newCondition = collectionElement.find('.filter-condition').first().clone(false);
+                $(newCondition).find('.btn-remove-filter-condition').removeClass('hidden');
+                $(newCondition).find('input').val('');
+                $(collectionElement).append(newCondition);
+            });
+
+            $(document).on('click', '.unicampaign-filter .filter-expression .btn-reset-filter', function (e) {
+                $(this).parentsUntil('.filter-expression').parent().find('.filter-condition').not(":first").remove();
+                $(this).parentsUntil('.filter-expression').parent().find('input').val('');
+                $(this).parentsUntil('.filter-expression').parent().find('select').prop('selectedIndex', 0);
+            });
+
+            $(document).on('click', '.unicampaign-filter .filter-expression .filter-condition-collection .filter-condition .btn-remove-filter-condition', function (e) {
+                var conditionElement = $(this).parentsUntil('.filter-condition').parent().remove();
+            });
+
+            $(document).on('click', '.unicampaign-filter .btn-add-filter', function (e) {
+                var newFilter = $('.filter-collection').find('.filter-expression').first().clone();
+                $(newFilter).find('.btn-remove-filter').first().removeClass('hidden');
+                $('.filter-collection').append(newFilter);
+                $(newFilter).find('.btn-reset-filter').first().trigger('click');
+            });
+
+            $(document).on('click', '.unicampaign-filter .filter-expression .btn-remove-filter', function (e) {
+                $(this).parentsUntil('.filter-expression').parent().remove();
+            });
+
+            $(document).on('click', '#btn_submit', function () {
+                var filterCollection = [];
+                $('#unicampaign_filter').find('.filter-collection .filter-expression').each(function () {
+                    var newFilter = {};
+                    newFilter.operatorType = $(this).find('.filter-type').first().val();
+                    newFilter.conditionCollection = [];
+                    $(this).find('.filter-condition-collection .filter-condition').each(function () {
+                        var newCondition = {};
+                        newCondition.attribute = $(this).find('.filter-condition-attribute').first().val();
+                        newCondition.operator = $(this).find('.filter-condition-operator').first().val();
+                        newCondition.value = $(this).find('.filter-condition-value').first().val();
+                        newFilter.conditionCollection.push(newCondition);
+                    });
+                    filterCollection.push(newFilter);
+                });
+                console.log(JSON.stringify(filterCollection));
+                //$.ajax({
+                //    url: '/test/Index',
+                //    type: 'POST',
+                //    data: filterCollection,
+                //    success: function (response) {
+                //        console.log(response);
+                //    }
+                //})
+            });
+        });
+    </script>
+}

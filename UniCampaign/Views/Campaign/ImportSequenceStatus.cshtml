@@ -1,0 +1,63 @@
+﻿@using UniCampaignE.Web.Localization
+@model UniCampaignE.Core.Models.API.Campaign
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Sequences assigned to @Model.Name</h4>
+        </div>
+        <div class="modal-body">
+            <div class="table-responsive">
+                <table id="sequence_grid" data-source="@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ListAssignedSequences), new { controller = "Campaign", area = "", campaignId = Model.GetUniqueId() })" class="table table-striped table-bordered table-condensed"></table>
+            </div>
+        </div>
+        <div class="modal-footer"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var sequenceGrid = $('#sequence_grid').grid({
+        primaryKey: 'Id',
+        iconsLibrary: 'fontawesome',
+        columns: [
+            { field: 'Name', title: 'Name' },
+            {field:'DataSource',title: 'DataSource'},
+            { field: 'MaximumDailyIterations', title: 'Max Daily Iterations' },
+            { field: 'IntervalInMinutes', title: 'Interval (minutes)' },
+            { field: 'NextIterationDate', title: 'Next Iteration' },
+            { field: 'Status', title: 'Status' },
+            { title: "", minWidth: 10, priority: 2, field: "Pause", tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="DELETE" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="stopSuccessHandler" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StopSequence)})' + '?sequenceId={Id}"><small class="">Stop</small></a>', tooltip: "Stop" },
+             { title: "", minWidth: 10, priority: 2, field: "Pause", tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="DELETE" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="stopSuccessHandler" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.Startsequence) })' + '?sequenceId={Id}"><small class="">Start</small></a>', tooltip: "Start" }
+        ],
+        detailTemplate: '<div><table/></div>',
+        uiLibrary: "bootstrap",
+        notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+        pager: { enable: true, limit: 5, sizes: [5, 10] }
+    });
+    sequenceGrid.on('detailExpand', function (e, $detailWrapper, id) {
+        $detailWrapper.find('table').grid(
+            {
+                dataSource: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.SequenceHistory),new { area="",controller="Campaign" })',
+                params: { sequenceId: id },
+                primaryKey: 'Id',
+                iconsLibrary: 'fontawesome',
+                columns: [
+                    { field: "AttemptedOn", title: "@GridComman.GRID_DATETIME_FORMAT" },
+                    { field: 'ListName', title: 'ContactList', minWidth: 60, priority: 6 },
+                    { field: "FileName", title: "Filename", minWidth: 50, priority: 4 },
+                    { title: "", minWidth: 10, priority: 3, field: "", tmpl: '<a  target="_blank" href="@Url.RouteUrl(new { area = "", controller = "Campaign", action = nameof(UniCampaignE.Web.Controllers.CampaignController.ImportDetails), id = Model.GetUniqueId(), name = Model.Name})&MapId={MapId}&ListName={ListName}"><small>Details</small></a>' },
+                ],
+                uiLibrary: "bootstrap",
+                notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+                pager: { enable: true, limit: 5, sizes: [5, 10] }
+            });
+    });
+    sequenceGrid.on('detailCollapse', function (e, $detailWrapper, id) {
+        $detailWrapper.find('table').grid('destroy', true, true);
+    });
+    function stopSuccessHandler(response) {
+        hideGlobalNotification();
+        //$('#loader').hide();
+        showGlobalNotification('success', response);
+        sequenceGrid.reload();
+    }
+</script>

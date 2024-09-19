@@ -1,0 +1,355 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib;
+@using UniCampaignE.Core.Models;
+@model UniCampaignE.Core.Models.RechurnPolicy
+
+<style>
+    .call-count-head {
+        font-size: 14px;
+        color: black;
+    }
+
+    .floatLeft {
+        width: 50%;
+        float: left;
+    }
+
+    .floatRight {
+        width: 50%;
+        float: right;
+    }
+
+    .table-container {
+        overflow: hidden;
+    }
+</style>
+<div class="modal-dialog modal-lg">
+    <form id="rechurn_list_form" method="post" action="@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.RechunkContactList), new { controller = "Campaign", area = "" })">
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+
+            <div class="table-container">
+                <div style="height:150px;overflow-y:scroll;overflow-x:hidden;">
+                    <table class="table table-striped table-bordered" style="width:98%;margin:1%;">
+                        <thead>
+                            <tr>
+                                <th class="call-count-head">
+                                    Call Disposition
+                                </th>
+                                <th class="call-count-head">
+                                    Count
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var CallResult in ViewBag.count)
+                            {
+                                <tr>
+                                    <td>
+                                        @CallResult.callres
+                                    </td>
+                                    <td>
+                                        @CallResult.Count
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="step_one">
+                @Html.HiddenFor(mod => mod.CampaignId, new { id = "campaignId" })
+
+                <div class="form-group">
+
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-3">
+                        Campaign Name<span class="text-danger">*</span>
+                    </label>
+                    <div class="col-xs-8 col-lg-7">
+                        @*<select class="form-control" data-value="@Model.CampaignId" data-text="@Model.CampaignName" id="campaign_list">  </select>*@
+                        @Html.TextBoxFor(m => m.CampaignName, new { @class = "form-control", @readonly = "readonly", id = "campaign_list1" })
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="control-label col-xs-3">
+                        @Campaign.CONTACT_LIST<span class="text-danger">*</span>
+                    </label>
+                    <div class="col-xs-8 col-lg-7">
+
+                        @Html.TextBoxFor(m => m.ContactListName, new { @class = "form-control", @readonly = "readonly" })
+                        @Html.HiddenFor(mod => mod.ContactListId, new { id = "ContactListId" })
+                        @Html.HiddenFor(mod => mod.MapId, new { id = "MapId" })
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Dial Attempt</label>
+                    <div class="col-xs-8 col-lg-2">
+                        @Html.DropDownList("Conditions", new List<SelectListItem>
+                            {
+                                new SelectListItem{ Text="None", Value = "0" },
+                                new SelectListItem{ Text="LessThan", Value = "1" },
+                                new SelectListItem{ Text="GreterThan", Value = "2" },
+                                new SelectListItem{ Text="Equal", Value = "3" },
+                             }, new { @class = "form-control", id = "DialCondition" })
+                    </div>
+                    <div class="col-xs-8 col-lg-5">
+                        @Html.TextBoxFor(m => m.DialAttempt, new { @class = "form-control", id = "DialAttempt", @type = "number", min = 1, max = 10 })
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Call Disposition</label>
+                    <div class="col-xs-8 col-lg-7">
+                        @Html.DropDownList("callresult", DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.API.CallResult)).Where(s => s.Value != "0" && s.Value != "2" && s.Value != "14" && s.Value != "17" && s.Value != "18" && s.Value != "25"), new { @class = "js-select2", id = "callresult_list_Rechrun", multiple = "multiple" })
+
+                    </div>
+                    <div class="col-xs-8 col-lg-2">
+                        <input type="checkbox" id="checkboxCallResult">Select All
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Agent Disposition</label>
+                    <div class="col-xs-8 col-lg-7">
+                        <select class="js-select2" name="AgentDisposition" id="agent_disposition_list_rechurn"></select>
+                    </div>
+                    <div class="col-md-4 col-lg-2">
+                        <input type="checkbox" id="checkboxAgent">Select All
+                    </div>
+
+                    <div class="clearfix"></div>
+                </div>
+                <div class="form-group">
+                    <button style="float:right; margin-right:20px;" id="btnRechurnCount" type="button" class="btn btn-primary">
+                        Total Count
+                        <span style="margin-left:2px;" id="RechurnCount" class="badge"></span>
+                    </button>
+                    <div class="clearfix"></div>
+                </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                    <input type="submit" class="btn btn-primary" value="@Comman.SAVE_BUTTON_TEXT" />
+                </div>
+            </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+
+        var $MultipleSelectionForm = $('#rechurn_list_form');
+        $MultipleSelectionForm.on('submit', function (e) {
+            e.preventDefault();
+
+            var url = $(this).attr('action');
+            var CallResultCollection = [];
+            var AgentCollection = [];
+            var CallResultCollection = $('#callresult_list_Rechrun', $MultipleSelectionForm).val();
+            var AgentCollection = $('#agent_disposition_list_rechurn', $MultipleSelectionForm).val();
+
+            if (CallResultCollection.length <= 0 && AgentCollection.length <= 0 && $('#DialCondition').val() == 0) {
+                showGlobalNotification('error', 'Please choose at least one rechurn criteria.');
+                return false;
+            }
+
+            var ContactMap = {
+                CampaignId: $('#campaignId', $MultipleSelectionForm).val(),
+                CampaignName: $('#campaign_list1', $MultipleSelectionForm).val(),
+                MapId: $('#MapId', $MultipleSelectionForm).val(),
+                ContactListId: $('#ContactListId', $MultipleSelectionForm).val(),
+                ContactListName: $('#ContactListName', $MultipleSelectionForm).val(),
+                CallDisposition: CallResultCollection,
+                AgentDisposition: AgentCollection,
+                DialAttempt: $('#DialAttempt', $MultipleSelectionForm).val(),
+                DialCondition: $('#DialCondition', $MultipleSelectionForm).val(),
+            }
+
+
+            $.ajax({
+                beforeSend: function (e) {
+                    $('#loader').show();
+                },
+                url: url,
+                success: globalAjaxSuccessHandler,
+                type: 'POST',
+                contentType: 'application/json',
+                error: globalAjaxErrorHandler,
+                data: JSON.stringify(ContactMap)
+            });
+            return false;
+        });
+    });
+</script>
+
+<script src="~/Scripts/modernizr-2.8.3.js"></script>
+<script src="~/Scripts/modernizr.custom.js"></script>
+<!-- JQUERY-->
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<!-- JQuery Easing -->
+<script src="~/Scripts/jquery.easing.js"></script>
+<script src="~/Scripts/animo.js"></script>
+<!-- BOOTSTRAP-->
+<script src="~/Scripts/bootstrap.min.js"></script>
+<!-- STORAGE API-->
+<script src="~/Scripts/jquery.storageapi.js"></script>
+<script src="~/Scripts/app.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/Scripts/moment.min.js"></script>
+<script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+<script src="~/Scripts/jquery.slimscroll.min.js"></script>
+<script src="~/Scripts/gijgo/combined/gijgo.min.js"></script>
+<script src="~/Scripts/select2.full.min.js"></script>
+<script src="~/Scripts/underscore-min.js"></script>
+<script src="~/Scripts/jquery.form.js"></script>
+<script src="~/Scripts/lobibox.js"></script>
+<script src="~/Scripts/layout.js"></script>
+<link href="~/Content/Select2MultipleCheck.css" rel="stylesheet" />
+<script type="text/javascript">
+
+
+    var agentWraupDispositions = [];
+
+    $("#btnRechurnCount").click(event => {
+
+        var model = {
+            CampaignId: $('#campaignId').val(),
+            MapId: $('#MapId').val(),
+            DialCondition: $('#DialCondition').val(),
+            DailAttempt: $('#DialAttempt').val(),
+            AgentDisposition: $('#agent_disposition_list_rechurn').val(),
+            CallDisposition: $('#callresult_list_Rechrun').val()
+        };
+
+        if (model.DialCondition == 0 && model.CallDisposition.length <= 0 && model.AgentDisposition.length <= 0) {
+            $('#RechurnCount').text(0);
+            return false;
+        }
+
+         var sendUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.RechurnContactsCount), new { area = "", controller = "Campaign" })';
+        $.ajax({
+            beforeSend: function (e) {
+                $('#loader').show();
+            },
+            type: 'POST',
+            url: sendUrl,
+            data: model,
+            success: function (res) {
+                $('#loader').hide();
+                $('#RechurnCount').text(res.Response.TotalCount);
+            },
+            error: function () {
+                $('#loader').hide();
+            }
+        });
+    });
+
+    $("#checkboxCallResult").click(function () {
+        if ($("#checkboxCallResult").is(':checked')) {
+            $("#callresult_list_Rechrun > option").prop("selected", "selected");
+            $("#callresult_list_Rechrun").trigger("change");
+        } else {
+            $("#callresult_list_Rechrun").val('').trigger('change')
+        }
+    });
+
+    $(".js-select2").select2({
+        closeOnSelect: false,
+        placeholder: "Placeholder",
+        allowHtml: true,
+        allowClear: true,
+        tags: true
+    });
+
+    $('.icons_select2').select2({
+        width: "100%",
+        templateSelection: iformat,
+        templateResult: iformat,
+        allowHtml: true,
+        placeholder: "Placeholder",
+        dropdownParent: $('.select-icon'),
+        allowClear: true,
+        multiple: false
+    });
+
+    function iformat(icon, badge) {
+        var originalOption = icon.element;
+        var originalOptionBadge = $(originalOption).data('badge');
+
+        return $('<span><i class="fa ' + $(originalOption).data('icon') + '"></i> ' + icon.text + '<span class="badge">' + originalOptionBadge + '</span></span>');
+    }
+
+    var callResultListOptions_Rechurn = {
+        width: '100%',
+        multiple: true,
+        placeholder: 'Select Call Result',
+        theme: 'bootstrap',
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: false,
+        tags: false,
+        allowClear: true
+    };
+
+    var agentDispositionListOptions_Rechurn = {
+        width: '100%',
+        multiple: true,
+        theme: 'bootstrap',
+        placeholder: 'Select Agent Disposition',
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: false,
+        tags: false,
+        allowClear: true,
+        language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+        placeholder: {
+            id: 0,
+            text: 'Select Agent Disposition'
+        },
+        data: agentWraupDispositions
+    };
+
+    $("#checkboxAgent").click(function () {
+        if ($("#checkboxAgent").is(':checked')) {
+                $("#agent_disposition_list_rechurn > option").prop("selected", "selected");
+                $("#agent_disposition_list_rechurn").trigger("change");
+            } else {
+                $("#agent_disposition_list_rechurn").val('').trigger('change');
+            }
+        });
+
+        $(document).ready(function (e) {
+            $('#callresult_list_Rechrun').select2(callResultListOptions_Rechurn);
+            $('#agent_disposition_list_rechurn').select2(agentDispositionListOptions_Rechurn);
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.GetWrapUpCode), new { area = "", controller = "Campaign" })',
+                success: function (res) {
+                    this.agentWraupDispositions =  res.records.map(function (item) {
+                        return {
+                            id: item.Label,
+                            text: item.Label
+                        }
+                    });
+
+                    console.log(agentDispositionListOptions_Rechurn);
+
+                    agentDispositionListOptions_Rechurn.data = this.agentWraupDispositions;
+                    $('#agent_disposition_list_rechurn').select2("destroy").empty().select2(agentDispositionListOptions_Rechurn);
+                }
+            });
+        });
+</script>

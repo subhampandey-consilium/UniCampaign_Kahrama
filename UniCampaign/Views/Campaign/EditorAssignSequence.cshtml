@@ -1,0 +1,538 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+@using UniCampaignE.Core.Constants
+@using UniCampaignE.Core.Constants.API
+@model UniCampaignE.Core.Models.ContactListSequence
+<div class="modal-dialog modal-lg">
+    @{
+        string action = ViewBag.Action;
+    }
+    <form id="assign_sequence_form" method="post" action="@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.AssignSequence),new { area="",controller="Campaign"})">
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <datalist id="header_auto_complete">
+                        @foreach (var header in ImportHeaderFields.AllHeaders)
+                        {
+                            if (ViewData.ContainsKey(header))
+                            {
+                                continue;
+                            }
+                            <option value="@header"></option>
+                        }
+                    </datalist>
+                    <div id="step_one">
+                        <div class="col-lg-7 p0">
+                            @Html.HiddenFor(mod => mod.CampaignId, new { id = "sequence_campaign_id" })
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">
+                                    @Comman.DATA_SOURCE_TEXT<span class="error inline">*</span>
+                                </label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control" id="sequence_source_list" name="@nameof(Model.Source.Id)"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">
+                                    @Campaign.NAME<span class="error inline">*</span>
+                                </label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.TextBoxFor(mod => mod.Name, new { @class = "form-control", id = "sequence_name" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">@Comman.TEMPLATE_PATH_TEXT<span class="error inline">*</span></label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.TextBoxFor(mod => mod.TemplatePath, new { @class = "form-control", id = "sequence_template_path" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">@Comman.FILENAME_FORMAT<span class="error inline">*</span></label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.TextBoxFor(mod => mod.FileNameFormat, new { @class = "form-control", id = "sequence_filename_format", autocomplete = "off" })
+                                    <button type="button" id="sequence_btn_placeholder" class="btn btn-link">Add Placeholder</button>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">Interval <span class="error inline">*</span></label>
+                                <div class="col-xs-4">
+                                    @Html.TextBoxFor(mod => mod.Interval, new { @class = "form-control", id = "sequence_interval" })
+                                </div>
+                                <div class="col-xs-3 p0 pl-sm pr-lg">
+                                    @Html.EnumDropDownListFor(mod => mod.IntervalUnit, new { @class = "form-control", id = "sequence_interval_unit" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">
+                                    @Campaign.TIME_ZONE
+                                </label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.DropDownListFor(mod => mod.TimeZone, DropDownHelper.GetTimeZones(), new { @class = "form-control", id = "sequence_timezone" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5 p0">
+                            <div class="form-group hidden">
+                                <label class="control-label col-xs-4">@ContactList.COUNTRY_LABEL<span class="error inline">*</span></label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.DropDownListFor(mod => mod.TargetCountry, DropDownHelper.GetCountries(), new { @class = "form-control", id = "sequence_country_list" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">@Comman.DELIMITER_TEXT</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.EnumDropDownListFor(mod => mod.Delimiter, new { @class = "form-control", id = "sequence_delimiter" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">Contains Headers</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <div class="checkbox c-checkbox mt-sm">
+                                        <label>
+                                            <input type="checkbox" id="sequence_headers" data-value="@Model.ContainsHeaders" />
+                                            <span class="fa fa-check"></span>Yes
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">
+                                    @Campaign.SCHEDULE
+                                </label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <div class="checkbox c-checkbox mt-sm">
+                                        <label>
+                                            <input type="checkbox" id="sequence_schedule_check" />
+                                            <span class="fa fa-check"></span>@Campaign.ENABLE
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group hidden" id="sequence_schedule_area">
+                                <label class="control-label col-xs-4">@Campaign.SCHEDULED_TIME</label>
+                                <div class="col-xs-8 col-lg-7" id="sequence_schedule_time">
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">@Comman.MAX_DAILY_ITERATIONS<span class="error inline">*</span></label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.TextBoxFor(mod => mod.MaximumDailyIterations, new { @class = "form-control", id = "sequence_maximum_iterations" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+
+                    </div>
+                    <div id="step_two" class="hidden">
+                        <div class="col-lg-6 p0">
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-5">@Campaign.PHONE01<span class="error inline">*</span></label>
+                                <div class="col-xs-7 col-lg-6">
+                                    <select class="form-control header-row" name="Phone01"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm @ViewData["AccountNumber"]">
+                                <label class="control-label col-xs-5">@Campaign.ACCOUNT_NUMBER</label>
+                                <div class="col-xs-7 col-lg-6">
+                                    <select class="form-control header-row @ViewData["AccountNumber"]" name="AccountNumber"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm @ViewData["FirstName"]">
+                                <label class="control-label col-xs-5">@Campaign.FIRST_NAME</label>
+                                <div class="col-xs-7 col-lg-6">
+                                    <select class="form-control header-row @ViewData["FirstName"]" name="FirstName"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm @ViewData["LastName"]">
+                                <label class="control-label col-xs-5 @ViewData["LastName"]">@Campaign.LAST_NAME</label>
+                                <div class="col-xs-7 col-lg-6">
+                                    <select class="form-control header-row" name="LastName"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-5">More Fields</label>
+                                <div class="col-xs-7 col-lg-6">
+                                    <input type="button" class="btn btn-primary btn-sm" id="sequence_btn_new_custom_field" value="Add" />
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 p0 custom-header-field-map">
+
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default disabled" id="btn_previous">@Comman.BUTTON_PREVIOUS</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <button type="button" class="btn btn-primary" id="btn_next">@Comman.BUTTON_NEXT</button>
+                <input type="submit" class="btn btn-primary hidden" id="btn_save" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+
+        </div>
+    </form>
+    <script type="text/javascript">
+        $(function ()
+        {
+            var $sequenceForm = $('#assign_sequence_form');
+            $('input[type="text"]', $sequenceForm).val('');
+            console.log($sequenceForm);
+            if ($('#sequence_headers', $sequenceForm).attr('data-value') == 'True') {
+                $('#sequence_headers', $sequenceForm).attr('checked', 'checked');
+            }
+            var sourceOptions = {
+                language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+                placeholder: '@Comman.SELECT_LAVEL ' + '  ' + '@Comman.DATA_SOURCE_TEXT',
+                width: '100%',
+                theme: 'bootstrap',
+                multiple: false,
+                dropdownParent: $('#modal_editor'),
+                minimumResultsForSearch: 4,
+                ajax: {
+                    cache: true,
+                    dataType: 'json',
+                    url: function (params) {
+                        var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.SourceController.SharedSources), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.SourceController).Replace("Controller", "")})';
+                        var q = "";
+                        var page = params.page || 1;
+                        q = 'page=' + page;
+                        q += '&limit=10';
+                        @*q += '&type=@DataSourceType.LocalDirectory';*@
+                        if (params.term) {
+                            q += '&searchString=' + encodeURIComponent(params.term);
+                        }
+                        url += "?" + q;
+                        return url;
+                    },
+                    processResults: function (data, params) {
+                        var obj = {};
+                        obj.results = data.records.map(function (item) {
+                            return {
+                                id: item.Id,
+                                text: item.Name
+                            }
+                        });
+                        if (!params.page) {
+                            params.page = 1;
+                        }
+                        obj.pagination = {
+                            more: (10 * params.page) < data.total
+                        }
+                        return obj;
+                    }
+                },
+                escapeMarkup: function (markup) { return markup; },
+                closeOnSelect: true
+            };
+
+            $('#sequence_source_list', $sequenceForm).select2(sourceOptions);
+            $('#sequence_country_list', $sequenceForm).select2({
+                width: '100%',
+                theme: 'bootstrap',
+                multiple: false,
+                closeOnSelect: true
+            });
+            $('#btn_next', $sequenceForm).on('click', function (e) {
+                hideGlobalNotification();
+                var elements = $('#step_one .form-control', $sequenceForm);
+                for (var i = 0; i < elements.length; i++) {
+                    if ($(elements[i]).val() == null || $(elements[i]).val() == '') {
+                        showGlobalNotification('error', 'Fields marked * are mandatory');
+                        return;
+                    }
+                }
+                var selectedSource = $('#sequence_source_list', $sequenceForm).val();
+                if ($('#sequence_source_list', $sequenceForm).val() == null) {
+                    showGlobalNotification('error', 'Please select a data source');
+                    return;
+                }
+                if ($('#sequence_name', $sequenceForm).val() == null || $('#sequence_name', $sequenceForm).val() == '') {
+                    showGlobalNotification('error', 'Please provide ');
+                    retrun;
+                }
+                if ($('#sequence_template_path', $sequenceForm).val() == null || $('#sequence_template_path', $sequenceForm).val() == "") {
+                    showGlobalNotification('error', 'Please provide the template path');
+                    retrun;
+                }
+                var tempMap = {
+                    sourceId: $('#sequence_source_list', $sequenceForm).val(),
+                    templatePath: $('#sequence_template_path', $sequenceForm).val(),
+                    delimiter: $('#sequence_delimiter', $sequenceForm).val()
+                };
+                $('#loader').show();
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    data: tempMap,
+                    url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.ContactListController.GetHeadersFromSequence), new { controller = nameof(UniCampaignE.Web.Controllers.ContactListController).Replace("Controller",""), area = ""})',
+                    success: function (response) {
+                        var headers = response;
+                        $('.header-row', $sequenceForm).empty();
+                        $('.header-row', $sequenceForm).append('<option value="">@Comman.SELECT_LAVEL</option>');
+                        _.each(headers, function (item, key, list) {
+                            $('.header-row', $sequenceForm).append('<option value="' + item.Value + '">' + item.Key + '</option>');
+                            $('#header_auto_complete', $sequenceForm).append('<option value="' + item.Key + '"></option>');
+                        });
+                        $('#loader').hide();
+
+                        if (!$('#step_two', $sequenceForm).hasClass('hidden')) {
+                            //$('.modal-dialog').removeClass('modal-lg');
+                            $('#step_two', $sequenceForm).addClass('hidden');
+                            $('#step_three', $sequenceForm).removeClass('hidden');
+                            $('#btn_save', $sequenceForm).removeClass('hidden');
+                            $(this).addClass('hidden');
+                            return;
+                        }
+                        //$('.modal-dialog').addClass('modal-lg');
+                        $('#step_one', $sequenceForm).addClass('hidden');
+                        $('#step_two', $sequenceForm).removeClass('hidden');
+                        $('#btn_previous', $sequenceForm).removeClass('disabled');
+                        $('#btn_save', $sequenceForm).removeClass('hidden');
+                        $('#btn_next', $sequenceForm).addClass('hidden');
+                        $('#loader').hide();
+                    },
+                    error: globalAjaxErrorHandler
+                });
+
+            });
+            $('#sequence_btn_placeholder', $sequenceForm).popover({
+                placement: 'auto top',
+                trigger: 'manual',
+                title: 'Add Placeholder',
+                template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>',
+                html: true,
+                content: '<div class="placeholder-container"><div class="row"><div class="col-xs-12"><select class="form-control input-sm placeholder-type"><option value="">Select</option><option value="D">Date</option><option value="S">Daily Sequence</option><option value="N" >Number</option><option value="C">Fixed Length String</option></select></div><div class="col-xs-12 mt-sm"><input type="text" placeholder="Format" class="form-control input-sm placeholder-format" disabled="disabled" /><small class="help-block"></small></div><div class="col-xs-12 mt-sm"><button class="btn btn-primary pull-right" type="button"><i class="fa fa-check"></i></button></div></div></div>',
+                viewport: '.modal'
+            });
+            $('#sequence_btn_placeholder', $sequenceForm).on('click', function (e) {
+                $(this).popover('toggle');
+            });
+            $('#sequence_btn_new_custom_field', $sequenceForm).popover({
+                placement: 'auto top',
+                trigger: 'manual',
+                title: 'Add New Field',
+                template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>',
+                html: true,
+                content: '<div class="row custom-field-container"><div class="col-lg-12"><input type="text" list="header_auto_complete" class="form-control" /><small class="help-block error inline"></small></div><div class="col-xs-12 mt-sm"><button class="btn btn-primary pull-right" type="button"><i class="fa fa-check"></i></button></div></div>',
+                viewport: '.modal'
+            });
+            $('#sequence_btn_new_custom_field', $sequenceForm).on('click', function (e) {
+                $(this).popover('toggle');
+            });
+            $sequenceForm.on('click', '.custom-field-container .btn', function (e) {
+                var $context = $(this).parentsUntil('.row').parent();
+                var $help = $('.help-block', $context);
+                $help.text('');
+                $('input', $context).focus();
+                var fieldName = $('input', $context).val();
+                if (fieldName == null || fieldName == '') return;
+                if ($('.header-row[name="' + fieldName + '"]').length > 0) {
+                    $help.text('Field already present');
+                    return;
+                }
+                var $newFormGroup = $('<div class="form-group form-group-sm"><label class="control-label col-xs-4">FieldName</label><div class="col-xs-7 col-lg-6"><select class="form-control custom-header-field header-row" name="FieldName"></select></div><div class="col-xs-1"><span class="btn-sm btn-danger btn-remove-custom-header" role="button"><i class="fa fa-remove"></i></span></div><div class="clearfix"></div></div>');
+                var $select = $('select', $newFormGroup);
+                $('label', $newFormGroup).text(fieldName);
+                $select.attr('name', fieldName);
+                var $options = $('option', $('.header-row', $sequenceForm).first()).clone(false, false);
+                $select.append($options);
+                $select.prop('selectedIndex', 0);
+                $('.custom-header-field-map', $sequenceForm).append($newFormGroup);
+                $('.header-row', $newFormGroup).select2({
+                    width: '100%',
+                    theme: 'bootstrap',
+                    multiple: false,
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#modal_editor')
+                });
+                $('#sequence_btn_new_custom_field', $sequenceForm).popover('hide');
+            });
+            $sequenceForm.on('click', '.btn-remove-custom-header', function (e) {
+                $(this).parentsUntil('.form-group').parent().remove();
+            });
+            var placeholderCollection = [];
+            $sequenceForm.on('change', '.placeholder-type', function (e) {
+                var selectedValue = $(this).val();
+                var $context = $(this).parents('.placeholder-container').first();
+                var $format = $('.placeholder-format', $context);
+                $format.val('');
+                var $help = $('.help-block', $context);
+                if (selectedValue !== null && selectedValue !== '') {
+                    switch (selectedValue) {
+                        case 'D':
+                            $format.removeAttr('disabled');
+                            $help.text('d=1-31, dd=01-31, M=1-12, MM=01-12, yy=00-99,yyyy=4 digit year');
+                            $help.show();
+                            break;
+                        case 'N':
+                            $format.removeAttr('disabled');
+                            $help.text('Specify range e.g 1-10');
+                            $help.show();
+                            break;
+                        case 'S':
+                            $format.removeAttr('disabled');
+                            $help.text('Specify starting value, default is 1');
+                            $help.show();
+                            break;
+                        case 'C':
+                            $format.removeAttr('disabled');
+                            $help.text('Specify length of the string');
+                            $help.show();
+                            break;
+                    }
+                } else {
+                    $format.attr('disabled', 'disabled');
+                    $help.text('');
+                    $help.hide();
+                }
+            });
+            $sequenceForm.on('click', '.placeholder-container button', function (e) {
+                var $context = $(this).parents('.placeholder-container').first();
+                var placeholderType = $('.placeholder-type', $context).val();
+                if (placeholderType == null || placeholderType == '') return;
+                var placeholderFormat = $('.placeholder-format', $context).val();
+                if ((placeholderType == 'N' || placeholderType == 'D' || placeholderType == 'C') && (placeholderFormat == null || placeholderFormat == '')) return;
+                var placeholderValue = placeholderType + '(' + placeholderFormat + ')';
+                var placeholder = _.uniqueId('placeholder_');
+                $('#sequence_filename_format', $sequenceForm).focus();
+                var startPosition = $('#sequence_filename_format', $sequenceForm).prop("selectionStart");
+                var currentText = $('#sequence_filename_format', $sequenceForm).val();
+                var textToPrepend = currentText.substring(0, startPosition);
+                var textToAppend = currentText.substring(startPosition, currentText.length);
+                var newText = textToPrepend + '{{' + placeholder + '}}' + textToAppend;
+                placeholderCollection.push({ key: placeholder, value: placeholderValue });
+                $('#sequence_filename_format', $sequenceForm).val(newText);
+                $('#sequence_btn_placeholder', $sequenceForm).popover('hide');
+            });
+            function cleanedPlaceholderCollection() {
+                var placeholdersFound = $('#sequence_filename_format', $sequenceForm).val().match(/{{placeholder_\d+}}/g);
+                return _.filter(placeholderCollection, function (item) {
+                    return _.contains(placeholdersFound, '{{' + item.key + '}}');
+                });
+            }
+            $('#btn_previous', $sequenceForm).on('click', function (e) {
+                $('#step_two', $sequenceForm).addClass('hidden');
+                //$('.modal-dialog').removeClass('modal-lg');
+                $('#step_one', $sequenceForm).removeClass('hidden');
+                $('#btn_save', $sequenceForm).addClass('hidden');
+                $('#btn_next', $sequenceForm).removeClass('hidden');
+                $(this).addClass('disabled');
+            });
+            $sequenceForm.on('change', '#sequence_schedule_check', function (e) {
+                var checked = $(this).is(':checked');
+                if (!checked) {
+                    $('#sequence_schedule_area', $sequenceForm).addClass('hidden');
+                    $('#sequence_schedule_time', $sequenceForm).empty();
+                } else {
+                    $('#sequence_schedule_area', $sequenceForm).removeClass('hidden');
+                    var html = '<div id="sequence_schedule_time_picker" class="input-group date"><input type="text" name="@nameof(Model.StartDateTime)" placeholder="Schedule Date and Time" class="form-control" id="sequence_start_time" /><span class="input-group-addon"><span class="fa fa-calendar"></span></span></div>';
+                    $('#sequence_schedule_time', $sequenceForm).html(html);
+                    $('#sequence_schedule_time #sequence_schedule_time_picker', $sequenceForm).datetimepicker({
+                        icons: globalDateTimePickerIcons,
+                        format: 'YYYY-MM-DD HH:mm',
+                        sideBySide: true,
+                        //minDate: moment().subtract(0, 'days'),
+                        defaultDate: moment(),
+                        showClear: true,
+                        showClose: true,
+                        useCurrent: true,
+                        keepInvalid: false,
+                        useStrict: true,
+                        toolbarPlacement: 'bottom',
+                        widgetPositioning: {
+                            horizontal: 'auto',
+                            vertical: 'bottom'
+                        }
+                    })
+                }
+            });
+            $('.header-row', $sequenceForm).select2({
+                width: '100%',
+                theme: 'bootstrap',
+                multiple: false,
+                dropdownAutoWidth: true,
+                dropdownParent: $('#modal_editor')
+            });
+            var headerFieldOptions = {
+                placeholder: 'Select',
+                tags: true,
+                allowClear: true,
+                width: '100%',
+                theme: 'bootstrap',
+                multiple: false,
+                dropdownAutoWidth: true,
+                dropdownParent: $('#modal_editor')
+            };
+            $('.header-field', $sequenceForm).select2(headerFieldOptions);
+            $sequenceForm.on('submit', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('action');
+                var selectedHeaders = [];
+                $('.header-row', $sequenceForm).not(':hidden').each(function (e) {
+                    if ($(this).val() == null || $(this).val() == '') return;
+                    var header = { key: $(this).attr('name'), value: $(this).val() };
+                    selectedHeaders.push(header);
+                });
+                if (selectedHeaders.length == 0) {
+                    showGlobalNotification('error', 'Fields marked * are required');
+                    return;
+                }
+                var sequence = {
+                    Name: $('#sequence_name', $sequenceForm).val(),
+                    CampaignId: $('#sequence_campaign_id', $sequenceForm).val(),
+                    TemplatePath: $('#sequence_template_path', $sequenceForm).val(),
+                    Delimiter: $('#sequence_delimiter', $sequenceForm).val(),
+                    ContainsHeaders: $('#sequence_headers', $sequenceForm).is(':checked'),
+                    HeaderMap: selectedHeaders,
+                    Source: {
+                        Id: $('#sequence_source_list', $sequenceForm).val()
+                    },
+                    FileNameFormat: $('#sequence_filename_format', $sequenceForm).val(),
+                    PlaceholderMap: cleanedPlaceholderCollection(),
+                    Interval: $('#sequence_interval', $sequenceForm).val(),
+                    IntervalUnit: $('#sequence_interval_unit', $sequenceForm).val(),
+                    MaximumDailyIterations: $('#sequence_maximum_iterations', $sequenceForm).val(),
+                    TimeZone: $('#sequence_timezone', $sequenceForm).val(),
+                    TargetCountry: $('#sequence_country_list', $sequenceForm).val()
+                };
+                if ($('#sequence_schedule_check', $sequenceForm).is(':checked')) {
+                    sequence.StartDateTime = $('#sequence_start_time', $sequenceForm).val();
+                }
+                $.ajax({
+                    beforeSend: function (e) {
+                        $('#loader').show();
+                        console.log(sequence);
+                    },
+                    url: url,
+                    success: globalAjaxSuccessHandler,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    error: globalAjaxErrorHandler,
+                    data: JSON.stringify(sequence)
+                });
+            });
+        });
+    </script>
+</div>

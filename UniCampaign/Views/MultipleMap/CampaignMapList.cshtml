@@ -1,0 +1,47 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+@using UniCampaignE.Core.Constants.API;
+@model UniCampaignE.Core.Models.MultiListMap
+<div class="modal-dialog modal-lg">
+    @{
+        string action = ViewBag.Action;
+    }
+
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+        </div>
+        <div class="modal-body">
+            
+            <div class="panel panel-primary" id="grid_panel">
+                <div class="panel-body">
+                    <table id="CampaignMapListGrid" class="table table-striped table-bordered table-condensed" data-source="@Url.Action(nameof(UniCampaignE.Web.Controllers.MultipleMapController.CampaignMapList),new { MultiListId = Model.MultiListId })"></table>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer"></div>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        debugger;
+        var Grid = $('#CampaignMapListGrid').grid({
+            title: 'Campaign Map List',
+            toolbarTemplate: '<div data-role="title">{title}</div>',
+            autoLoad: false,
+            iconsLibrary: 'fontawesome',
+            uiLibrary: "bootstrap",
+            notFoundText: 'Not Found',
+            columns: [
+                   { field: "k", title: "Campaign Name" },
+                   { field: "l", title: "Percentage" }
+            ],
+            pager: { enable: true, limit: 5, sizes: [2, 5, 10, 20] },
+        });
+        Grid.reload();
+    });
+    </script>

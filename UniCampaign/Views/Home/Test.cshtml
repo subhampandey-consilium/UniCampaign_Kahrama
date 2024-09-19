@@ -1,0 +1,86 @@
+﻿@using UniCampaignE.Core.Localization;
+@model  UniCampaignE.Core.Models.EmailConfig
+@{
+    Layout = "~/Views/Shared/_UniCampaignLayout.cshtml";
+}
+
+@section page_content{
+    <link href="~/Content/summernote.css" rel="stylesheet" />
+   <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Add EmailTemplate</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Name<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="col-lg-7 col-xs--8">
+                                @Html.TextBoxFor(email=>email.Name, new { @class = "form-control", placeholder = "Name" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-horizantal" role="form">
+                            <div class="form-group">
+                                <div class="col-lg-offset-1 col-lg-11" id="editor" style="min-height:350px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="Save" />
+            </div>
+        </div>
+ 
+}
+@section page_scripts{
+    <script src="~/Scripts/summernote.min.js"></script>
+    <script>
+        $(document).ready(function (e) {
+            var editor;
+            $('#editor').summernote({
+                minHeight: 350,
+                dialogsInBody: true,
+                dialogsFade: false,
+                toolbar: [
+                    ['misc', ['undo', 'redo']],
+                    ['font', ['bold', 'italic', 'underline', 'strikethrough']],
+                    ['style', ['fontname', 'fontsize', 'color']],
+                    ['paragraph', ['paragraph', 'ol', 'ul', 'style']],
+                    ['insert', ['hr', 'picture', 'link', 'table']]
+                ]
+            });
+            $('#saveButton').click(function (e) {
+                var contents = $('#editor').summernote('code');
+                var output = contents.replace(/\{\{0\}\}/gi, 'Solution Partner');
+                alert(output);
+            });
+        });
+    </script>
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

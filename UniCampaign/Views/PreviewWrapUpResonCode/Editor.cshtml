@@ -1,0 +1,43 @@
+﻿@using UniCampaignE.Web.Localization
+@model UniCampaignE.Core.Models.PreviewWrapUp
+<!DOCTYPE html>
+<div class="modal-dialog">
+    @{
+        string action = ViewBag.Action;
+    }
+    @using (Ajax.BeginForm(action, new { area = "", controller = "PreviewWrapUpResonCode" }, new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        @Html.HiddenFor(reasonCode => reasonCode.WrapUpCodeId)
+                        <label class="control-label col-xs-4">@WrapUpReasonCode.LABEL<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(reasonCode => reasonCode.WrapUpCodeName, new { @class = "form-control", placeholder = WrapUpReasonCode.LABEL_PLACE_HOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                      
+                        <label class="control-label col-xs-4">Description<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(reasonCode => reasonCode.Description, new { @class = "form-control", placeholder ="Description"})
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+
+        </div>
+                                        }
+
+</div>

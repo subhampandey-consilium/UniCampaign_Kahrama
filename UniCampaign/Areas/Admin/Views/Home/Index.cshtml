@@ -1,0 +1,127 @@
+﻿@using UniCampaignE.Core.Common;
+@model UniCampaignLicense
+@{
+    Layout = "~/Views/Shared/_UniCampaignAdminLayout.cshtml";
+}
+
+@section page_content{
+    <div class="content-heading">
+        Administration
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-flat panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        License Management
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="col-lg-7">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <div class="panel-title">
+                                    License Information
+                                </div>
+                            </div>
+                            <div class="panel-body">
+
+                                @if (Model != null)
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table" >
+                                            <tr>
+                                                <td>License Issued to</td>
+                                                <td class="text-bold text-dark">@Model.LicenseInfo.Customer.Name</td>
+                                            </tr>
+                                            <tr class="hidden">
+                                                <td>Channels</td>
+                                                <td>
+                                                    @foreach (var feature in Model.LicenseInfo.ProductFeatures.GetAll().Keys)
+                                                    {
+                                                        <span class="badge bg-info-dark p-sm">@feature</span>
+                                                     
+                                                    }
+                                                </td>
+                                            </tr>
+                                            @* <tr>
+        <td>Maximum Number of Tenants</td>
+        <td><span class="badge bg-info-dark">@Model.LicenseInfo.Quantity</span></td>
+    </tr>
+                                            *@
+                                           
+                                            <tr>
+                                                <td>Mac Addresses</td>
+                                                <td>
+                                                    @foreach (var macAddress in Model.LicenseInfo.RegisteredMacAddresses.GetAll().Keys)
+                                                    {
+                                                        <span class="badge bg-info-dark p-sm mb-sm">@macAddress</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Issued On</td>
+                                                <td class="text-dark text-bold">@Model.LicenseInfo.IssuedOn.ToString("r")</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Expiration Date</td>
+                                                <td class="text-bold text-dark">@Model.LicenseInfo.Expiration.ToString("r") </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-danger text-bold">Prouct License Invalid or Not Available</div>
+
+                                }
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <div class="panel-title">
+                                    @ViewBag.PanelTitle
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                @using (Html.BeginForm("Index", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                                {
+                                    <div class="form-horizontal p-lg center" role="form">
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-4">License <span class="error inline">*</span> </label>
+                                            <div class="col-xs-7">
+                                                <input type="file" name="licenseFile" />
+                                            </div>
+                                            <div class="clearfix"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-4 ">License Key <span class="error inline">*</span></label>
+                                            <div class="col-xs-7">
+                                                <input type="file" name="licenseKeyFile" />
+                                            </div>
+                                            <div class="clearfix"></div>                                          
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="submit" class="btn btn-primary pull-right ml" value="Upload" />                                          
+                                            <input type="reset" class="btn btn-default pull-right" value="Cancel" />
+                                        </div>
+                                        <div class="clearfix mt error">
+                                            @Html.ValidationSummary()
+                                            <strong class="text-success">@ViewBag.Message</strong>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}

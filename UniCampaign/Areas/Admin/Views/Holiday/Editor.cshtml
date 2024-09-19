@@ -1,0 +1,193 @@
+﻿@using UniCampaignE.Web.Localization
+@model UniCampaignE.Core.Models.Holiday
+<div class="modal-dialog" id="holiday_form">
+    @{
+        string action = ViewBag.Action;
+    }
+    @using (Ajax.BeginForm(action, "Holiday", new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnBegin = "validateHoliday", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal" role="form">
+                    <div class="form-group">
+                        @Html.HiddenFor(mod => mod.Id, new { id = "holiday_id" })
+                        <label class="control-label col-xs-4">@Holiday.HOLIDAY_NAME_LABEL <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.Name, new { Class = "form-control", placeholder = Holiday.HOLIDAY_NAME_PLACEHOLDER, id = "holiday_name" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Holiday.HOLIDAY_DESCRIPTION_LABEL</label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.Description, new { Class = "form-control", placeholder = Holiday.HOLIDAY_DESCRIPTION_PLACEHOLDER, id = "holiday_description" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Date<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date date-picker">
+                                @{
+                                    if (Model != null)
+                                    {
+                                        @Html.TextBox(nameof(Model.StartDate), string.Format("{0:yyyy-MM-dd}", Model.StartDate), new { data_required = "", @class = "form-control", id = "holiday_start_date" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(mod => mod.StartDate, new { @class = "form-control", id = "holiday_start_date", placeholder = Campaign.START_DATE })
+                                    }
+                                }
+                                <span class="input-group-addon">
+                                    <span class="fa fa-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Campaign.START_TIME<span class="error inline"></span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date time-picker">
+                                @Html.TextBoxFor(mod => mod.StartTime, new { Class = "form-control", placeholder = "Strat Time (Default Value 00:00:00)", id = "holiday_start_time" })
+                                <span class="input-group-addon">
+                                    <span class="fa fa-clock-o"></span>
+                                </span>
+                            </div>
+
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Campaign.END_TIME<span class="error inline"></span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date time-picker">
+                                @Html.TextBoxFor(mod => mod.EndTime, new { Class = "form-control", placeholder = "End Time (Default Value 23:59:59)", id = "holiday_end_time" })
+                                <span class="input-group-addon">
+                                    <span class="fa fa-clock-o"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Repeats<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.EnumDropDownListFor(mod => mod.Recurrence, new { @class = "form-control", id = "holiday_recurrence" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Repeats After<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.RecurrenceInterval, new { @class = "form-control inline", id = "holiday_recurrence_interval", style = "width:80%;" })&nbsp;&nbsp;<span class="help-block text-bold text-right inline"></span>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Ends On</label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date date-picker">
+                                @{
+                                    if (Model != null && Model.EndDate.HasValue)
+                                    {
+                                        @Html.TextBox(nameof(Model.EndDate), string.Format("{0:yyyy-MM-dd}", Model.EndDate), new { Class = "form-control", id = "holiday_end_date" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(mod => mod.EndDate, new { Class = "form-control", id = "holiday_end_date" })
+                                    }
+                                }
+                                <span class="input-group-addon">
+                                    <span class="fa fa-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+        </div>
+                                    }
+</div>
+<script type="text/javascript">
+    var validateHoliday;
+
+    $(function (e) {
+
+        var $formContext = $('#holiday_form');
+        var datePickerOptions = {
+            format: 'YYYY-MM-DD',
+            allowInputToggle: true,
+            showClear: true,
+            showClose: true,
+            icons: globalDateTimePickerIcons,
+            sideBySide: true,
+            useCurrent: true
+        };
+        var timePickerOptions = {
+            format: 'HH:mm',
+            allowInputToggle: true,
+            showClear: true,
+            showClose: true,
+            icons: globalDateTimePickerIcons,
+            sideBySide: false,
+            useCurrent: true
+        };
+
+        $formContext.on('change', '#holiday_recurrence', function (e) {
+            var $intervalContext = $('#holiday_recurrence_interval', $formContext).parentsUntil('.form-group').parent();
+            var $endDateContext = $('#holiday_end_date', $formContext).parentsUntil('.form-group').parent();
+            var $helpBlock = $('.help-block', $intervalContext);
+            var type = $('#holiday_recurrence', $formContext).prop('selectedIndex');
+            if (type != 0) {
+                $intervalContext.removeClass('hidden');
+                $endDateContext.removeClass('hidden');
+                $input = $('input', $intervalContext);
+                if ($input.val() == null) {
+                    $input.val(1);
+                }
+                switch (type) {
+                    case 1:
+                        $helpBlock.text('days');
+                        break;
+                    case 2:
+                        $helpBlock.text('weeks');
+                        break;
+                    case 3:
+                        $helpBlock.text('months');
+                        break;
+                    case 4:
+                        $helpBlock.text('years');
+                        break;
+                }
+            } else {
+                if (!$intervalContext.hasClass('hidden')) {
+                    $intervalContext.addClass('hidden');
+                }
+                if (!$endDateContext.hasClass('hidden')) {
+                    $endDateContext.addClass('hidden');
+                }
+                $('input', $intervalContext).val(null);
+                $('input', $endDateContext).val(null);
+                $helpBlock.text('');
+            }
+        });
+        $('.date-picker', $formContext).datetimepicker(datePickerOptions);
+        $('.time-picker', $formContext).datetimepicker(timePickerOptions);
+        $('#holiday_recurrence', $formContext).trigger('change');
+        validateHoliday = function () {
+            return true;
+        }
+    });
+
+</script>

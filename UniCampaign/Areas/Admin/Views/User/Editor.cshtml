@@ -1,0 +1,71 @@
+﻿@model UniCampaignE.Core.Models.User
+@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+    <div class="modal-dialog">
+        @{
+            string action = ViewBag.Action;
+        }
+
+        @using (Ajax.BeginForm(action, new { area = "admin", controller = "User" }, new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler" }))
+        {
+            <div class="modal-content">
+                <div class="modal-header bg-primary-dark">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-horizantal" id="addUser" role="form">
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">@Account.TENANT_LABEL<span class="text-danger">*</span></label>
+                            <div class="col-xs-8 col-lg-7">
+                                @Html.DropDownList("TenantOption", ViewBag.Tenants as IEnumerable<SelectListItem>, Comman.SELECT_LAVEL, new { @class = "form-control", placeholder = "Tenant", id = "tenant_select" })
+                                @Html.HiddenFor(mod => mod.TenantId, new { id = "selected_tenant" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group">
+                            @Html.HiddenFor(mod => mod.UserId)
+                            <label class="control-label col-xs-4">@Account.USERNAME_LABEL <span class="text-danger">*</span></label>
+                            <div class="col-xs-8 col-lg-7">
+                                @Html.TextBoxFor(mod => mod.Username, new { Class = "form-control", placeholder = Account.USERNAME_PLACEHOLDER })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">@Account.PASSWORD_LABEL<span class="text-danger">*</span></label>
+                            <div class="col-xs-8 col-lg-7">
+                                @Html.TextBoxFor(mod => mod.Password, new { Class = "form-control", placeholder = Account.PASSWORD_PLACEHOLDER, type = "password" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">@Account.ROLE_LABEL<span class="text-danger">*</span></label>
+                            <div class="col-xs-8 col-lg-7">
+                                @*@Html.EnumDropDownListFor(mod => mod.Role, new { @class = "form-control", placeholder = Account.ROLE_PLACEHOLDER })*@
+                                @Html.DropDownListFor(mod => mod.Role, DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.Role)), new { @class = "form-control", placeholder = Account.ROLE_PLACEHOLDER })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                    <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+                </div>
+            </div>
+        }
+    </div>
+    @if (Model != null)
+    {
+        <script type="text/javascript">
+            $('#tenant_select').val(@Model.TenantId);
+            $('#tenant_select').attr('disabled', 'disabled');
+        </script>
+    }
+    <script type="text/javascript">
+
+        $('#tenant_select').on('change', function (e) {
+            $('#selected_tenant').val($(this).val());
+        });
+    </script>

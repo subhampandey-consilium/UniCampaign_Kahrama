@@ -1,0 +1,24 @@
+﻿@model UniCampaignE.Core.Models.Tenant
+ @using UniCampaignE.Web.Localization
+<div class="modal-dialog modal-lg">
+    @using (Ajax.BeginForm(nameof(UniCampaignE.Web.Areas.Admin.Controllers.TenantController.Save), new { area = "admin", controller = "Tenant" }, new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    @Html.EditorForModel("TenantConfiguration")
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value=@Comman.SAVE_BUTTON_TEXT />
+            </div>
+        </div>
+    }
+</div>

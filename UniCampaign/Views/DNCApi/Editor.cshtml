@@ -1,0 +1,101 @@
+﻿@using UniCampaignE.Web.HelperLib
+@using UniCampaignE.Core.Constants.API;
+@using UniCampaignE.Web.Localization
+@model UniCampaignE.Web.Models.DNCViewModel
+<div class="modal-dialog">
+    @{
+        string action = ViewBag.Action;
+    }
+    @using (Ajax.BeginForm(action, new { area = "", controller = "DNCApi" }, new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnFailure="globalAjaxErrorHandler", OnSuccess = "globalAjaxSuccessHandler" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        @Html.HiddenFor(dncApi => dncApi.DNCApiId)
+                        <label class="control-label col-xs-4">@DNC_UCCE_.DNC_NAME<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(dncApi => dncApi.Name, new { @class = "form-control", placeholder = DNC_UCCE_.TEXTBOX_NAME_PLACEHOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@DNC_UCCE_.File_NAME<span class="text-danger">*</span></label>
+                        <div class="col-lg-7 col-xs--8">
+                            @Html.TextBoxFor(dncApi => dncApi.FileName, new { @class = "form-control", placeholder =DNC_UCCE_.TEXTBOX_FILEPATH_PLACEHOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">
+                            @DNC_UCCE_.OVERWRITE
+                        </label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="checkbox c-checkbox mt0">
+                                <label>
+                                    @{string checkOverwrite = "";}
+                                    @if (Model != null && Model.Overwrite)
+                                    {
+                                        checkOverwrite = @"checked='checked'";
+                                    }
+                                    <input type="checkbox" id="enableoverwrite_check" @checkOverwrite />
+                                    <span class="fa fa-check"></span>@DNC_UCCE_.OVERWRITE
+                                </label>
+                                @Html.Hidden(nameof(Model.Overwrite), Model != null && Model.Overwrite, new { @id = "dncApi_Overwrite" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">
+                       @DNC_UCCE_.RENAME_FILE_AFTERIMPORT
+                        </label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="checkbox c-checkbox mt0">
+                                <label>
+                                    @{string checkRename = "";}
+                                    @if (Model != null && Model.RenameFileAfterImport)
+                                    {
+                                        checkRename = @"checked='checked'";
+                                    }
+                                    <input type="checkbox" id="enablerename_check" @checkRename />
+                                    <span class="fa fa-check"></span> @DNC_UCCE_.RENAME_FILE_AFTERIMPORT
+                                </label>
+                                @Html.Hidden(nameof(Model.RenameFileAfterImport), Model != null && Model.Overwrite, new { @id = "dncApi_Rename" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="error">
+                @Html.ValidationSummary()
+            </div>
+            <div class="text-success">
+                <ul>
+                    @Html.Raw(ViewBag.Feedback)
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+
+        </div>
+                                        }
+    <script src="~/Scripts/select2.full.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function (e) {
+            $('#enableoverwrite_check').on('change', function (e) {
+                $('#dncApi_Overwrite').val($(this).is(':checked'));
+            });
+            $('#enablerename_check').on('change', function (e) {
+                $('#dncApi_Rename').val($(this).is(':checked'));
+            });
+        });
+    </script>
+</div>

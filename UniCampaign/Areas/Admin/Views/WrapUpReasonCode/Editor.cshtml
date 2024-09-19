@@ -1,0 +1,60 @@
+﻿@using UniCampaignE.Web.Localization
+@model UniCampaignE.Web.Models.WrapUpModel
+<!DOCTYPE html>
+<div class="modal-dialog">
+    @{
+        string action = ViewBag.Action;
+    }
+    @using (Ajax.BeginForm(action, new { area = "admin", controller = "WrapUpReasonCode" }, new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        @Html.HiddenFor(reasonCode => reasonCode.ReasonCodeId)
+                        <label class="control-label col-xs-4">@WrapUpReasonCode.LABEL<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(reasonCode => reasonCode.Label, new { @class = "form-control", placeholder = WrapUpReasonCode.LABEL_PLACE_HOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">
+                            @WrapUpReasonCode.FOR_ALL
+                        </label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="checkbox c-checkbox">
+                                <label>
+                                    @{string check = "";}
+                                    @if (Model != null && Model.ForAll)
+                                    {
+                                        check = @"checked='checked'";
+                                    }
+                                    <input type="checkbox" id="for_all_check" @check />
+                                    <span class="fa fa-check"></span>@WrapUpReasonCode.LABEL_ENABLE
+                                </label>
+                                @Html.Hidden(nameof(Model.ForAll), Model != null && Model.ForAll, new { @id = "for_all" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+
+        </div>
+      }
+
+</div>
+<script type="text/javascript">
+    $('#for_all_check').on('change', function (e) {
+        $('#for_all').val($(this).is(':checked'));
+    });
+</script>

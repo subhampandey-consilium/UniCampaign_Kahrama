@@ -1,0 +1,200 @@
+﻿@using UniCampaignE.Web.Localization;
+@{
+    Layout = "~/Views/Shared/_UniCampaignMainLayout.cshtml";
+}
+@section top_navigation{
+    <!-- START Top Navbar-->
+    <nav role="navigation" class="navbar topnavbar">
+        <!-- START navbar header-->
+        <div class="navbar-header">
+            <a href="@Url.RouteUrl("Admin_default")" class="navbar-brand">
+                <div class="brand-logo">
+                    <img src="~/Content/img/logo-resized.png" class="img-responsive" />
+                </div>
+                <div class="brand-logo-collapsed">
+                    <img src="~/Content/img/logo-single.png" class="img-responsive" />
+                </div>
+            </a>
+        </div>
+        <!-- END navbar header-->
+        <!-- START Nav wrapper-->
+        <div class="nav-wrapper">
+            <ul class="nav navbar-nav">
+                <li>
+                    <!-- Button used to collapse the left sidebar. Only visible on tablet and desktops-->
+                    <a href="#" data-toggle-state="aside-collapsed" data-no-persist="true" class="hidden-xs">
+                        <em class="fa fa-navicon"></em>
+                    </a>
+                    <!-- Button to show/hide the sidebar on mobile. Visible on mobile only.-->
+                    <a href="#" data-toggle-state="aside-toggled" data-no-persist="true" class="visible-xs sidebar-toggle">
+                        <em class="fa fa-navicon"></em>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown dropdown-list">
+                    <a href="#" title="@Comman.PROFILE_TEXT" data-toggle="dropdown">
+                        SuperAdmin <em class="fa fa-chevron-down"></em>
+                    </a>
+                    <ul class="dropdown-menu animated flipInX">
+                        <li>
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <div id="user-block" class="bg-gray-light" aria-expanded="true">
+                                        <div class="item user-block">
+                                            <!-- User picture-->
+                                            <div class="user-block-picture">
+                                                <img src="~/Content/img/avatar.png" alt="Avatar" />
+                                            </div>
+                                            <!-- Name and Role-->
+                                            <div class="user-block-info">
+                                                <span class="user-block-name">admin</span>
+                                                <span class="user-block-role">Administrator</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a class="list-group-item hidden" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area = "", controller = "Account", action = "ChangePassword"})">
+                                    <span>@Comman.CHANGE_PASSWORD</span>
+                                    <span class="pull-right"><small><i class="fa fa-2x fa-user-secret text-warning"></i></small></span>
+                                </a>
+                                <a href="@Url.RouteUrl(new {area = "admin", controller = "Account", action = "Logout" })" class="list-group-item">
+                                    <span>@Comman.LOGOUT_LABEL</span>
+                                    <span class="pull-right"><small><i class="fa fa-2x fa-lock text-danger"></i></small></span>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- END Nav wrapper-->
+    </nav>
+    <!-- END Top Navbar-->
+
+}
+@section sidebar_navigation{
+    <nav data-sidebar-anyclick-close="" class="sidebar">
+        <!-- START sidebar nav-->
+        <ul class="nav" id="sidebar_navigation">
+            <li class="nav-heading">
+                <span>@Comman.NAVIGATION</span>
+            </li>
+
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "Home", action = "Index" })" title="Home">
+                    <em class="fa fa-dashboard"></em>
+                    <span>@Comman.HOME_LABEL</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "Tenant", action = "ConfigIndex" })" title="Configuration">
+                    <em class="fa fa-cogs"></em>
+                    <span>Configuration</span>
+                </a>
+            </li>
+            @*<li class="nav-item">
+        <a href="@Url.RouteUrl(new { area = "admin", controller = "User", action = "Index" })" title="@Account.USER_MANAGEMENT_TITLE">
+            <em class="fa fa-users"></em>
+            <span>@Account.USER_MANAGEMENT_TITLE</span>
+        </a>
+    </li>*@
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "Dealer", action = "Index" })" title= "@Comman.GROUP_TITLE Management">
+                    <em class="fa fa-user-o"></em>
+                    <span>@Comman.GROUP_TITLE Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "RoleMaster", action = "Index" })" title=@RoleMaster.ROLEMASTER_TITLE>
+                    <em class="fa fa-id-card"></em>
+                    <span>@RoleMaster.ROLEMASTER_TITLE</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "UserMaster", action = "Index" })" title="User Management">
+                    <em class="fa fa-users"></em>
+                    <span>User Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "Agent", action = "Index" })" title="Agent Management">
+                    <em class="fa fa-user-circle-o"></em>
+                    <span>Agent Management</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "WrapUpReasonCode", action = "Index" })" title="WrapUp Management">
+                    <em class="fa fa-pencil-square-o"></em>
+                    <span>WrapUp Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "SkillGroup", action = "Index" })" title="SkillGroups">
+                    <em class="fa fa-spinner"></em>
+                    <span>SkillGroups</span>
+                </a>
+            </li>
+          
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "Holiday", action = "Index" })" title="Holiday">
+                    <em class="fa fa-calendar-o"></em>
+                    <span>Holiday</span>
+                </a>
+            </li>
+
+            
+                <li class="nav-item">
+                    <a href="#Report_nav" title="Call Report" data-toggle="collapse">
+                        <em class="icon-call-in"></em>
+                        <span>Reports</span>
+                    </a>
+                    <ul id="Report_nav" class="nav sidebar-subnav collapse">
+
+                            <li class="nav-item">
+                                <a href="@Url.RouteUrl(new { area = "admin", controller = "CallDetail", action = "Index" })" title="CallDetail">
+                                    <span>Call Report</span>
+                                </a>
+                            </li>
+                           <li class="nav-item">
+                               <a href="@Url.RouteUrl(new { area = "admin", controller = "StartTimeDetail", action = "Index" })" title="StartTime">
+                                <span>StartTime Call Report</span>
+                              </a>
+                          </li>
+                        <li class="nav-item">
+                            <a href="@Url.RouteUrl(new { area = "admin", controller = "OutboundCall", action = "Index" })" title="OutboundCall">
+                                <span>OutboundCall Report</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="@Url.RouteUrl(new { area = "admin", controller = "OutboundAgentState", action = "Index" })" title="AgentState">
+                                <span>AgentState Report</span>
+                            </a>
+                        </li>  
+                        <li class="nav-item">
+                            <a href="@Url.RouteUrl(new { area = "admin", controller = "CallDetailInterval", action = "Index" })" title="CallDetailInterval">
+                                <span>CallDetailInterval Report</span>
+                            </a>
+                        </li>  
+                    </ul>
+                </li>
+            <li class="nav-item">
+                <a href="@Url.RouteUrl(new { area = "admin", controller = "AuditTrail", action = "Index" })" title="@Comman.AUDIT_TRAIL_NAV">
+                    <em class="fa fa-eye"></em>
+                    <span>@Comman.AUDIT_TRAIL_NAV</span>
+                </a>
+            </li>
+
+        </ul>
+        <!-- END sidebar nav-->
+    </nav>
+}
+@section page_content{
+    @RenderSection("page_content", true)
+}
+@section page_scripts{
+    @RenderSection("page_scripts", false)
+}
+@RenderBody()

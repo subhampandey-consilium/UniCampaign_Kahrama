@@ -1,0 +1,56 @@
+﻿@using UniCampaignE.Web.Localization
+@model UniCampaignE.Core.Models.GlobalDNC
+<div class="modal-dialog">
+    <div class="modal-content">
+        <form action="@Url.RouteUrl(new { area = "", controller = "GlobalDNC", action = nameof(UniCampaignE.Web.Controllers.GlobalDNCController.AddBulkDNC) })" method="post" id="bulkDNCForm">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Global DNC List (Bulk Upload)</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" id="bulkDNCForm" role="form">
+
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Global DNC File <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <input id="custom_dnc_file" type="file" name="@nameof(Model.GlobalDNCFile)" />
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    
+                  
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+        </form>
+    </div>
+
+</div>
+<script type="text/javascript">
+    var fileSize = 0;
+    $('#custom_dnc_file').bind('change', function (e) {
+        fileSize = this.files[0].size
+    });
+    $(document).ready(function (e) {
+        $('#bulkDNCForm').ajaxForm({
+            success: globalAjaxSuccessHandler,
+            error: globalAjaxErrorHandler,
+            beforeSubmit: function (e) {
+                $('#loader').show();
+                if (fileSize > 3145728) {
+                    showGlobalNotification('error', 'File size exceeds 3MB');
+                    $('#loader').hide();
+                    return false;
+                }
+                return true;
+            }
+        });
+
+       
+    });
+
+   
+</script>

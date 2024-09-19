@@ -1,0 +1,250 @@
+﻿@using UniCampaignE.Web.Localization
+@model  UniCampaignE.Core.Models.SmsContactMap
+<div class="modal-dialog modal-lg">
+    @using (Html.BeginForm("AssignContactList", "SmsCampaign", FormMethod.Post, new { id = "assign_form" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" id="sms_campaign_form" role="form">
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Contact List <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.HiddenFor(mod => mod.Campaign.Id)
+                            @Html.DropDownListFor(mod => mod.ContactList.Id, new List<SelectListItem>(), new { @class = "form-control", id = "contact_list_select" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Phone Column <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <select class="form-control header-row" disabled="disabled" id="phone_column" name="@nameof(Model.PhoneColumn)"></select>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"> SMS Template </label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownList("templates", ViewBag.TemplateOptions as IEnumerable<SelectListItem>, Comman.SELECT_LAVEL, new { @class = "form-control", id = "templateDropdown" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Message <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="col-lg-12 p0">
+                                <div class="dropdown pull-right">
+                                    <span class="pull-right text-primary dropdown-toggle" id="dropdown_trigger" role="button" data-toggle="dropdown">Insert Placeholder <i class="caret"></i></span>
+                                    <ul class="dropdown-menu placeholder-dropdown" style="height: auto;max-height: 200px;overflow-x: hidden;"></ul>
+                                </div>
+
+                            </div>
+                            @Html.TextAreaFor(mod => mod.Message, 10, 0, new { @class = "form-control", style = "", id = "message_text" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Target Country</label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownListFor(mod => mod.TargetCountry, UniCampaignE.Web.HelperLib.DropDownHelper.GetCountries(), new { @class = "form-control", id = "country_select" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">
+                            Duplicate Filter
+                        </label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="checkbox c-checkbox mt-sm">
+                                <label>
+                                    @{string check2 = "";}
+                                    @if (Model != null && Model.FilterDuplicates)
+                                    {
+                                        check2 = @"checked='checked'";
+                                    }
+                                    <input type="checkbox" id="duplicate_check" @check2 />
+                                    <span class="fa fa-check"></span>@Campaign.ENABLE
+                                </label>
+                                @Html.Hidden(nameof(Model.FilterDuplicates), Model != null && Model.FilterDuplicates, new { @id = "filter_duplicate" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Recurrence</label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.EnumDropDownListFor(mod => mod.Recurrence.Type, new { @class = "form-control", id = "recurrence_type" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div id="recurrence_area" class="hidden">
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">
+                                @Campaign.RECURRENCE_INTERVAL
+                            </label>
+                            <div class="col-xs-4 col-lg-3">
+                                @Html.TextBoxFor(mod => mod.Recurrence.Interval, new { @class = "form-control", @id = "recurrence_interval" })
+                            </div>
+                            <div class="col-lg-3 col-xs-4">
+                                @Html.EnumDropDownListFor(mod => mod.Recurrence.Unit, new { @class = "form-control" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">
+                                Recurrence Limit
+                            </label>
+                            <div class="col-lg-7 col-xs-8">
+                                @Html.TextBoxFor(mod => mod.Recurrence.Limit, new { @class = "form-control" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                    <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+                </div>
+            </div>
+        </div>
+                                        }
+</div>
+<script type="text/javascript">
+    var incrementalRecurrence = '@((int)UniCampaignE.Core.Constants.RecurrenceType.Incremental)';
+    $('#recurrence_type').find('option[value="' + incrementalRecurrence + '"]').first().attr('disabled', 'disabled');
+    $('#phone_column').select2({ width: '100%', language: language, theme: 'bootstrap', closeOnSelect: true, allowClear: true, placeholder: { id: '', text: 'Select' } });
+    var templateUrl = '@Url.RouteUrl(new { controller = nameof(UniCampaignE.Web.Controllers.SMSTemplateController).Replace("Controller",""), action=nameof(UniCampaignE.Web.Controllers.SMSTemplateController.GetTemplateBody), id=UrlParameter.Optional })'
+    $('#country_select').select2({ width: '100%', language: language, theme: 'bootstrap', closeOnSelect: true, allowClear: true, placeholder: { id: '', text: 'Select' } });
+    $('#country_select').val(null).trigger('change.select2');
+    var listHeaders = [];
+    var placeholderCollection = [];
+    var language = '@System.Globalization.CultureInfo.CurrentCulture.Name';
+    var listOptions = {
+        language: language,
+        placeholder: 'Select',
+        width: '100%',
+        theme: 'bootstrap',
+        multiple: false,
+        ajax: {
+            cache: true,
+            dataType: 'json',
+            url: function (params) {
+                var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.ContactListController.ListContactLists), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.ContactListController).Replace("Controller", "")})';
+                var q = "";
+                var page = params.page || 1;
+                q = 'page=' + page;
+                q += '&purpose=@UniCampaignE.Core.Constants.ListPurpose.SMS';
+                q += '&limit=10';
+                if (params.term) {
+                    q += '&searchString=' + encodeURIComponent(params.term);
+                }
+                url += "?" + q;
+                return url;
+            },
+            processResults: function (data, params) {
+                var obj = {};
+                obj.results = data.records.map(function (item) {
+                    return {
+                        id: item.Id,
+                        text: item.Name
+                    }
+                });
+                if (!params.page) {
+                    params.page = 1;
+                }
+                obj.pagination = {
+                    more: (10 * params.page) < data.total
+                }
+                return obj;
+            }
+        },
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true
+    };
+    $('#contact_list_select').select2(listOptions).on('change', function (e) {
+        $('#loader').show();
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            data: { listId: $('#contact_list_select').val() },
+            url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.ContactListController.GetHeaders), new { controller = nameof(UniCampaignE.Web.Controllers.ContactListController).Replace("Controller",""), area = ""})',
+            success: function (response) {
+                listHeaders = response.Headers;
+                console.log(listHeaders);
+                $('.header-row').empty();
+                $('.placeholder-dropdown').empty();
+                _.each(listHeaders, function (item, key, list) {
+                    $('.header-row').append('<option value="' + item.Value + '">' + item.Key + '</option>');
+                    $('.placeholder-dropdown').append('<li><a href="#" class="placeholder-item" data-value="' + item.Value + '">' + item.Key + '</a></li>');
+                });
+                $('.header-row').removeAttr('disabled');
+                $('.header-row').val('null');
+                $('.header-row').trigger('change.select2');
+                $('#loader').hide();
+            },
+            error: globalAjaxErrorHandler
+        });
+
+    });
+    $(document).on('change', '#templateDropdown', function (e) {
+        var id = $(this).val();
+        if (id === "") return;
+        $('#loader').show();
+        $.ajax({
+            url: templateUrl + "/" + id,
+            type: "GET",
+            dataType: 'json',
+            success: function (data) {
+                $('#message_text').val(data.SmsMessage);
+                $('#loader').hide();
+            },
+            error: globalAjaxErrorHandler
+        });
+    });
+    $('.modal-dialog').on('click', '.placeholder-item', function (e) {
+        e.preventDefault();
+        var placeholder = _.uniqueId('placeholder_');
+        $('#message_text').focus();
+        var startPosition = $('#message_text').prop("selectionStart");
+        var currentText = $('#message_text').val();
+        var textToPrepend = currentText.substring(0, startPosition);
+        var textToAppend = currentText.substring(startPosition, currentText.length);
+        var newText = textToPrepend + '{{' + placeholder + '}}' + textToAppend;
+        placeholderCollection.push({ key: placeholder, value: $(this).attr('data-value') });
+        $('#message_text').val(newText);
+    });
+    function cleanedPlaceholderCollection() {
+        var placeholdersFound = $('#message_text').val().match(/{{placeholder_\d+}}/g);
+        return _.filter(placeholderCollection, function (item) {
+            return _.contains(placeholdersFound, '{{' + item.key + '}}');
+        });
+    }
+    $('#assign_form').ajaxForm({
+        success: globalAjaxSuccessHandler,
+        error: globalAjaxErrorHandler,
+        beforeSerialize: function ($form, options) {
+            options.data = {};
+            options.data.Placeholders = cleanedPlaceholderCollection();
+        },
+        beforeSubmit: function (e) {
+            $('#loader').show();
+        }
+    });
+    $('.modal-dialog').on('change', '#recurrence_type', function (e) {
+        var element = $(this);
+        if ($(this).val() == 0 || $(this).val() == "@{var r = (int)UniCampaignE.Core.Constants.RecurrenceType.Single; @r}") {
+            $('#recurrence_area').addClass('hidden');
+            return;
+        }
+        if ($('#recurrence_area').hasClass('hidden')) {
+            $('#recurrence_area').removeClass('hidden');
+        }
+    });
+    $('.modal-dialog').on('change', '#duplicate_check', function (e) {
+        $('#filter_duplicate').val($(this).is(":checked"));
+    })
+</script>

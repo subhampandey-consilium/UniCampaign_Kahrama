@@ -1,0 +1,340 @@
+﻿@using UniCampaignE.Web.Localization
+@model UniCampaignE.Core.Models.rechurn
+@using UniCampaignE.Web.HelperLib;
+@using UniCampaignE.Core.Constants.API;
+
+
+<div class="modal-dialog modal-lg" id="ReChurn_editor">
+
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-horizontal" role="form">
+                <div class="mainForm" id="rechurnpolicy">
+                    <div class="form-group">
+                        @Html.HiddenFor(mod => mod.Id, new { id = "rechurn_id" })
+                        <label class="control-label col-xs-4">Name <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.Name, new { Class = "form-control", placeholder = "Name", id = "rechurn_name" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                       
+                        <label class="control-label col-xs-4">Description <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.Description, new { Class = "form-control", placeholder = "Description", id = "rechurn_Description" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Call Result<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownListFor(mod => mod.CallResults, DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.API.CallResult)), new { @class = "form-control", id = "CallResult_List" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Agent Disposition<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownList("AgentDispositions", new List<SelectListItem>(), new { @class = "form-control", id = "WrapUpList_List" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+                <div class="rechurnSecduleForm hidden" id="rechurnSecdule" >
+                  
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">ScheduleType <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownListFor(mod=>mod.ScheduleType, DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.RecurrenceScheduleType)), new { @class = "form-control", id = "ScheduleType" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                   
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">Frequency  <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownListFor(mod => mod.Frequency, DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.RecurrenceScheduleFrequency)), new { @class = "form-control", id = "RecurrenceScheduleFrequency" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">RecurrenceInterval  <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.RecurrenceInterval, "", new { Class = "form-control", placeholder = "RecurrenceInterval", id = "RecurrenceInterval" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">RecurrenceUnit   <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                          @Html.DropDownListFor(mod => mod.RecurrenceUnit, DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.TimeUnit)), new { Class = "form-control", placeholder = "RecurrenceUnit", id = "RecurrenceUnit" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">StartDateTime<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date date-picker">
+                              
+                                  
+                                @Html.TextBoxFor(mod => mod.StartDateTime, string.Format("{0:yyyy-MM-dd}", "StartDateTime"), new { Class = "form-control", id = "rechurn_start_date" })
+                                <span class="input-group-addon">
+                                    <span class="fa fa-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                   
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">EndDateTime </label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date date-picker">
+                              
+                                    @Html.TextBoxFor(mod => mod.EndDateTime, string.Format("{0:yyyy-MM-dd}", "EndDateTime"), new { Class = "form-control", id = "rechurn_end_date" })
+                                 
+                                <span class="input-group-addon">
+                                    <span class="fa fa-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+
+                </div>
+                
+                <div class="clearfix"></div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+            <input type="submit" class="btn btn-primary hidden" id="btn_save" value=@Comman.SAVE_BUTTON_TEXT  />
+            <input type="button" class="btn btn-primary" id="btn_next" value="Next"  />
+            <input type="button" class="btn btn-primary hidden" id="btn_prev" value="Preview"  />
+        </div>
+    </div>
+</div>
+@if (Model != null)
+{
+
+    <script type="text/javascript">
+        debugger;
+        $('#rechurn_id').text(@Model.Id);
+        $('#ScheduleType').text(@Model.ScheduleType);
+        $('#rechurn_name').text(@Model.Name);
+        $('#RecurrenceScheduleFrequency').text(@Model.Frequency);
+        $('#RecurrenceInterval').text(@Model.RecurrenceInterval);
+        $('#RecurrenceUnit').text(@Model.RecurrenceUnit);
+        $('#rechurn_start_date').text(@Model.StartDateTime);
+        $('#rechurn_end_date').text(@Model.EndDateTime);
+
+
+    </script>
+}
+<script type="text/javascript">
+
+   
+    var AgentDispositionListUrl ='@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.GetWrapUpCode), new { area = "", controller = "Campaign" })';
+    $(function (e) {
+        debugger;
+        var $formContext = $('#ReChurn_editor');
+        var datePickerOptions = {
+            format: 'YYYY-MM-DD HH:mm',
+            allowInputToggle: true,
+            showClear: true,
+            showClose: true,
+            icons: globalDateTimePickerIcons,
+            sideBySide: true,
+            useCurrent: true
+        };
+        var timePickerOptions = {
+            format: 'HH:mm',
+            allowInputToggle: true,
+            showClear: true,
+            showClose: true,
+            icons: globalDateTimePickerIcons,
+            sideBySide: false,
+            useCurrent: true
+        };
+
+        $formContext.on('change', '#rechurn_RechurnRecurrenceType', function (e) {
+            var $intervalContext = $('#rechurn_recurrence_interval', $formContext).parentsUntil('.form-group').parent();
+            var $endDateContext = $('#rechurn_end_date', $formContext).parentsUntil('.form-group').parent();
+            var $helpBlock = $('.help-block', $intervalContext);
+            var type = $('#rechurn_RechurnRecurrenceType', $formContext).prop('selectedIndex');
+            if (type != 0) {
+                $intervalContext.removeClass('hidden');
+                $endDateContext.removeClass('hidden');
+                $input = $('input', $intervalContext);
+                if ($input.val() == null) {
+                    $input.val(1);
+                }
+                switch (type) {
+                    case 1:
+                        $helpBlock.text('days');
+                        break;
+                    case 2:
+                        $helpBlock.text('weeks');
+                        break;
+                    case 3:
+                        $helpBlock.text('months');
+                        break;
+                    case 4:
+                        $helpBlock.text('years');
+                        break;
+                }
+            } else {
+                if (!$intervalContext.hasClass('hidden')) {
+                    $intervalContext.addClass('hidden');
+                }
+                if (!$endDateContext.hasClass('hidden')) {
+                    $endDateContext.addClass('hidden');
+                }
+                $('input', $intervalContext).val(null);
+                $('input', $endDateContext).val(null);
+                $helpBlock.text('');
+            }
+        });
+        $('.date-picker', $formContext).datetimepicker(datePickerOptions);
+        $('.time-picker', $formContext).datetimepicker(timePickerOptions);
+        $('#rechurn_RechurnRecurrenceType', $formContext).trigger('change');
+
+
+
+
+
+
+        $('#WrapUpList_List').select2(WrapUpList_SelectOptions);
+        $('#CallResult_List').select2(CallResult_SelectOptions);
+    });
+    var CallResult_SelectOptions =
+        {
+            width: '100%',
+            multiple: true,
+            placeholder: 'Select Call Result',
+            theme: 'bootstrap',
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true,
+            language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+            placeholder: {
+                id: 0,
+                text: 'select Agent Disposition'
+            },
+            theme: 'bootstrap'
+    };
+    var WrapUpList_SelectOptions =
+        {
+            width: '100%',
+            multiple: true,
+            placeholder: 'Select Agent Disposition',
+            theme: 'bootstrap',
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true,
+            language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+            placeholder: {
+                id: 0,
+                text: 'select Agent Disposition'
+            },
+            theme: 'bootstrap',
+            ajax: {
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    debugger;
+                    var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.GetWrapUpCode), new { area = "", controller = "Campaign" })';
+                    var q = "";
+                    var page = params.page || 1;
+                    q = 'page=' + page;
+                    q += '&limit=10';
+                    q += '&dropdown=1';
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+
+                },
+                processResults: function (data, params) {
+                    var obj = {};
+                    obj.results = data.records.map(function (item) {
+                        return {
+                            id: item.Label,
+                            text: item.Label
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+        };
+   
+    var rechurnPolicyData = {};
+    rechurnPolicyData.AgentDispositions = [];
+    rechurnPolicyData.CallResults = [];
+
+    $('#btn_next').on('click', function (e) {
+        debugger;
+        rechurnPolicyData.Name = $("#rechurn_name").val();
+        rechurnPolicyData.Description = $("#rechurn_Description").val();
+        rechurnPolicyData.AgentDispositions = $("#WrapUpList_List").val();
+        rechurnPolicyData.CallResults = $("#CallResult_List").val();
+
+        $('#btn_next').addClass('hidden');
+        $('#btn_save').removeClass('hidden');
+        $('#btn_prev').removeClass('hidden');
+        $('#rechurnSecdule').removeClass('hidden');
+        $('#rechurnpolicy').addClass('hidden');
+        
+    });
+    $('#btn_prev').on('click', function (e) {
+
+        $('#btn_next').removeClass('hidden');
+        $('#btn_save').addClass('hidden');
+        $('#btn_prev').addClass('hidden');
+        $('#rechurnSecdule').addClass('hidden');
+        $('#rechurnpolicy').removeClass('hidden');
+
+    });
+   
+    $('#btn_save').on('click', function (e)
+    {
+        var saveRechurnUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.RechurnPolicyController.Add), new { area = "", controller = "RechurnPolicy" })';
+        debugger;
+        rechurnPolicyData.Id= $('#rechurn_id').val();
+        rechurnPolicyData.ScheduleType = $('#ScheduleType').val();
+        rechurnPolicyData.Name = $('#rechurn_name').val();
+        rechurnPolicyData.RecurrenceScheduleFrequency = $('#RecurrenceScheduleFrequency').val();
+        rechurnPolicyData.RecurrenceInterval = $('#RecurrenceInterval').val();
+        rechurnPolicyData.RecurrenceUnit = $('#RecurrenceUnit').val();
+        rechurnPolicyData.StartDateTime = $('#rechurn_start_date').val();
+        rechurnPolicyData.EndDateTime = $('#rechurn_end_date').val();
+        $.ajax({
+            type: 'POST',
+            beforeSend: function () {
+                $('#loader').show();
+            },
+            data: JSON.stringify(rechurnPolicyData),
+            url: saveRechurnUrl,
+            success: globalAjaxSuccessHandler,
+            error: globalAjaxErrorHandler
+        });
+
+    });
+</script>
+

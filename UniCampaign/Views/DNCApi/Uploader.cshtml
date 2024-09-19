@@ -1,0 +1,52 @@
+﻿@using UniCampaignE.Web.Localization
+@model int
+<div class="modal-dialog">
+    <form id="dnc_upload_form" method="post" action="@Url.Action(nameof(UniCampaignE.Web.Controllers.DNCApiController.Upload), new { dncId = Model })">
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@DNC_UCCE_.UPLOAD_FILE<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <input type="file" name="dncFile" id="ucce_dnc_file" />
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@DNC_UCCE_.UPLOAD_BUTTON_TEXT" />
+            </div>
+        </div>
+    </form>
+</div>
+<script src="~/Scripts/jquery.form.js"></script>
+<script type="text/javascript">
+    var fileSize = 0;
+    $('#ucce_dnc_file').bind('change', function (e) {
+        fileSize = this.files[0].size
+    });
+    $('#dnc_upload_form').ajaxForm(
+        {
+        success: globalAjaxSuccessHandler,
+        error: globalAjaxErrorHandler,
+        beforeSubmit: function (e)
+       {
+        $('#loader').show();
+        if (fileSize > 3145728) {
+            showGlobalNotification('error', 'File size exceeds 3MB');
+            $('#loader').hide();
+            return false;
+        }
+        return true;
+    }
+    });
+</script>
+

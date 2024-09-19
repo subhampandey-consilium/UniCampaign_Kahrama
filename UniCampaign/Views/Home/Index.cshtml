@@ -1,0 +1,530 @@
+﻿@using UniCampaignE.Web.Localization
+@{
+    Layout = "~/Views/Shared/_UniCampaignLayout.cshtml";
+}
+@section page_content{
+    <style type="text/css">
+        .grow {
+            transition: all .2s ease-in-out;
+        }
+
+            .grow:hover {
+                transform: scale(1.1);
+            }
+    </style>
+    <link href="~/Content/c3.min.css" rel="stylesheet" />
+    <div class="content-heading">
+        @Home.DASHBOARD_TITLE
+    </div>
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="row form-group">
+                        <div class="col-lg-4 pull-left">
+                            <div data-toggle="buttons" class="btn-group" id="main_chart_type">
+                                <label class="btn btn-primary active grow" data-type="line">
+                                    <input name="chart_type_option" value="line" type="radio"><i class="fa fa-line-chart fa-lg  "></i>
+                                </label>
+
+                                <label class="btn btn-primary grow" data-type="bar">
+                                    <input name="chart_type_option" value="bar" type="radio"><i class="fa fa-bar-chart fa-lg"></i>
+                                </label>
+                                <label class="btn btn-primary grow" data-type="grid">
+                                    <input name="chart_type_option" value="grid" type="radio" /><i class="fa fa-table fa-lg"></i>
+                                </label>
+
+                            </div>
+
+                            <div data-toggle="buttons" class="btn-group" id="gird-stuck">
+                                <label class="btn btn-primary grow" data-type="gridnew">
+                                    <input name="chart_type_option-stuck" value="gridnew" type="radio" /><i class="fa fa-list-ul"></i>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 pull-right ">
+                            <form id="stats_search_form" class="hidden">
+                                <div class="form-inline pl-lg" role="form">
+                                    <div class="">
+                                        <input type="text" style="width:80%" id="stats_search_term" class="form-control" placeholder="@Home.SERACH_CAMPAIGN_PLACE_HOLDER" />
+                                        <input type="submit" class="btn btn-primary grow" value="@Comman.BUTTON_SEARCH" />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-lg-6 pull-right ">
+                            <form id="stats_search_form_new" class="hidden">
+                                <div class="form-inline pl-lg" role="form">
+                                    <div class="">
+                                        <input type="text" style="width:80%" id="IdSearchText" class="form-control" placeholder="@Home.SERACH_CAMPAIGN_PLACE_HOLDER" />
+                                        <input type="submit" class="btn btn-primary grow" id="btnsearchname" value="@Comman.BUTTON_SEARCH" />
+                                        
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="p0" id="main_chart">
+                            </div>
+                            <i class="fa fa-circle-o-notch fa-spin " style="font-size:50px; color:cornflowerblue; float:right;  margin-right: 480px; margin-top: 10px;" id="spinner"></i>
+                            <p style="float:right;  margin-right: 470px; margin-top: 10px" id="loadingText">Loading....</p>
+                            <div class="form-group pull-right hidden" id="buttonPanel">
+                                <input type="submit" class="btn btn-primary " value="Previous" id="lastbtn">
+                                <input type="submit" class="btn btn-primary disabled" value="Next" id="nextbtn">
+                            </div>
+                        </div>
+                        <div class="col-lg-12 hidden" id="main_grid">
+                            <div class="row">
+
+                            </div>
+                            <div class="table-responsive p0 mt-sm">
+                                <table id="grid" class="table table-striped table-bordered table-condensed"></table>
+                            </div>
+                        </div>
+                        <div class="col-lg-12 " id="main_gridnew">
+                            <div class="row">
+
+                            </div>
+                            <div class="table-responsive p0 mt-sm">
+                                <table id="gridnew" data-source="@Url.Action(nameof(UniCampaignE.Web.Controllers.HomeController.GetStuckRecord))" class="table table-striped table-bordered table-condensed"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-footer">
+                    <span class="pull-right text-dark" data-now="" data-format="HH:mm:ss DD-MM-YYYY"></span>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="panel panel-primary widget">
+                <div class="list-group-item">
+                    <div class="media-box">
+                        <div class="pull-left">
+                            <em class="icon-call-out text-info"></em>
+                        </div>
+                        <div class="media-box-body clearfix">
+                            <div class="m0">Active Campaigns <span class="badge pull-right bg-green-dark" id="active_campaign_count">0</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item">
+                    <div class="media-box">
+                        <div class="pull-left">
+                            <em class="icon-umbrella text-danger"></em>
+                        </div>
+                        <div class="media-box-body clearfix">
+                            <div class="m0">Active Holidays <span class="badge pull-right bg-danger-dark" id="active_holiday_count">0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section page_scripts{
+    <script src="~/Scripts/d3.min.js"></script>
+    <script src="~/Scripts/c3.js"></script>
+    <script type="text/javascript">
+        var mainChart, statsGrid;
+        var page = 1;
+        var campUrl = GenerateUrl(page);
+        var mainChartOptions = {
+            size: {
+                height: '300',
+            },
+            bindto: '#main_chart',
+            data:
+            {
+                labels: true,
+                url: campUrl,
+                keys:
+                {
+                    x: 'Campaign',
+                    value: ['Total', 'Pending', 'Dialed', 'TotalConnect', 'TotalAbandoned','Exclusion'/*'TotalInvalid','Duplicate'*/]
+                },
+                mimeType: 'json',
+                empty: {
+                    label: {
+                        text: "@Home.LABEL_NO_ACTIVE_CAMPAIGN"
+                    }
+                },
+                type: 'line'
+            },
+            axis:
+            {
+                x:
+                {
+                    type: 'category',
+                    label: { text: 'Active Campaigns', position: 'outer-center' }
+                },
+                y:
+                {
+                    min: 0,
+                    padding: 0,
+                    label: { text: 'Records', position: 'outer-middle' }
+                }
+            },
+            onrendered: function ()
+            {
+                $('.c3-axis-y-label').addClass('text-sm');
+                $('.c3-axis-x-label').addClass('text-sm');
+                $('#spinner').addClass('hidden');
+                $('#loadingText').addClass('hidden');
+                if (!$('#main_chart').hasClass('hidden'))
+                {
+                    if ($('#buttonPanel').hasClass('hidden'))
+                    {
+                        $('#buttonPanel').removeClass('hidden');
+                    }
+                    $('#nextbtn').removeClass('hidden');
+                    if (page == 1)
+                    {
+                        $('#lastbtn').addClass('disabled');
+                    }
+                    $('#lastbtn').removeClass('hidden');
+                }
+            },
+            legend:
+            {
+                position: 'right'
+            }
+        };
+
+
+            var gridSettings =
+            {
+            uiLibrary: "bootstrap",
+            iconsLibrary: 'fontawesome',
+            notFoundText: "No records found",
+            primaryKey: 'CampaignName',
+            dataSource: "@Url.Action(nameof(UniCampaignE.Web.Controllers.HomeController.RealTimeStats))",
+            columns: [
+                { field: "CampaignName", title: "@Home.GRID_CAMPAIGN" },
+                { field: "Total", title: "@Home.GRID_RECORDS_TOTAL", width: 80 },
+                { field: "Pending", title: "@Home.GRID_RECORDS_PENDING", width: 80 },
+                { field: "Dialed", title: "@Home.GRID_RECORDS_DAILED", width: 90 },
+                { field: "TotalConnect", title: "@Home.GRID_CLOSED", width: 75 },
+                { field: "TotalAbandoned", title: "@Home.GRID_ABANDONED", width: 80 },
+                { field: "Exclusion", title: "@Home.GRID_EXCLUSION", width: 75 },
+                @*{ field: "TotalInvalid", title: "@Home.GRID_TOTALINVALID", width: 80 },
+                { field: "Duplicate", title: "@Home.GRID_DUPLICATE", width: 75 },*@
+            ],
+
+                detailTemplate: '<div><table/></div>',
+            showHiddenColumnsAsDetails: true,
+            pager: { enable: true, limit: 5, sizes: [5, 10, 20, 30] }
+        };
+
+        function refreshData(pageIndex)
+        {
+            var dataUrl = GenerateUrl(pageIndex);
+            if (!$('#main_grid').hasClass('hidden')) {
+                $('#main_chart').addClass('hidden')
+                statsGrid.reload();
+            } else {
+                $.ajax({
+                    type: 'GET',
+                    @*url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.HomeController.OverallRealTimeStats))',*@
+                    url: dataUrl,
+                    dataType: 'json',
+                    success: function (data)
+                    {
+                        if ($('#nextbtn').hasClass('disabled')) {
+                            $('#nextbtn').removeClass('disabled');
+                        }
+                        if (data.length == 0)
+                        {
+                            $('#nextbtn').addClass('disabled');
+                        }
+                        if (mainChart === undefined)
+                        {
+                            mainChartOptions.data.json = data;
+                            mainChart = c3.generate(mainChartOptions);
+                            return;
+                        }
+                        else
+                        {
+                            mainChart.unload();
+                            var chartData =
+                            {
+
+                            labels: true,
+                            keys: {
+                                x: 'Campaign',
+                                value: ['Total', 'Pending', 'Dialed', 'TotalConnect', 'TotalAbandoned','Exclusion'/*,'TotalInvalid','Duplicate'*/]
+                            },
+                            mimeType: 'json',
+                            empty:
+                                {
+                                label:
+                                {
+                                    text: "@Home.LABEL_NO_ACTIVE_CAMPAIGN"
+                                }
+                            },
+                            type: 'line',
+                            };
+                            chartData.json = data;
+                            mainChart.load(chartData);
+                        $('#main_chart').removeClass('hidden');
+                        $('#spinner').addClass('hidden');
+                        $('#loadingText').addClass('hidden');
+                        $('.c3-axis-y-label').addClass('text-sm');
+                        $('.c3-axis-x-label').addClass('text-sm');
+
+
+                        }
+                    },
+                    error: globalAjaxErrorHandler
+                })
+            }
+        }
+
+        $(document).ready(function (e) {
+            var gridrefresh;
+             $.ajax({
+                type: 'GET',
+                success: function (data) {
+                    $('#active_holiday_count').text(data);
+                },
+                url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.HomeController.HolidayCount))',
+                error:globalAjaxErrorHandler
+            });
+            $.ajax({
+                type: 'GET',
+                success: function (data) {
+                    $('#active_campaign_count').text(data);
+                },
+                url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.HomeController.CampaignCount))',
+                error:globalAjaxErrorHandler
+            });
+
+            refreshData(page);
+
+        });
+
+        $('.panel-body').on('submit', '#stats_search_form', function (submitEvent) {
+            submitEvent.preventDefault();
+            statsGrid.clear();
+            statsGrid.reload({ searchString: $('#stats_search_term').val() });
+        });
+
+        $('#main_chart_type').on('click', '.btn', function (e)
+        {
+            debugger;
+            var targetType = $(this).attr('data-type');
+            if (targetType != 'gird-stuck') {
+                $('#main_gridnew').addClass('hidden');
+            } else {
+                if ($('#main_gridnew').hasClass('hidden')) {
+                    $('#main_gridnew').removeClass('hidden');
+                }
+            }
+
+            if (targetType != 'grid') {
+
+                if ($('#main_chart').hasClass('hidden')) {
+                    $('#main_chart').removeClass('hidden');
+                    $('#stats_search_form_new').addClass('hidden');
+                    $('#stats_search_form').addClass('hidden');
+                    $('#main_grid').addClass('hidden');
+                    statsGrid.grid('destroy', true, true);
+                    if ($('#buttonPanel').hasClass('hidden')) {
+                        $('#buttonPanel').removeClass('hidden');
+                    }
+                }
+                mainChart.transform($(this).attr('data-type'));
+            }
+            else {
+                $('#main_chart').addClass('hidden');
+                $('#main_grid').removeClass('hidden');
+                $('#buttonPanel').addClass('hidden');
+                $('#spinner').addClass('hidden');
+                $('#loadingText').addClass('hidden');
+                $('#stats_search_form_new').addClass('hidden');
+                $('#stats_search_form').removeClass('hidden');
+                statsGrid = $('#grid').grid(gridSettings);
+                statsGrid.on('detailExpand', function (e, $detailWrapper, id) {
+                    debugger;
+                    var currentRecord = statsGrid.getById(id);
+                    var criteriaGrid = $detailWrapper.find('table').grid(
+                        {
+                            dataSource: '@Url.Action(nameof(UniCampaignE.Web.Controllers.HomeController.Campaigncontactlistgrid),new { area="",controller="Home" })',
+                            params: { CampaignId: currentRecord.Id},
+                            primaryKey: 'CallingListID',
+                            iconsLibrary: 'fontawesome',
+                            columns:
+                                [
+                                  /*  { field: "CallingListID", title: "Calling List ID" },*/
+                                    { field: "CallingList", title: "Calling List" },
+                                    { field: "Total", title: "Total" },
+                                    { field: "Pending", title: "Pending" },
+                                    { field: "Dialed", title: "Dialed" },
+                                    { field: "TotalConnect", id: "TotalConnect" },
+                                    { field: "TotalAbandoned", id: "TotalAbandoned" },
+                                    { field: "Exclusion", id: "Exclusion" },
+                                    //{ field: "TotalInvalid", id: "TotalInvalid" },
+                                    //{ field: "Duplicate", id: "Duplicate" },
+
+                                ],
+                            uiLibrary: "bootstrap",
+                            notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+                            pager: { enable: true, limit: 5, sizes: [5, 10] },
+                        });
+                });
+
+            }
+
+        });
+
+        $('#gird-stuck').on('click', '.btn', function (e) {
+
+            if ($('#main_gridnew').hasClass('hidden')) {
+                $('#main_gridnew').removeClass('hidden');
+            }
+
+            $('#main_chart').addClass('hidden');
+            $('#main_grid').addClass('hidden');
+
+            $('#buttonPanel').addClass('hidden');
+            $('#spinner').addClass('hidden');
+            $('#loadingText').addClass('hidden');
+            $('#stats_search_form').addClass('hidden');
+            $('#stats_search_form_new').removeClass('hidden');
+            gridrefresh=  $('#gridnew').grid({
+                uiLibrary: "bootstrap",
+
+            iconsLibrary: 'fontawesome',
+            notFoundText: "No records found",
+                 columns: [
+                     { field: "CampaignList_Id", title: "Map Id", width: 80 },
+                { field: "Campaign_Name", title: "Campaign Name", width: 150 },
+                { field: "List_Name", title: "List Name", width: 150 },
+                { field: "Value", title: "Filter", width: 90 },
+                { field: "Delay", title: "Delay", width: 90, hidden: true },
+                { field: "LastAttemptedOn", title: "Last Imported", width: 150 },
+                { field: "CreatedOn", title: "Assigned Time", width: 150 }
+                 ],
+
+                 pager: { enable: true, limit: 5, sizes: [5, 10, 30] }
+
+            });
+            //setInterval(function () {
+            //    gridrefresh.reload();
+            //}, 30000);
+
+        });
+
+
+
+        $('#nextbtn').click(function () {
+            debugger;
+            if (!$('#nextbtn').hasClass('disabled'))
+            {
+                page++;
+                if (page > 1)
+                {
+                    $('#lastbtn').removeClass('disabled');
+                }
+                $('#spinner').removeClass('hidden');
+                $('#loadingText').removeClass('hidden');
+                $('#main_chart').addClass('hidden');
+                refreshData(page);
+            }
+            if (!$('#spinner').hasClass('hidden')) {
+                $('#nextbtn').addClass('hidden');
+                $('#lastbtn').addClass('hidden');
+            }
+        });
+
+        $('#lastbtn').click(function () {
+            if (page > 1)
+            {
+                page--;
+                debugger;
+                $('#spinner').removeClass('hidden');
+                $('#loadingText').removeClass('hidden');
+                $('#main_chart').addClass('hidden');
+                refreshData(page);
+            }
+            if (!$('#spinner').hasClass('hidden')) {
+                $('#nextbtn').addClass('hidden');
+                $('#lastbtn').addClass('hidden');
+            }
+        });
+        function GenerateUrl(pageIndex)
+        {
+            var dataUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.HomeController.OverallRealTimeStats), new { area = "", controller = "Home" })';
+                    var q = "";
+                    q = 'page=' + pageIndex;
+                    q += '&limit=10';
+            dataUrl += "?" + q;
+            return dataUrl;
+        }
+
+
+        $('#btnsearchname').on('click', function (e) {
+            e.preventDefault();
+
+            var InputElement = document.getElementById("IdSearchText")
+            var input = document.getElementById("IdSearchText").value.trim();
+            if (!input) {
+                $(InputElement).addClass("CustomError");
+                setTimeout(function () { $(InputElement).removeClass("CustomError"); }, 1000); return;
+                }
+
+            $.ajax({
+                url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.HomeController.GetStuckRecord))',
+                type: "GET",
+                beforeSend: function (e) {
+                        $('#loader').show();
+                },
+                data: {
+                    "searchString": input,
+                },
+                cache: false,
+                success: function (response) {
+                    $('#loader').hide();
+                    if (response.records.length > 0) {
+                        $("#btnsearchname").css('right', '20%');
+                        gridrefresh.render(response)
+
+
+                    } else {
+                        var InputOldValue = input;
+                        InputElement.value = 'No match found';
+                        InputElement.style.border = '2px solid red';
+                        setTimeout(function () { InputElement.value = InputOldValue; InputElement.style.border = ''; }, 2000);
+                    }
+                },
+                error: globalAjaxErrorHandler
+                });
+        });
+
+
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

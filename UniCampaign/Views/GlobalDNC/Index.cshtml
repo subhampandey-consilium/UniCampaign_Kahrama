@@ -1,0 +1,145 @@
+﻿@using UniCampaignE.Web.Localization
+@{
+    Layout = "~/Views/Shared/_UniCampaignLayout.cshtml";
+}
+@section page_content{
+    <div class="content-heading">
+        Global DNC
+        <div class="pull-right">
+            <div class="btn-group">
+                <button class="btn btn-primary bg-primary-dark text-bold ml-sm" id="btn_download_report">
+                    Download As CSV
+                    <span><i class="fa fa-download"></i></span>
+                </button>
+            </div>
+
+            <div class="btn-group">
+
+                <a class="btn btn-primary bg-primary-dark text-bold ml-sm" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" data-ajax-failure="globalAjaxErrorHandler" href="@Url.RouteUrl(new {area="",controller="GlobalDNC",action="AddBulkDNC"})">
+                    <span>Add Bulk</span>&nbsp;&nbsp;<i class="fa fa-plus"></i>
+                </a>
+            </div>
+
+            <div class="btn-group">
+                <a class="btn btn-primary bg-primary-dark text-bold ml-sm" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" data-ajax-failure="globalAjaxErrorHandler" href="@Url.RouteUrl(new {area="",controller="GlobalDNC",action="Add"})">
+                    <span>@CustomDNC.ADD_DNC_TITLE</span>&nbsp;&nbsp;<i class="fa fa-plus"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-flat panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        Global DNC
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-4 pull-right">
+                            <input class="form-control seach-box" type="text" placeholder="Phone Number" aria-label="Search" id="IdSearchText">
+                            <button id="btnSearchGDNC" class="btn btn-primary btn-search">Search</button>
+                            <button id="btnResetGDNC" class="btn btn-danger btn-reset">Reset</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive p0">
+                        <table id="grid" class="table table-striped table-bordered table-condensed" data-source="@Url.Action(nameof(UniCampaignE.Web.Controllers.GlobalDNCController.ListGlobalDncs))"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section page_scripts{
+
+    <script type="text/javascript">
+        debugger;
+        var currentCampaign = {};
+        var grid;
+        var downloadUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.GlobalDNCController.DetailsNDCReport),new { area="",controller= "GlobalDNC" })';
+        $(document).ready(function (e) {
+            grid = $("#grid").grid({
+                primaryKey: "Id",
+                uiLibrary: "bootstrap",
+                iconsLibrary: 'fontawesome',
+                notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+                columns: [
+                    { field: "PhoneNumber", title: "@CustomDNC.GRID_PHONE_NUMBER", width: 320 },
+                    { field: "Status", title: "Status", width: 100 },
+                    { field: 'MarkedByAgentOn', title: 'Marked By Agent On' },
+                    { field: 'CreatedOn', title: 'Created On' },
+                    { field: 'LastUpdatedOn', title: 'Last Updated On' },
+                    {
+                        title: "",
+                        minWidth: 10,
+                        priority: 2,
+                        width: 34,
+                        tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-failure="globalAjaxErrorHandler" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area="",controller= "GlobalDNC", action=nameof(UniCampaignE.Web.Controllers.GlobalDNCController.Edit),id = UrlParameter.Optional}){Id}"><span class="fa fa-edit"></span></a>',
+                        tooltip: "@GridComman.GRID_EDIT",
+
+                    },
+                    { title: "", minWidth: 10, priority: 3, field: "Delete", width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-confirm="Are you sure you want to delete {PhoneNumber}?" data-ajax-success="globalAjaxSuccessHandler" data-ajax-failure="globalAjaxErrorHandler" data-ajax-method="DELETE" href="@Url.RouteUrl(new { area="",controller= "GlobalDNC", action="Delete",id = UrlParameter.Optional}){Id}"><span class="fa fa-trash-o"></span></a>', tooltip: "@GridComman.GRID_DELETE" }
+                ],
+                pager: { enable: true, limit: 8, sizes: [8, 15, 25] }
+            });
+        });
+
+
+        $(document).on('click', '#btn_download_report', function (e)
+        {
+            var url = downloadUrl;
+            var reportWindow = window.open(url, '_blank');
+        });
+
+
+        $('#btnSearchGDNC').click(() => {
+            var InputElement = document.getElementById("IdSearchText")
+            var input = document.getElementById("IdSearchText").value.trim();
+            if (!input) {
+                $(InputElement).addClass("CustomError");
+                setTimeout(function () { $(InputElement).removeClass("CustomError"); }, 1000); return;
+                }
+
+            $.ajax({
+                url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.GlobalDNCController.ListGlobalDncs))',
+                type: "GET",
+                beforeSend: function (e) {
+                        $('#loader').show();
+                },
+                data: {
+                    "searchString": input,
+                },
+                cache: false,
+                success: function (response) {
+                    $('#loader').hide();
+                    if (response.records.length > 0) {
+                        $("#btnSearchGDNC").css('right', '20%');
+                        grid.render(response)
+                        $("#btnResetGDNC").show();
+                    } else {
+                        var InputOldValue = input;
+                        InputElement.value = 'No match found';
+                        InputElement.style.border = '2px solid red';
+                        setTimeout(function () { InputElement.value = InputOldValue; InputElement.style.border = ''; }, 2000);
+                    }
+                },
+                error: globalAjaxErrorHandler
+                });
+        });
+
+        $('#btnResetGDNC').click(() => {
+            document.getElementById("IdSearchText").value = '';
+            grid.reload();
+            $("#btnSearchGDNC").show();
+            $("#btnSearchGDNC").css('right', '4%');
+            $("#btnResetGDNC").hide();
+        });
+
+        $('#IdSearchText').keypress((e) => {
+            if (e.which == 13) {
+                $('#btnSearchGDNC').click();
+            }
+        });
+    </script>
+}

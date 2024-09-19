@@ -1,0 +1,253 @@
+﻿@using UniCampaignE.Web.Controllers;
+@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+@using UniCampaignE.Core.Constants.API;
+@model int
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Append Contact List (Single Criteria)</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-horizantal" role="form">
+                @Html.Hidden("campaignId", Model)
+                <div class="form-group">
+                    <label class="control-label col-xs-4">
+                        Parent <span class="text-danger">*</span>
+                    </label>
+                    <div class="col-xs-8 col-lg-7">
+                        <select name="parentGroupId" class="form-control" id="group_list"></select>
+                    </div>
+                    <div class="clearfix"></div>
+
+                </div>
+                <div id="scrollgroup" class="form-group hidden">
+                    <div id="scrollable_list" class="panel panel-flat p0 m0">
+                        <div id="contactmap_single_container" class="panel-body p0 m0">
+                            <div id="inner_scrollable_list" class="list-group pb0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">
+                        Contact List<span class="text-danger">*</span>
+                    </label>
+                    <div class="col-xs-8 col-lg-7">
+                        <select name="newListId" class="form-control" id="contact_list"></select>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <input type="submit" class="btn btn-primary" id="btn_save" value="Save" />
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    $('#contactmap_single_container').slimscroll({ height: '200px', }).bind('slimscroll', function (e, pos) {
+        // Enabled Scroll for contact maps.
+    });
+
+    $('#btn_save').on('click', function (e) {
+        var campID = $("#campaignId").val();
+        var appendedlistId = $('#contact_list').val();
+        var Mapids = [];
+        $('#mapIdDiv input:checked').each(function () {
+            Mapids.push($(this).val());
+        });
+
+        $.ajax({
+        type: 'POST',
+        beforeSend: function () {
+            $('#loader').show();
+        },
+        url: '@Url.Action(nameof(CampaignController.AppendContactListMC), new { area = "", controller = "Campaign" })',
+        data: { campaignId: campID, parentmapIds: Mapids, AppendlistID: appendedlistId },
+        success: globalAjaxSuccessHandler,
+        error: globalAjaxErrorHandler
+        });
+    });
+
+    var contactListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.ContactListController.ListContactLists), new { area = "", controller = nameof(ContactListController) })';
+    var groupListUrl = '@Url.Action(nameof(CampaignController.ListAssignedMapCriteria),new { area="",controller = "Campaign"})';
+  
+    var listOptions =
+     {
+        language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+        placeholder: 'Select Contact List',
+        width: '100%',
+        theme: 'bootstrap',
+        multiple: false,
+        dropdownParent: $('#modal_editor'),
+        minimumResultsForSearch: 4,
+        ajax: {
+            cache: true,
+            dataType: 'json',
+            url: function (params) {
+                var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.ContactListController.ListContactLists), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.ContactListController).Replace("Controller", "")})';
+                var q = "";
+                var page = params.page || 1;
+                q = 'page=' + page;
+                q += '&purpose=@UniCampaignE.Core.Constants.ListPurpose.Voice';
+                q += '&limit=10';
+                if (params.term) {
+                    q += '&searchString=' + encodeURIComponent(params.term);
+                }
+                url += "?" + q;
+                return url;
+            },
+            processResults: function (data, params) {
+                var obj = {};
+                obj.results = data.records.map(function (item) {
+                    return {
+                        id: item.Id,
+                        text: item.Name
+                    }
+                });
+                if (!params.page) {
+                    params.page = 1;
+                }
+                obj.pagination = {
+                    more: (10 * params.page) < data.total
+                }
+                return obj;
+            }
+        },
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true
+        };
+
+    //getmap starts here
+    $("#group_list").change(function () {
+       
+        var listID = $("#group_list").val();
+        var campID = $("#campaignId").val();
+        if (!listID) {
+            $("#scrollgroup").addClass('hidden');
+        } else {
+            $("#scrollgroup").removeClass('hidden');
+            getMapLists(listID, campID);
+        }
+    });
+
+function getMapLists(listID,CampaignId)
+{
+    var maplistUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.GetRuleCriteria),new { area="",controller="Campaign" })' + '?listId=' + listID + '&CampaignId=' + CampaignId;
+    var queryParams = {};
+    queryParams.page = 1;
+    queryParams.term = '';
+    queryParams.limit = 12;
+    queryParams.more = false;
+    queryParams.current = 0;
+
+    if (!$('#scrollable_list').hasClass('whirl standard')) {
+        $('#scrollable_list').addClass('whirl standard');
+    }
+    $.ajax({
+        url: maplistUrl,
+        success: function (data) {
+            $('#scrollable_list').removeClass('whirl standard');
+            queryParams.more = (queryParams.limit * queryParams.page) < data.total;
+            if (queryParams.page == 1) {
+                $('#inner_scrollable_list').html('');
+            }
+       
+            var firstelement = $('<div class="list-group-item skill-group"><input type="checkbox" id="selectallckbx" onClick="check_uncheck_list(this.checked);" />Select All<br></div>');
+            $('#inner_scrollable_list').append(firstelement);
+            $.each(data.records, function (idx, item) {
+                if (item.Filter == null) {
+                    var elem = $('<div id="mapIdDiv" class="list-group-item skill-group"><input type="checkbox" class="divCheckboxItem" name="listidck" value="' + item.MapId + '">' + 'No Filter_' + '<br></div>');//+ item.MapId
+                    $('#inner_scrollable_list').append(elem);
+                }
+                else
+                {
+                    var elem = $('<div id="mapIdDiv" class="list-group-item skill-group"><input type="checkbox" class="divCheckboxItem" name="listidck" value="' + item.MapId + '">' + 'FilterBy_' + item.FilterCriteria + '<br></div>');
+                    $('#inner_scrollable_list').append(elem);
+                }
+            });
+        },
+        error: globalAjaxErrorHandler
+    });
+    }
+    //////////////////////////
+    function check_uncheck_list(isChecked) {
+        if (isChecked) {
+            $('input[name="listidck"]').each(function () {
+                this.checked = true;
+            });
+        } else {
+            $('input[name="listidck"]').each(function () {
+                this.checked = false;
+            });
+        }
+    }
+
+///////////////////////////
+
+    $('#group_list').select2(
+    {
+        width: '100%',
+        multiple: false,
+        placeholder: 'Select Parent',
+        theme: 'bootstrap',
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true,
+        tags: false,
+        allowClear: true,
+        language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+        placeholder: {
+            id: 0,
+            text: 'Select Parent List'
+        },
+        theme: 'bootstrap',
+        ajax: {
+           // url1: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ListAssignedMapCriteria),new { area="",controller="Campaign" })' + '?CampaignId=' + $("#campaignId").val(),
+            cache: true,
+            dataType: 'json',
+            url: function (params) {
+                var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ListAssignedMapCriteria),new { area="",controller="Campaign" })' + '?CampaignId=' + $("#campaignId").val();
+                var q = "";
+                var page = params.page || 1;
+                q += '&page=' + page;
+                q += '&limit=20';
+                if (params.term) {
+                    q += '&searchString=' + encodeURIComponent(params.term);
+                }
+                url +=q;
+                return url;
+
+            },
+            processResults: function (data, params) {
+
+                var obj = {};
+                debugger;
+                obj.results = data.records.map(function (item) {
+                    return {
+                        id: item.ListId,
+                        text: item.ListName
+                    }
+                });
+                if (!params.page) {
+                    params.page = 1;
+                }
+                obj.pagination = {
+                    more: (10 * params.page) < data.total
+                }
+                return obj;
+            }
+        },
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true,
+        tags: false,
+        allowClear: true
+    });
+    $('#contact_list').select2(listOptions);
+
+</script>

@@ -1,0 +1,46 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_UniCampaignAdminLayout.cshtml";
+}
+@section page_content{
+    <div class="content-heading">
+        Agent Management
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-flat panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        Agents
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive p0">
+                        <table id="grid" class="table table-striped table-bordered table-condensed" data-source="@Url.Action(nameof(UniCampaignE.Web.Controllers.AgentController.ListAgents))"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section page_scripts{
+    <script type="text/javascript">
+        $(document).ready(function (e) {
+            grid = $("#grid").grid({
+                primaryKey: "Name",
+                uiLibrary: "bootstrap",
+                iconsLibrary:'fontawesome',
+                notFoundText: "No records found",
+                columns: [
+                    { field: "Name", title: "Name", minWidth: 190, priority: 1 },
+                    { field: "AgentId", title: "AgentId", minWidth: 50, priority: 5 },
+                    { field: 'Username', title: 'Username' },
+                    { field: 'Peripheral', title: 'Peripheral' },
+                    {field:'IsSupervisor',title:'Supervisor'},
+                    { title: "", minWidth: 10, priority: 2, field: "Edit", width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-failure="globalAjaxErrorHandler" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area="admin",controller="Agent",action="Skills",id = UrlParameter.Optional})/{Id}"><span class="fa fa-edit"></span></a>', tooltip: "Edit" },
+                ],
+                pager: { enable: true, limit: 8, sizes: [8, 15, 25] }
+            });
+        });
+    </script>
+}

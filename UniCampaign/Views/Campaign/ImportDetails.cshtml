@@ -1,0 +1,1237 @@
+﻿@using UniCampaignE.Web.Localization;
+@using UniCampaignE.Web.HelperLib;
+@using UniCampaignE.Core.Constants;
+@model dynamic
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>UniCampaign - @ViewBag.Title</title>
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <!-- SIMPLE LINE ICONS-->
+    <link href="~/Content/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" />
+    <!-- ANIMATE.CSS-->
+    <link href="~/Content/animate.css/animate.min.css" rel="stylesheet" />
+    <!-- WHIRL (spinners)-->
+    <link href="~/Content/whirl/whirl.css" rel="stylesheet" />
+    <!-- =============== PAGE VENDOR STYLES ===============-->
+    <link rel="shortcut icon" href="~/Content/img/fav.ico">
+    <!-- WEATHER ICONS-->
+    @*<link href="~/Content/weather-icons/css/weather-icons.min.css" rel="stylesheet" />*@
+
+
+    <!-- =============== BOOTSTRAP STYLES ===============-->
+    @{
+        string currentLanguage = System.Globalization.CultureInfo.CurrentCulture.Name.Contains("zh") ? System.Globalization.CultureInfo.CurrentCulture.Name : System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+        string bootstrapLib = System.Globalization.CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "bootstrap-rtl.css" : "bootstrap.css";
+        string appLib = System.Globalization.CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "app-rtl.css" : "app.css";
+    }
+    <link href="~/Content/@bootstrapLib" rel="stylesheet" />
+    @*<link href="~/Content/bootstrap.min.css" rel="stylesheet" id="bscss" />*@
+    <!-- =============== APP STYLES ===============-->
+    <link href="~/Content/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+    <link href="~/Content/@appLib" rel="stylesheet" id="maincss" />
+    <link href="~/Content/theme/test.css" rel="stylesheet" />
+    <link href="~/Content/gijgo/combined/gijgo.min.css" rel="stylesheet" />
+    <link href="~/Content/select2.min.css" rel="stylesheet" />
+    <link href="~/Content/select2-bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/lobibox.min.css" rel="stylesheet" />
+    <title>@Page.Title</title>
+    <style>
+        .content-wrapper {
+            min-height: 570px;
+        }
+
+        .error {
+            color: red;
+            display: block;
+        }
+
+        .btn-rechurn {
+            margin-top: 4px;
+            margin-right: 0;
+            width: 56px;
+            padding: 6px 4px;
+        }
+
+        #loader {
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            position: fixed;
+            display: none;
+        }
+
+            #loader .loader-inner {
+                margin: auto;
+                width: 100%;
+                top: 42%;
+                position: absolute;
+                color: blue;
+            }
+
+        .select2-container .select2-search,
+        .select2-container .select2-search__field {
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal" id="modal_editor"></div>
+    <div id="loader" class="whirl duo" style="opacity:.6;">
+        <div class="loader-inner text-center text-md">
+            @Comman.PLEASE_WAIT_LOADER
+        </div>
+    </div>
+    <div class="wrapper">
+        <!-- top navbar-->
+        <header class="topnavbar-wrapper">
+            <nav role="navigation" class="navbar topnavbar">
+                <!-- START navbar header-->
+                <div class="navbar-header">
+                    <a href="@Url.RouteUrl("default")" class="navbar-brand">
+                        <div class="brand-logo">
+                            <img src="~/Content/img/logo-resized.png" class="img-responsive" />
+                        </div>
+                        <div class="brand-logo-collapsed">
+                            <img src="~/Content/img/logo-single.png" class="img-responsive" />
+                        </div>
+                    </a>
+                </div>
+                <!-- END navbar header-->
+                <!-- START Nav wrapper-->
+                <div class="nav-wrapper">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <!-- Button used to collapse the left sidebar. Only visible on tablet and desktops-->
+                            <a href="#" data-toggle-state="aside-collapsed" data-no-persist="true" class="hidden-xs">
+                                <em class="fa fa-navicon"></em>
+                            </a>
+                            <!-- Button to show/hide the sidebar on mobile. Visible on mobile only.-->
+                            <a href="#" data-toggle-state="aside-toggled" data-no-persist="true" class="visible-xs sidebar-toggle">
+                                <em class="fa fa-navicon"></em>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown dropdown-list">
+                            <a href="#" title="@Comman.PROFILE_TEXT" data-toggle="dropdown">
+                                @SessionHelper.CurrentUser.Name (@SessionHelper.CurrentTenant.Name)
+                                <em class="fa fa-chevron-down"></em>
+                            </a>
+                            <ul class="dropdown-menu animated flipInX">
+                                <li>
+                                    <div class="list-group">
+                                        <div class="list-group-item">
+                                            <div id="user-block" class="bg-gray-light" aria-expanded="true">
+                                                <div class="item user-block">
+                                                    <!-- User picture-->
+                                                    <div class="user-block-picture">
+                                                        <img src="~/Content/img/avatar.png" alt="Avatar" />
+                                                    </div>
+                                                    <!-- Name and Role-->
+                                                    <div class="user-block-info">
+                                                        <span class="user-block-name">@SessionHelper.CurrentUser.Name</span>
+                                                        <span class="user-block-role">@SessionHelper.CurrentUser.Role</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a class="list-group-item" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area = "", controller = "Account", action = "ChangePassword" })">
+                                            <span>@Comman.CHANGE_PASSWORD_TAB</span>
+                                            <span class="pull-right"><small><i class="fa fa-2x fa-user-secret text-warning"></i></small></span>
+                                        </a>
+                                        <a href="@Url.RouteUrl(new { area = "", controller = "Account", action = "Logout" })" class="list-group-item">
+                                            <span>@Comman.LOGOUT_Tab</span>
+                                            <span class="pull-right"><small><i class="fa fa-2x fa-lock text-danger"></i></small></span>
+                                        </a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <!-- END Nav wrapper-->
+            </nav>
+        </header>
+        <div class="content-wrapper">
+            <div class="row" id="form1">
+                <div class="col-lg-6">
+                    <div class="panel panel-dark">
+                        <div class="panel-body p-sm">
+                            <div class="row">
+
+                                <div class="col-xs-4">
+                                    <div class="">
+                                        <label class="control-label">Campaign</label>
+                                        <select class="form-control" data-value="@Model.Id" data-text="@Model.Name" id="campaign_list">
+                                            @if (Model != null)
+                                            {
+                                                <option value="@Model.Id" selected="selected">@Model.Name</option>
+                                            }
+                                        </select>
+
+                                    </div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="">
+                                        <label class="control-label">Contact List</label>
+                                        @if (Model != null && Model.Map != null)
+                                        {
+                                            <select class="form-control" data-value="@Model.Map.Id" data-listId="@Model.Map.ListId" data-text="@Model.Map.Name" id="map_list" disabled="disabled">
+                                                <option value="@Model.Map.ListId" selected="selected">@Model.Map.Name</option>
+                                            </select>
+
+                                        }
+                                        else
+                                        {
+                                            <select class="form-control" id="map_list" disabled="disabled"></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-xs-4 hidden" id="FilteredListDiv">
+                                    <div class="panel panel-primary scrollable_list">
+                                        <div class="panel panel-body p-sm">
+                                            <div class="form-group ">
+                                                <input type="text" class="form-control" id="skill_search_term" />
+                                            </div>
+                                            <div class="clearfix"></div>
+                                            <div id="skill_group_container">
+                                                <div class="list-group" id="inner_scrollable_list">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="panel panel-dark">
+                        <div class="panel-body p-sm">
+                            <div class="form-inline" id="filter_form">
+                                <div class="row">
+
+
+                                    <!--<div class="col-xs-2">
+                                         <div class="">
+                                             <label class="control-label">Attempted On</label>
+                                             <select class="form-control" id="attempt_list" disabled="disabled"></select>
+                                         </div>
+                                     </div>-->
+
+                                    <div class="col-xs-4">
+                                        <div class="">
+                                            <label class="control-label">Status</label>
+                                            @Html.DropDownList("status", DropDownHelper.GetConstants(typeof(RecordStatus)), "Select Status", new { @class = "form-control", id = "status_list" })
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <div class="">
+                                            <label class="control-label">CallResult</label>
+                                            @Html.DropDownList("callresult", DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.API.CallResult)), "Select Call Result", new { @class = "form-control", id = "callresult_list" })
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <div class="">
+                                            <label class="control-label">Agent</label>
+                                            <select class="form-control" name="Agents" id="Agent_list"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:1%;">
+                                    <div class="col-xs-4">
+                                        <div class="">
+                                            <label class="control-label">Agent Disposition</label>
+                                            <select class="form-control" name="AgentDisposition" id="agent_disposition_list"></select>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <div style="line-height:5em;">
+                                            <button class="btn btn-primary mt-sm" id="btn_view_report">View</button> &nbsp;
+                                            <button class="btn btn-default mt-sm" id="btn_reset">Reset</button>&nbsp;
+                                            @if (Model != null && Model.Map != null)
+                                            {
+                                                <button class="btn btn-primary btn-rechurn" id="btnRechurn">Rechurn</button>
+                                                @*<a style="margin-top:4px;" id="rechurn" class="btn btn-primary" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-failure="globalAjaxErrorHandler" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area = "", controller = "Campaign", action = nameof(UniCampaignE.Web.Controllers.CampaignController.RechunkContactList) })/@Model.Id/@Model.Map.Id"><small>Rechurn</small></a>*@
+                                            }
+                                            else
+                                            {
+                                                <a style="margin-top:4px;" id="rechurn" class="btn btn-primary" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-failure="globalAjaxErrorHandler" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" @*href="@Url.RouteUrl(new { area = "", controller = "Campaign", action = nameof(UniCampaignE.Web.Controllers.CampaignController.RechunkContactList), campaignId = UrlParameter.Optional })/@Model.Id/@ModelIds"*@><small>Rechurn</small></a>
+                                            }
+
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-4" style="line-height:5em;">
+                                        <button class="btn btn-primary mt-sm" id="btn_download_report">Download As CSV</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-sm">
+                <div class="col-lg-12">
+                    <i class="fa fa-expand" id="toggleWindow" title="Expand/collapse window"></i>
+                    <!-- <div class="row">
+                              <div class="col-xs-8">
+                                  <a href="javascript:void(0);" id="btn_delete_record" class="text-bold" title="Delete record by selection">DeleteRecord</a>
+                              </div></div>-->
+                    <div class="row">
+                        <div class="table-responsive p0">
+                            <table id="grid" class="table table-bordered table-condensed table-striped"></table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MODERNIZR-->
+    <script src="~/Scripts/modernizr-2.8.3.js"></script>
+    <script src="~/Scripts/modernizr.custom.js"></script>
+    <!-- JQUERY-->
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <!-- JQuery Easing -->
+    <script src="~/Scripts/jquery.easing.js"></script>
+    <script src="~/Scripts/animo.js"></script>
+    <!-- BOOTSTRAP-->
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <!-- STORAGE API-->
+    <script src="~/Scripts/jquery.storageapi.js"></script>
+    <script src="~/Scripts/app.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+    <script src="~/Scripts/jquery.slimscroll.min.js"></script>
+    <script src="~/Scripts/gijgo/combined/gijgo.min.js"></script>
+    <script src="~/Scripts/select2.full.min.js"></script>
+    <script src="~/Scripts/select2-i18n/@{@currentLanguage}.js"></script>
+    <script src="~/Scripts/underscore-min.js"></script>
+    <script src="~/Scripts/jquery.form.js"></script>
+    <script src="~/Scripts/lobibox.js"></script>
+    <script src="~/Scripts/layout.js"></script>
+
+    <script type="text/javascript">
+
+
+    $("#toggleWindow").click(function () { $("#form1").toggle(1000); });
+
+
+
+    var gridConfig = {};
+    gridConfig.notFoundText = "@GridComman.GRID_NO_RECORD_FOUND";
+    gridConfig.url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.NewImportDetails),new {area = "",controller="Campaign" })';
+    var campaignListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ListCampaigns), new { area = "", controller = "Campaign" })';
+    var contactListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.AssignedDistinctContactList), new { area = "", controller = "Campaign" })';//.ListContactMaps
+    var attemptListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.History),new { area="",controller="Campaign"})';
+    var downloadUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.DetailsReport),new { area="",controller="Campaign"})';
+    var rechrun = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.RechunkContactList),new { area="",controller="Campaign"})';
+    var campaignListOptions = {
+        width: '100%',
+        multiple: false,
+        placeholder: {
+            id: 0,
+            text: 'Select Campaign'
+        },
+        theme: 'bootstrap',
+        ajax: {
+            cache: true,
+            dataType: 'json',
+            url: function (params) {
+                var url = campaignListUrl;
+                var q = "";
+                var page = params.page || 1;
+                q = 'page=' + page;
+                q += '&limit=10';
+                if (params.term) {
+                    q += '&searchString=' + encodeURIComponent(params.term);
+                }
+                url += "?" + q;
+                return url;
+            },
+            processResults: function (data, params) {
+                var obj = {};
+                obj.results = data.records.map(function (item) {
+                    return {
+                        id: item.Id,
+                        text: item.Name
+                    }
+                });
+                if (!params.page) {
+                    params.page = 1;
+                }
+                obj.pagination = {
+                    more: (10 * params.page) < data.total
+                }
+                return obj;
+            }
+        },
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true,
+        tags: false,
+        allowClear: true
+    };
+    var mapListOptions = {
+        width: '100%',
+        multiple: false,
+        placeholder: {
+            id: 0,
+            text: 'Select Contact List'
+        },
+        theme: 'bootstrap',
+        ajax: {
+            cache: true,
+            dataType: 'json',
+            url: function (params) {
+                var url = contactListUrl;
+                var q = "campaignId=" + $('#campaign_list').val();
+                var page = params.page || 1;
+                q += '&page=' + page;
+                q += '&limit=10';
+                if (params.term) {
+                    q += '&searchString=' + encodeURIComponent(params.term);
+                }
+                url += "?" + q;
+                return url;
+            },
+            processResults: function (data, params) {
+                var obj = {};
+
+                obj.results = data.records.map(function (item) {
+                    return {
+                        id: item.Id,
+                        text: item.Name
+                    }
+                });
+
+                if (!params.page) {
+                    params.page = 1;
+                }
+                obj.pagination = {
+                    more: (10 * params.page) < data.total
+                }
+                return obj;
+            }
+        },
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true,
+        tags: false,
+        allowClear: true
+    };
+    var attemptListOptions = {
+        width: '100%',
+        multiple: false,
+        placeholder: {
+            id: 0,
+            text: 'Attempt'
+        },
+        theme: 'bootstrap',
+        minimumResultsForSearch: Infinity,
+        ajax: {
+            cache: true,
+            dataType: 'json',
+            url: function (params) {
+                var url = attemptListUrl;
+                var q = "mapId=" + $('#map_list').val();
+                var page = params.page || 1;
+                q += '&page=' + page;
+                q += '&limit=10&paginate=true';
+                if (params.term) {
+                    q += '&searchString=' + encodeURIComponent(params.term);
+                }
+                url += "?" + q;
+                return url;
+            },
+            processResults: function (data, params) {
+                var obj = {};
+                obj.results = data.records.map(function (item) {
+                    return {
+                        id: item.Id,
+                        text: item.AttemptedOn
+                    }
+                });
+                if (!params.page) {
+                    params.page = 1;
+                }
+                obj.pagination = {
+                    more: (10 * params.page) < data.total
+                }
+                return obj;
+            }
+        },
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true,
+        tags: false,
+        allowClear: true
+    }
+    var statusListOptions = {
+        width: '100%',
+        multiple: false,
+        placeholder: 'Select Status',
+        theme: 'bootstrap',
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true,
+        tags: false,
+        allowClear: true
+    };
+    var callResultListOptions = {
+        width: '100%',
+        multiple: false,
+        placeholder: 'Select Call Result',
+        theme: 'bootstrap',
+        escapeMarkup: function (markup) { return markup; },
+        closeOnSelect: true,
+        tags: false,
+        allowClear: true
+    };
+    //var callResultListOptions_Rechurn = {
+    //    width: '100%',
+    //    multiple: true,
+    //    placeholder: 'Select Call Result',
+    //    theme: 'bootstrap',
+    //    escapeMarkup: function (markup) { return markup; },
+    //    closeOnSelect: true,
+    //    tags: false,
+    //    allowClear: true
+    //};
+    $('#btnRechurn').click(function () {
+
+        var mapId = $('#map_list').val();
+
+        if (mapId == null || mapId == '') {
+            alert('Please Select Contact List');
+            return false;
+        }
+
+        var assignedSkillGroups = [];
+        $('.skill-group').each(function (idx, elem) {
+            //if ($('.label-primary', $(elem)).hasClass('hidden') || $('.label-primary', $(elem)).hasClass('show'))
+            //{
+            if (!$('.label-primary', $(elem)).hasClass('hidden')) {
+
+                var AllMaps = $(elem).data('identity');
+                assignedSkillGroups.push(AllMaps);
+            }
+
+        });
+        if (assignedSkillGroups.length > 2) {
+            alert('Please Select Only One Map List');
+            return false;
+        }
+        if (assignedSkillGroups.length == 1) {
+            alert('Please Select atleast One Map List');
+            return false;
+        }
+        var value = assignedSkillGroups[1];
+        var newURL = '@Url.RouteUrl(new { area = "", controller = "Campaign", action = nameof(UniCampaignE.Web.Controllers.CampaignController.RechunkContactList) })/@Model.Id/' + value;
+
+        // $("#rechurn").attr("href", newURL);
+        $.ajax({
+            beforeSend: function (e) {
+                $('#loader').show();
+            },
+            type: 'GET',
+            url: newURL,
+            success: function (content) {
+                showModalOnButtonClick(content);
+            },
+            error: globalAjaxErrorHandler
+        });
+
+    });
+
+    function showModalOnButtonClick(content) {
+        $('#modal_editor').html(content);
+        $('#modal_editor').modal('show');
+        $('#loader').hide();
+    }
+
+    $(document).ready(function (e) {
+
+        $('#status_list').val(0);
+        $('#attempt_list').select2(attemptListOptions);
+        $('#map_list').select2(mapListOptions);
+        $('#status_list').select2(statusListOptions);
+        $('#callresult_list').select2(callResultListOptions);
+        //$('#callresult_list_Rechrun').select2(callResultListOptions_Rechurn);
+        $('#campaign_list').select2(campaignListOptions);
+        loadFilteredList();
+
+        $(document).on('change.select2', '#campaign_list', function (e) {
+
+            var currentVal = $(this).val();
+            //
+            if (currentVal == null) {
+
+                $('#map_list').val(0).trigger('change.select2')
+                $('#map_list').attr('disabled', 'disabled');
+            } else {
+                $('#map_list').removeAttr('disabled');
+                $('#map_list').val(null);
+                $('.skill-group').val(null);
+                $("#FilteredListDiv").addClass('hidden');
+                $('#map_list').select2(mapListOptions);
+
+                //  $('#map_list').trigger('change.select2');
+                // loadFilteredList();
+            }
+        });
+        $(document).on('change.select2', '#map_list', function (e) {//saroj
+            var currentVal = $(this).val();
+
+            if (currentVal == null) {
+
+                $('#attempt_list').val(0).trigger('change.select2');
+                $('#attempt_list').attr('disabled', 'disabled');
+            } else {
+                $('#attempt_list').removeAttr('disabled');
+            }
+            @*var URL = '@Url.RouteUrl(new { area = "", controller = "Campaign", action = nameof(UniCampaignE.Web.Controllers.CampaignController.AssigendFilterdList) })/' + $("#map_list").val() + '/';
+            $("#filter_list").attr("href", URL);*@
+            loadFilteredList();
+            $("#FilteredListDiv").removeClass('hidden');
+
+            @*var newURL = '@Url.RouteUrl(new { area = "", controller = "Campaign", action = nameof(UniCampaignE.Web.Controllers.CampaignController.RechunkContactList) })/@Model.Id/' + $("#map_list").val();
+
+            $("#rechurn").attr("href", newURL);*@
+            });
+
+        $(document).on('change.select2', '#callresult_list', function (e) {
+            var callResult = $(this).val();
+            if (callResult != null && callResult != '') {
+                var status = $('#status_list').val();
+                if (status != null && status != '') {
+                    $('#status_list').val(null).trigger('change');
+                }
+                var agent = $('#Agent_list').val();
+                if (agent != null && agent != '') {
+                    $('#Agent_list').val(null).trigger('change');
+                }
+
+                var agentDisposition = $('#agent_disposition_list').val();
+                if (agentDisposition != null && agentDisposition != '') {
+                    $('#agent_disposition_list').val(null).trigger('change');
+                }
+            }
+        });
+
+        $(document).on('change.select2', '#Agent_list', function (e) {
+            var agent = $(this).val();
+            if (agent != null && agent != '') {
+                var callResult = $('#callresult_list').val();
+                if (callResult != null && callResult != '') {
+                    $('#callresult_list').val(null).trigger('change');
+                }
+                var status = $('#status_list').val();
+                if (status != null && status != '') {
+                    $('#status_list').val(null).trigger('change');
+                }
+                var agentDisposition = $('#agent_disposition_list').val();
+                if (agentDisposition != null && agentDisposition != '') {
+                    $('#agent_disposition_list').val(null).trigger('change');
+                }
+            }
+        });
+
+        $(document).on('change.select2', '#status_list', function (e) {
+            var status = $(this).val();
+            if (status != null && status != '') {
+                var callResult = $('#callresult_list').val();
+                if (callResult != null && callResult != '') {
+                    $('#callresult_list').val(null).trigger('change');
+                }
+                var agent = $('#Agent_list').val();
+                if (agent != null && agent != '') {
+                    $('#Agent_list').val(null).trigger('change');
+                }
+                var agentDisposition = $('#agent_disposition_list').val();
+                if (agentDisposition != null && agentDisposition != '') {
+                    $('#agent_disposition_list').val(null).trigger('change');
+                }
+            }
+        });
+
+        $(document).on('change.select2', '#agent_disposition_list', function (e) {
+            var disposition = $(this).val();
+            if (disposition != null && disposition != '') {
+                var callResult = $('#callresult_list').val();
+                if (callResult != null && callResult != '') {
+                    $('#callresult_list').val(null).trigger('change');
+                }
+                var agent = $('#Agent_list').val();
+                if (agent != null && agent != '') {
+                    $('#Agent_list').val(null).trigger('change');
+                }
+                var agentDisposition = $('#status_list').val();
+                if (agentDisposition != null && agentDisposition != '') {
+                    $('#status_list').val(null).trigger('change');
+                }
+            }
+        });
+
+        $(document).on('click', '#btn_download_report', function (e) {
+            var campaignId = $('#campaign_list').val();
+            if (campaignId == null || campaignId == '') {
+                return;
+            }
+            var count = 1;
+            var assignedMapsarray = [];
+            $('.skill-group').each(function (idx, elem) {
+                if (!$('.label-primary', $(elem)).hasClass('hidden')) {
+                    count++;
+                    if (count > 2) {
+                        var AllMaps = $(elem).data('identity');
+                        if (AllMaps) {
+                            assignedMapsarray.push(AllMaps);
+                        }
+                    }
+                }
+            });
+
+            var model = {
+                CampaignId: $('#campaign_list').val(),
+                MapId: assignedMapsarray,
+                AttemptId: $('#attempt_list').val(),
+                Status: $('#status_list').val(),
+                Callresult: $('#callresult_list').val(),
+                AgentId: $('#Agent_list').val(),
+                WrapUpdata: $('#agent_disposition_list').val()
+            };
+
+            if (assignedMapsarray.length != 0) {
+                $.ajax({
+                    url: downloadUrl,
+                    beforeSend: function (e) {
+                        $('#loader').show();
+                    },
+                    type: "POST",
+                    data: model,
+                    success: function () { },
+                    error: globalAjaxErrorHandler
+                }).done(function (data) {
+                    if (data.Successful) {
+                        globalAjaxSuccessHandler("File Downloaded Successfully.");
+                        window.location.href = "@Url.RouteUrl(new { Controller = "Campaign", Action = "Download" })/?FileName=" + data.fileName;
+                    } else {
+                        globalAjaxErrorHandler(null,null,"No Records Found.");
+                    }
+                });
+            }
+            else {
+                alert("Please choose any contact list map.");
+            }
+        });
+
+        //$(function () {
+        //    $("#dialog").dialog({
+        //        autoOpen: false,
+        //        modal: true,
+        //        title: "View Details",
+        //         height: 700,
+        //         width: 900
+        //    });
+        //    $("#btn_rechunk").click(function () {
+        //        var url = rechunk;
+        //        url += "?campaignId=" + $('#campaign_list').val() + "&mapId=" + $('#map_list').val();
+        //        $.ajax({
+        //            type: "GET",
+        //            url: url,
+        //            data: {
+        //                campaignId: $('#campaign_list').val(),
+        //                mapId: $('#map_list').val()
+
+        //            },
+        //            contentType: "application/json; charset=utf-8",
+        //            dataType: "html",
+        //            success: function (response) {
+        //                $('#dialog').html(response);
+        //                $('#dialog').dialog('open');
+
+
+        //            },
+        //            failure: function (response) {
+        //                alert(response.responseText);
+        //            },
+        //            error: function (response) {
+        //                alert(response.responseText);
+        //            }
+        //        });
+        //    });
+        //});
+        //$(document).on('click', '#btn_chunk', function (e) {
+        //    var campaignId = $('#campaign_list').val();
+        //    var mapId = $('#map_list').val();
+        //    if (campaignId == null || campaignId == '') {
+        //        return;
+        //    }
+        //    if (mapId == null || mapId == '') {
+        //        alert('Please Select Contactlist');
+        //        return;
+        //    }
+        //    $.ajax({
+        //        url: "contacts/rechun",
+        //        type: "get",
+        //        data: {
+        //            campaignId: campaignId,
+        //            mapId: mapId
+        //        },
+        //        success: function (response) {
+        //        },
+        //        error: function (response) {
+        //          }
+        //    });
+
+        //    //$("#rechrun").click();
+        //});
+
+        $(document).on('click', '#btn_reset', function (e) {
+            $('#campaign_list').val(null).trigger('change.select2');
+            $('#status_list').val(null).trigger('change.select2');
+            $('#Agent_list').val(null).trigger('change.select2');
+            $('#agent_disposition_list').val(null).trigger('change.select2');
+            $('#callresult_list').val(null).trigger('change.select2');
+            $('#grid').grid('clear', true);
+        });
+        $(document).on('click', '#btn_view_report', function (e) {
+
+            //loadFilteredList();
+            var assignedSkillGroups = [];
+            $('.skill-group').each(function (idx, elem) {
+                if (!$('.label-primary', $(elem)).hasClass('hidden')) {
+
+                    var AllMaps = $(elem).data('identity');
+                    if (AllMaps) {
+                        assignedSkillGroups.push(AllMaps);
+                    }
+                }
+            });
+
+            var contactList = $('#map_list').val();
+            if (assignedSkillGroups.length <= 0 || !contactList) {
+                alert("Please Choose at least one Contact Map/Conatct List.");
+                return;
+            }
+
+            if ($('#campaign_list').val() == null || $('#campaign_list').val() == '') {
+                return;
+            }
+
+            var dataSource = {};
+            dataSource.url = gridConfig.url;
+            dataSource.method = "POST";
+            dataSource.data = {
+                campaignId: $('#campaign_list').val(),
+                mapId: assignedSkillGroups,
+                attemptId: $('#attempt_list').val(),
+                status: $('#status_list').val(),
+                callresult: $('#callresult_list').val(),
+                AgentId: $('#Agent_list').val(),
+                WrapUpdata: $('#agent_disposition_list').val()
+            };
+            $('#grid').grid('destroy', true, true);
+            var ImportDetailsGrid = $("#grid").grid({
+                uiLibrary: "bootstrap",
+                iconsLibrary: 'fontawesome',
+                primaryKey: "AccountNumber",
+                notFoundText: gridConfig.notFoundText,
+                dataSource: dataSource,
+
+                pager: { enable: true, limit: 30, sizes: [30, 40, 60] },
+                columns: [
+                    { field: 'Phone01', title: 'Phone01' },
+                    { field: 'AccountNumber', title: 'Account Number', width: '80' },
+                    { field: 'FirstName', title: 'First Name', sortable: true },
+                    { field: 'LastName', title: 'Last Name', sortable: true },
+                    { field: 'Phone02', title: 'Phone02', hidden: true },
+                    { field: 'Phone03', title: 'Phone03', hidden: true },
+                    { field: 'Phone04', title: 'Phone04', hidden: true },
+                    { field: 'Phone05', title: 'Phone05', hidden: true },
+                    { field: 'Phone06', title: 'Phone06', hidden: true },
+                    { field: 'Phone07', title: 'Phone07', hidden: true },
+                    { field: 'Phone08', title: 'Phone08', hidden: true },
+                    { field: 'Phone09', title: 'Phone09', hidden: true },
+                    { field: 'Phone10', title: 'Phone10', hidden: true },
+                    { field: 'CallResult', title: 'Call Result', sortable: true },
+                    { field: 'AgentName', title: 'Agent Name', sortable: true },
+                    { field: 'Status', title: 'Status', sortable: true },
+                    { field: 'DateTime', title: 'Created On' },
+                    { field: 'CallDisposition', title: 'Call Disposition', sortable: true },
+                    { field: 'DialAttempts', title: 'Dial Attempts', width: '80' },
+                    { field: 'ReChurnAttempts', title: 'ReChurn Attempts', width: '80' },
+                    { field: "WrapupData", title: "Agent Disposition", sortable: true },
+                    { field: 'CallDateTime', title: 'Call DateTime' },
+                    { field: 'ImportedOn', title: 'Imported On' },
+                    { field: 'CampaignId', title: '', hidden: true }
+                ],
+                detailTemplate: '<div><table/></div>',
+                initialized: function (e) {
+                    $(this).addClass('table-striped table-condensed');
+                }
+            });
+            ImportDetailsGrid.on('dataBound', function (e, records, totalRecords) {
+                $("th[data-field='FirstName'] div[data-role='title']").css('text-decoration', 'underline');
+                $("th[data-field='LastName'] div[data-role='title']").css('text-decoration', 'underline');
+                $("th[data-field='WrapupData'] div[data-role='title']").css('text-decoration', 'underline');
+                $("th[data-field='Status'] div[data-role='title']").css('text-decoration', 'underline');
+                $("th[data-field='CallDisposition'] div[data-role='title']").css('text-decoration', 'underline');
+                $("th[data-field='CallResult'] div[data-role='title']").css('text-decoration', 'underline');
+                $("th[data-field='AgentName'] div[data-role='title']").css('text-decoration', 'underline');
+
+                var Oldtable = document.getElementById("grid");
+                Oldtable.insertBefore(Oldtable.tFoot, Oldtable.tHead);
+                Oldtable.tFoot.style.display = 'table-row-group';
+            });
+
+            ImportDetailsGrid.on('detailExpand', function (e, $detailWrapper, id) {
+                var url = ''
+                var currentRecord = ImportDetailsGrid.getById(id);
+                $detailWrapper.find('table').grid(
+                    {
+                        dataSource: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.GetCallDeatils),new { area="",controller="Campaign" })',
+                        params: { ImportId: id, CampaignId: currentRecord.CampaignId },
+                        primaryKey: 'Id',
+                        iconsLibrary: 'fontawesome',
+                        columns: [
+                            { field: "WrapupData", title: "WrapUp Code" },
+                            { field: 'CallDateTime', title: 'Call DateTime', minWidth: 60, priority: 6 },
+                            { field: "CreatedOn", title: "DateTime", minWidth: 50, priority: 4 },
+                        ],
+                        uiLibrary: "bootstrap",
+                        notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+                        pager: { enable: true, limit: 5, sizes: [5, 10] }
+                    });
+            });
+
+            ImportDetailsGrid.on('detailCollapse', function (e, $detailWrapper, id) {
+                $detailWrapper.find('table').grid('destroy', true, true);
+            });
+
+
+            function deleteRecordBySecltion(records, selectedcampaign, mapIdforrecorddelete) {
+
+                $.ajax({
+                    url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.DeleteRecordBySelection))',
+                    type: "POST",
+                    data: { selectedRecords: records, campaignId: selectedcampaign, mapId: mapIdforrecorddelete },
+                    success: function (response) { $('#btn_view_report').trigger('click'); $('#loader').hide(); },
+                    error: globalAjaxErrorHandler
+                });
+            }
+            $('#btn_delete_record').off('dblclick').on('dblclick', function (e) {
+                //  e.preventDefault();
+                // selectionMethod: 'checkbox',
+                // selectionType: 'multiple',
+                var cnfirm = confirm("Do you want to delete selected records?");
+                if (cnfirm) {
+
+                    var records = ImportDetailsGrid.getSelections();
+                    if (records == null || records.length == 0) {
+                        showGlobalNotification('error', 'Please select at least one record');
+                        return;
+                    }
+                    else {
+                        var assignedMaps = [];
+                        $('.skill-group').each(function (idx, elem) {
+                            if (!$('.label-primary', $(elem)).hasClass('hidden')) {
+
+                                var AllMaps = $(elem).data('identity');
+                                assignedMaps.push(AllMaps);
+                            }
+                        });
+                        if (assignedMaps.length > 2) {
+                            alert('Please Select Only One Map List');
+                            return false;
+                        }
+                        else if (assignedMaps.length == 1) {
+                            alert('Please Select atleast One Map List');
+                            return false;
+                        }
+                        else {
+                            var selectedcampaign = $('#campaign_list').val()
+                            var mapIdforrecorddelete = assignedMaps[1];
+
+                            $('#loader').show();
+                            deleteRecordBySecltion(records, selectedcampaign, mapIdforrecorddelete);
+                        }
+
+
+                    }
+                }
+                else {
+                    alert("You have choose 'No'");
+                }
+
+            });
+        });
+
+        $('#Agent_list').select2({
+            width: '100%',
+            multiple: false,
+            placeholder: 'Select Call Result',
+            theme: 'bootstrap',
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true,
+            language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+            placeholder: {
+                id: 0,
+                text: 'select Agent'
+            },
+            ajax: {
+                //delay: 10,
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.AgentController.ListAgents), new { area = "", controller = "Agent" })';
+                    var q = "";
+                    var page = params.page || 1;
+                    q = 'page=' + page;
+                    q += '&limit=10';
+                    q += '&dropdown=1';
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+                },
+                processResults: function (data, params) {
+                    var obj = {};
+                    console.log(data);
+                    obj.results = data.records.map(function (item) {
+                        console.log(item);
+                        return {
+                            id: item.AgentId,
+                            text: item.Name
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+        });
+
+        $('#agent_disposition_list').select2({
+            width: '100%',
+            multiple: false,
+            placeholder: 'Select Call Result',
+            theme: 'bootstrap',
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true,
+            language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+            placeholder: {
+                id: 0,
+                text: 'select Agent Disposition'
+            },
+            theme: 'bootstrap',
+            ajax: {
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.GetWrapUpCode), new { area = "", controller = "Campaign" })';
+                    var q = "";
+                    var page = params.page || 1;
+                    q = 'page=' + page;
+                    q += '&limit=10';
+                    q += '&dropdown=1';
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+
+                },
+                processResults: function (data, params) {
+                    var obj = {};
+                    obj.results = data.records.map(function (item) {
+                        return {
+                            id: item.Label,
+                            text: item.Label
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+        });
+    });
+
+    var listFilterUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.AssignedListWithFilter), new { area = "" , controller = "Campaign"})';
+    var queryParams = {};
+    queryParams.page = 1;
+    queryParams.term = '';
+    queryParams.limit = 300;
+    queryParams.more = false;
+    queryParams.current = 0;
+        var generateUrl = function () {
+        var url = listFilterUrl + "/" + $('#map_list').val() + "/" + $('#campaign_list').val();
+        var q = "";// "ListId=" + $('#map_list').val() + "/" + "CampaignId=" + $('#campaign_list').val();
+        return url;
+        };
+
+    function loadFilteredList() {
+
+        var selectedMapId = $("#campaign_list").val();
+        var selectedListId = $("#map_list").val();
+        if (selectedMapId != null && selectedListId != null)//sar
+        {
+            if (!$('#scrollable_list').hasClass('whirl standard')) {
+                $('#scrollable_list').addClass('whirl standard');
+            }
+            $.ajax({
+                url: generateUrl(),
+                success: function (data) {
+                    console.log('success', data);
+                    $('#scrollable_list').removeClass('whirl standard');
+                    //queryParams.more = (queryParams.limit * queryParams.page) < data.total;
+                    if (queryParams.page == 1) {
+                        $('#inner_scrollable_list').html('');
+                    }
+                    var firstelement = $('<div class="list-group-item skill-group itscheckbox"><input type="checkbox" id="selectallckbx"/>Select All<br></div>');
+                    $('#inner_scrollable_list').append(firstelement);
+                    $.each(data.records, function (idx, item) {
+                        var assigned = ' show ';
+                        var selectMap = $('#map_list').attr("data-value");
+                        var elem = '';
+                        if (selectMap != null) {
+                            var hidden = ' hidden ';
+
+                            if (selectMap == item.MapId) {
+                                elem = $('<div class="list-group-item skill-group" data-identity="' + item.MapId + '" data-name="' + item.filter + '" role="button">' + item.filter + '<span class="label label-primary pull-right pv-sm' + assigned + '"><span class="fa fa-check"></span></span></div>');
+                                $('#inner_scrollable_list').append(elem);
+                                $("#skill_search_term").val(item.filter);
+                            }
+                            else {
+                                elem = $('<div class="list-group-item skill-group" data-identity="' + item.MapId + '" data-name="' + item.filter + '" role="button">' + item.filter + '<span class="label label-primary pull-right pv-sm' + hidden + '"><span class="fa fa-check"></span></span></div>');
+                                $('#inner_scrollable_list').append(elem);
+                            }
+                        }
+                        else {
+                            elem = $('<div class="list-group-item skill-group" data-identity="' + item.MapId + '" data-name="' + item.filter + '" role="button">' + item.filter + '<span class="label label-primary pull-right pv-sm' + assigned + '"><span class="fa fa-check"></span></span></div>');
+                            $('#inner_scrollable_list').append(elem);
+                        }
+                    });
+
+                    var selectedMapId = $("#campaign_list").val();
+                    var selectedListId = $("#map_list").val();
+                    if (selectedMapId != null && selectedListId != null)//sar
+                    {
+                        $("#campaign_list").val(selectedMapId);
+                        $("#map_list").val(selectedListId);
+                        $("#FilteredListDiv").removeClass('hidden');
+                        $('#map_list').removeAttr('disabled');
+                        $('#btn_view_report').trigger('click');
+                    }
+                    $('#skill_search_term').trigger('keyup');
+
+                },
+                error: globalAjaxErrorHandler
+            });
+
+
+        }
+        else {
+
+            alert("Please select Campaign and List");
+        }
+
+    }
+
+
+    $(function (e) {
+
+
+        $('#skill_group_container').slimscroll({ height: '200px', }).bind('slimscroll', function (e, pos) {
+
+            if (pos == 'bottom' && queryParams.more) {
+                //queryParams.page++;
+                //loadFilteredList();
+            }
+        });
+
+        $('#inner_scrollable_list').on('click', '.skill-group', function () {
+
+            if ($('.label-primary', $(this)).hasClass('hidden') || $('.label-primary', $(this)).hasClass('show')) {
+
+                $('.label-primary', $(this)).toggleClass('hidden');
+            }
+            else {
+                if ($("#selectallckbx").is(':checked')) {
+                    $('.skill-group').each(function (idx, elem) {
+
+                        $('.label-primary', $(elem)).removeClass('hidden').addClass('show');;
+
+                    });
+                }
+                else {
+                    $('.skill-group').each(function (idx, elem) {
+
+                        $('.label-primary', $(elem)).removeClass('show').addClass('hidden');
+
+                    });
+                }
+            }
+
+
+        });
+
+        $('#skill_search_term').on('keyup', function (e) {
+
+            var input, filter, ul, li, a, i;
+            input = document.getElementById("skill_search_term");
+            filter = input.value.toUpperCase();
+            div = document.getElementById("inner_scrollable_list");
+            a = div.getElementsByClassName("list-group-item");
+
+            for (i = 0; i < a.length; i++) {
+                txtValue = a[i].textContent || a[i].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    a[i].style.display = "";
+                } else {
+                    a[i].style.display = "none";
+                }
+            }
+
+            //var regex = new RegExp("^[a-zA-Z0-9\./\_/]{2,32}$");
+            // var str = $(this).val();
+            // if (str.length <= 2) {
+            //     queryParams.term = "";
+            //     queryParams.page = 1;
+            // } else if (regex.test(str)) {
+            //     queryParams.term = str;
+            // }
+            // loadFilteredList();
+        });
+        if ($('#map_list').val() != null) {
+
+         //   loadFilteredList();
+
+        }
+
+
+    });
+    </script>
+</body>
+</html>

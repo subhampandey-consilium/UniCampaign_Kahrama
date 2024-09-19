@@ -1,0 +1,79 @@
+﻿@using UniCampaignE.Web.HelperLib
+@model UniCampaignE.Core.Models.ContactFilter
+@{
+    var filterNumber = 0;
+}
+<div class="unicampaign-filter">
+    <div class="form-group btn-group-sm pull-right p0 m0">
+        <button class="btn btn-primary btn-add-filter" type="button"><i class="fa fa-plus"></i><span>&nbsp;&nbsp;Add Filter</span></button>
+    </div>
+    <div class="clearfix"></div>
+    <ul class="nav filter-tabs nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#Filter_0">Filter_0</a></li>
+    </ul>
+    <div class="filter-collection p-sm tab-content p-lg">
+        @if (Model != null && Model.Filters.Count > 0)
+        {
+            foreach (var filter in Model.Filters)
+            {
+                var filterId = $"Filter_{filterNumber}";
+                <div id="@filterId" class="filter-expression tab-pane fade">
+                    <div role="form">
+                        <div class="form-group pull-right btn-group-sm">
+                            <button type="button" class="btn btn-default btn-reset-filter"><i class="fa fa-close"></i><span>&nbsp;&nbsp;Reset</span></button>
+                            <button type="button" class="btn btn-danger hidden btn-remove-filter"><i class="fa fa-remove"></i><span>&nbsp;&nbsp;Remove</span></button>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group form-group-sm pull-left">
+                            <div class="form-inline">
+                                <div class="form-group form-group-sm">
+                                    <label class="control-label">Type&nbsp;&nbsp;</label>
+                                    @Html.DropDownList("", DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Models.LogicalOperator)), new { @class = "form-control filter-type" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="form-group pull-right m0 p0">
+                            <span class="btn btn-link btn-add-filter-condition text-bold">Add Condition</span>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="form-group filter-condition-collection" role="form">
+                            <label class="control-label">Conditions</label>
+                            @Html.Editor(filterId, "ContactFilterCondition", filter.Conditions)
+
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div id="Filter_0" class="filter-expression tab-pane fade in active">
+                <div role="form">
+                    <div class="form-group pull-right btn-group-sm">
+                        <button type="button" class="btn btn-default btn-reset-filter"><i class="fa fa-close"></i><span>&nbsp;&nbsp;Reset</span></button>
+                        <button type="button" class="btn btn-danger hidden btn-remove-filter"><i class="fa fa-remove"></i><span>&nbsp;&nbsp;Remove</span></button>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group form-group-sm pull-left">
+                        <div class="form-inline">
+                            <div class="form-group form-group-sm">
+                                <label class="control-label">Type&nbsp;&nbsp;</label>
+                                @Html.DropDownList("", DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Models.LogicalOperator)), new { @class = "form-control filter-type" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group pull-right m0 p0">
+                        <span class="btn btn-link btn-add-filter-condition text-bold">Add Condition</span>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group filter-condition-collection" role="form">
+                        <label class="control-label">Conditions</label>
+                        @Html.EditorFor(mod => mod.Conditions, "ContactFilterCondition")
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,272 @@
+﻿@using UniCampaignE.Web.Localization
+@model UniCampaignE.Core.Models.API.Campaign
+<style>
+    .swal-wide {
+        width: 800px !important;
+        height: 400px !important;
+    }
+</style>
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Contact Lists assigned to @Model.Name</h4>
+        </div>
+        <div class="modal-body">
+            <div class="table-responsive">
+                <table id="mapCriteria_grid" data-source="@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ContactMapGroupList), new { controller = "Campaign", area = "", campaignId = Model.GetUniqueId() })" class="table table-striped table-bordered table-condensed"></table>
+            </div>
+        </div>
+        <div class="modal-footer"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var mapCriteriaGrid = $('#mapCriteria_grid').grid(
+        {
+            primaryKey: 'Id',
+            iconsLibrary: 'fontawesome',
+            columns: [
+                { field: 'Id', title: 'Id', hidden: true },
+                { field: 'ContactListName', title: 'Contact List' },
+                { field: 'DefaultThreshold', title: 'Default Threshold' },
+                { field: 'DialingPriority', title: 'Dialing Priority' },
+               // { hidden: true, field: "TurnOFF/ON", title: "Turn OFF/ON", tmpl: '<a data-ajax="true" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="stopSuccessHandler" data-ajax-method="POST" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StopCallingList)})' + '?mapid={Id}&status=6&name={ListName}" style="color:red" id="stopbutton_{Id}" >Stop</i></a> <a data-ajax="true" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="stopSuccessHandler" data-ajax-method="POST" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StartCallingList)})' + '?mapid={Id}&status=3&name={ListName}" id="Resume_{Id}">Resume</a>' },
+                { hidden: true, field: "UpdatePriority", title: "Update Priority", tmpl: '<select id="Dialingpriority_{Id}"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select>', events: { 'change': updatepriority } }
+            ],
+            detailTemplate: '<div><table/></div>',
+            uiLibrary: "bootstrap",
+            notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+            pager: { enable: true, limit: 5, sizes: [5, 10] }
+        });
+
+    function updatepriority() {
+        debugger;
+        var currentMap = arguments[0].data;
+        var selectid = "#Dialingpriority_" + currentMap.record['Id'];
+        var priorityvalue = $(selectid).val();
+        $.ajax({
+            type: 'POST',
+            url: '@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.ChangeMapPriority) })' + "?listId=" + currentMap.record['Id'] + "&Priority=" + priorityvalue,
+            success: function (response) {
+                debugger;
+                showGlobalNotification('success', response);
+            },
+            error: function (xhr, st, desc) {
+                debugger;
+                showGlobalNotification('error', responseText);
+            }
+        });
+
+    }
+    mapCriteriaGrid.on('detailExpand', function (e, $detailWrapper, id) {
+        debugger;
+        var currentRecord = mapCriteriaGrid.getById(id);
+        var criteriaGrid = $detailWrapper.find('table').grid(
+            {
+                dataSource: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ContactMapGroupItirationList),new { area="",controller="Campaign" })',
+                params: { groupId: currentRecord.Id },
+                primaryKey: 'MapId',
+                iconsLibrary: 'fontawesome',
+                columns: [
+                    {
+                        field: "Criteria", title: "S.No", renderer: function (value, record, $cell, $displayEl, id, grid) {
+                            var data = grid.getAll();
+                            debugger;
+                            var index = data.indexOf(record);
+                            //  alert("Index: " + data[0].Status);
+
+                            index = index + 1;
+                            return "Criteria " + index;
+                        }
+                    },
+                    { field: "Id", title: "Id" },
+                    { field: "TotalRecords", title: "TotalRecords" },
+                  //  { field: "Group", title: "Group" },
+                    { field: "CalculatedThreshold", title: "Threshold", minWidth: 50, priority: 4 },
+                    { field: "CalculatedThresholdType", title: "ThresholdType" },
+                    { field: "Status", id: "mapstatus", title: "Status" },
+                   // { field: "TurnOFF/ON", title: "Turn OFF/ON", tmpl: '<a data-ajax="true" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="stopSuccessHandler" data-ajax-method="POST" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StopCallingList)})' + '?mapid={MapId}&status=6&name={ListName}" style="color:red" id="stopbutton_{MapId}_{ListId}" ><i title="Stop Contact List"  class="fa fa-stop"></i></a> <a data-ajax="true" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="stopSuccessHandler" data-ajax-method="POST" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StartCallingList)})' + '?mapid={MapId}&status=3&name={ListName}" id="Resume_{MapId}_{ListId}"><i title="Resume Contact List" style="color:#009933" class="fa fa-play"></i></a>' },
+                    { field: "CreatedOn", title: "Assigned On" },
+                    { title: "", minWidth: 10, priority: 3, field: "", tmpl: '<span class="fa fa-edit"></span>', events: { 'click': GetRule } },
+                    { title: "", minWidth: 10, priority: 3, field: "", tmpl: '<a  target="_blank" href="@Url.RouteUrl(new { area = "", controller = "Campaign", action = nameof(UniCampaignE.Web.Controllers.CampaignController.ImportDetails), id = Model.GetUniqueId(), name = Model.Name})&MapId={MapId}&ListName={ListName}"><small>Details</small></a>' },
+
+                ],
+                uiLibrary: "bootstrap",
+                notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+                pager: { enable: true, limit: 5, sizes: [5, 10] },
+                detailTemplate: '<div><table/></div>',
+                dataBound: function (e, data, total) {
+                    debugger;
+                    for (var i = 0; i < data.length; i++) {
+                        $('#Dialingpriority').val(data[i].DialingPriority);
+                        if (data[i].Status == "Processing" || data[i].Status == "Processed" || data[i].Status == "Completed") {
+                            var id = "#stopbutton_" + data[i].MapId;
+                            var id2 = "#Resume_" + data[i].MapId;
+                            $(id).hide();
+                            $(id2).hide();
+                        }
+                        if (data[i].Status == "Stopped" || data[i].Status == "Failed" || data[i].Status == "Paused" || data[i].Status == "Paused") {
+                            var id = "#stopbutton_" + data[i].MapId;
+                            var idresume = "#Resume_" + data[i].MapId;
+                            $(id).hide();
+                            $(idresume).show();
+                        }
+                        if (data[i].Status == "Assigned" || data[i].Status == "PreProcessed" || data[i].Status == "Scheduled") {
+                            var id = "#stopbutton_" + data[i].MapId;
+                            var idresume = "#Resume_" + data[i].MapId;
+                            $(id).show();
+                            $(idresume).hide();
+                        }
+                    }
+                }
+            });
+
+        function GetRule() {
+            $('#loader').show();
+            var currentMap = arguments[0].data;
+            $.ajax({
+                type: 'GET',
+                dataType: 'html',
+                data: { MapId: currentMap.id },
+                url: '@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.EditRuleCriteria) })',
+                success: function (response) {
+                    var unicampaignFilter = $(response);
+                    $.ajax({
+                        type: 'GET',
+                        dataType: 'json',
+                        data: { listId: currentMap.record['ListId'] },
+                        url: '@Url.RouteUrl(new { area="",controller="ContactList",action=nameof(UniCampaignE.Web.Controllers.ContactListController.GetHeaders) })',
+                        success: function (responseGetHeaders) {
+                            var selectElements = $('.filter-condition-attribute', unicampaignFilter);
+                            $(selectElements).html('');
+                            $(selectElements).prop("disabled", true);
+                            $.each(responseGetHeaders.Headers, function (index, header) {
+                                $(selectElements).append('<option value="' + header.Value + '">' + header.Key + '</option>');
+                            });
+
+                            $('#loader').hide();
+                            Swal.fire({
+                                customClass: 'swal-wide',
+                                heightAuto: true,
+                                html: unicampaignFilter,
+                                showCloseButton: true,
+                                showCancelButton: true,
+                                onOpen: function (e) {
+
+                                    $('.filter-condition-attribute', $(e)).each(function () {
+                                        if ($(this).attr('data-selected-attribute'))
+                                            $(this).val($(this).attr('data-selected-attribute'));
+                                    });
+
+                                }
+                            }).then(function (result) {
+                                var $swalAlert = $('#swal2-content');
+                                var target = $('#limit_filter', $swalAlert);
+
+                                var targetType = $('#target_Type', $swalAlert);
+                                var targetCheck = $('#c_TargetCheck', $swalAlert).is(':checked');
+                                if (targetCheck == true && (target[0].value == '' || target[0].value == null)) {
+                                    showGlobalNotification('error', 'Enter the targert for criteria');
+                                    $('#limit_filter', $swalAlert).focus();
+                                    return false;
+                                }
+                                if (targetCheck == true && target[0].value > 100 && targetType[0].value == 1) {
+                                    showGlobalNotification('error', 'Enter the valid targert for criteria');
+                                    $('#limit_filter', $swalAlert).focus();
+                                    return false;
+                                }
+                                if (result.value) {
+                                    $.ajax({
+                                        type: 'GET',
+                                        dataType: 'html',
+                                        data: { MapId: currentMap.id, MapTarget: target[0].value, MapTargetType: targetType[0].value, MapTargetCheck: targetCheck },
+                                        url: '@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.ChangeMapTarget) })',
+                                    });
+                                    criteriaGrid.reload();
+                                }
+                            });
+
+                        }
+                    });
+
+                },
+                error: function (xhr, st, desc) {
+
+                }
+            });
+
+        };
+
+
+        criteriaGrid.on('detailExpand', function (e, $detailWrapper, id) {
+            debugger;
+            var mapRecord = criteriaGrid.getById(id);
+            console.log(mapRecord)
+            $detailWrapper.find('table').grid({
+                primaryKey: 'Id',
+                iconsLibrary: 'fontawesome',
+                columns: [
+                    { field: "AttemptedOn", title: "@GridComman.GRID_DATETIME_FORMAT" },
+                    { field: 'TotalRecords', title: '@Campaign.GRID_TOTAL_RECORDS', minWidth: 60, priority: 6 },
+                    { field: "RecordsImported", title: "@Campaign.GRID_RECORDS_IMPORTED", priority: 8 },
+                    { field: "InvalidRecords", title: "@Campaign.GRID_INVALID_RECORDS", minWidth: 50, priority: 4 },
+                    { field: "DuplicatesFiltered", title: "@Campaign.GRID_DUPLICATES_FILTERED", minWidth: 30, priority: 5 },
+                    { field: "DNCFiltered", title: "Excluded", minWidth: 30, priority: 7 },
+                    { field: "Status", title: "Status", minWidth: 50, priority: 5 }
+                ],
+                dataSource: {
+                    url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.History),new { area="",controller="Campaign" })',
+                    data: {
+                        mapId: mapRecord.MapId
+                    }
+                },
+                uiLibrary: "bootstrap",
+                notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+                pager: { enable: true, limit: 5, sizes: [5, 10] }
+            });
+        });
+        criteriaGrid.on('detailCollapse', function (e, $detailWrapper, id) {
+            $detailWrapper.find('table').grid('destroy', true, true);
+            // $('#stopmapbtn').hide();
+        });
+    });
+    mapCriteriaGrid.on('detailCollapse', function (e, $detailWrapper, id) {
+        $detailWrapper.find('table').grid('destroy', true, true);
+    });
+
+
+
+    function stopSuccessHandler(response) {
+        debugger;
+        hideGlobalNotification();
+        //$('#loader').hide();
+        showGlobalNotification('success', response);
+        mapCriteriaGrid.reload();
+    }
+
+    function stoplistsuccessor(response) {
+        $('#mapCriteria_grid').grid(
+                {
+                    primaryKey: 'Id',
+                    iconsLibrary: 'fontawesome',
+                    columns: [
+                        { field: 'Id', title: 'Id', hidden: true },
+                        { field: 'ListName', title: 'Contact List' },
+                        { field: 'Recurrence', title: 'Recurrence' },
+                        { field: 'RecurrenceInterval', title: 'Recurrence Interval' },
+                        { field: "TurnOFF", title: "Turn OFF", tmpl: '<a data-ajax="true"  data-ajax-loading="#loader" data-ajax-method="POST" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="showModalEditor" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StartCallingList)})' + '?campaignid={Id}&mapid={Id}&calllistId={Id}"><small class="">Stop</small></a>', tooltip: "Stop" },
+                        { field: "TurnON", title: "Turn ON", tmpl: '<a data-ajax="true" style="display:none;" data-ajax-loading="#loader" data-ajax-method="POST" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="showModalEditor" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StopCallingList) })' + '?campaignid={Id}&mapid={Id}&calllistId={Id}"><small class="">Start</small></a>', tooltip: "Start" }
+
+                    ],
+                    detailTemplate: '<div><table/></div>',
+                    uiLibrary: "bootstrap",
+                    notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+                    pager: { enable: true, limit: 5, sizes: [5, 10] }
+                });
+        hideGlobalNotification();
+        //$('#loader').hide();
+        showGlobalNotification('success', response);
+        mapCriteriaGrid.reload();
+    }
+
+</script>

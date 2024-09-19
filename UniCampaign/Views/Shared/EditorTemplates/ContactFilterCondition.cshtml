@@ -1,0 +1,36 @@
+﻿@using UniCampaignE.Web.HelperLib
+@model IEnumerable<UniCampaignE.Core.Models.ConditionalExpression>
+
+@if (Model != null && Model.Count() > 0)
+{
+    string hiddenClass = "hidden";
+    foreach (var condition in Model)
+    {
+        <div class="form-group form-group-sm filter-condition">
+            <div class="form-inline">
+                <select class="form-control filter-condition-attribute">
+                    <option>FirstName</option>
+                    <option>LastName</option>
+                </select>
+                @Html.DropDownList("", DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Models.ConditionalOperator)), new { @class = "form-control filter-condition-operator" })
+                <input type="text" class="form-control filter-condition-value" value="@condition.Value" />
+                <span class="btn btn-link btn-remove-filter-condition @hiddenClass">Remove</span>
+            </div>
+        </div>
+        hiddenClass = string.Empty;
+    }
+}
+else
+{
+    <div class="form-group form-group-sm filter-condition">
+        <div class="form-inline">
+            <select class="form-control filter-condition-attribute">
+                <option>FirstName</option>
+                <option>LastName</option>
+            </select>
+            @Html.DropDownList("", DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Models.ConditionalOperator)), new { @class = "form-control filter-condition-operator" })
+            <input type="text" class="form-control filter-condition-value" />
+            <span class="btn btn-link btn-remove-filter-condition hidden">Remove</span>
+        </div>
+    </div>
+}

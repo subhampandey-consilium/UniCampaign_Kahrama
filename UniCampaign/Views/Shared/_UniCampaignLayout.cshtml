@@ -1,0 +1,533 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+@{
+
+    Layout = "~/Views/Shared/_UniCampaignMainLayout.cshtml";
+}
+@section head{
+    <style>
+        @@media (min-width: 1200px) {
+            .modal-xl {
+                width: 80%;
+            }
+        }
+    </style>
+    @RenderSection("head", false)
+}
+@section top_navigation{
+    <!-- START Top Navbar-->
+    <nav role="navigation" class="navbar topnavbar">
+        <!-- START navbar header-->
+        <div class="navbar-header">
+            <a href="@Url.RouteUrl("default")" class="navbar-brand">
+                <div class="brand-logo">
+                    <img src="~/Content/img/logo-resized.png" class="img-responsive" />
+                </div>
+                <div class="brand-logo-collapsed">
+                    <img src="~/Content/img/logo-single.png" class="img-responsive" />
+                </div>
+            </a>
+        </div>
+        <!-- END navbar header-->
+        <!-- START Nav wrapper-->
+        <div class="nav-wrapper">
+            <ul class="nav navbar-nav">
+                <li>
+                    <!-- Button used to collapse the left sidebar. Only visible on tablet and desktops-->
+                    <a href="#" data-toggle-state="aside-collapsed" data-no-persist="true" class="hidden-xs">
+                        <em class="fa fa-navicon"></em>
+                    </a>
+                    <!-- Button to show/hide the sidebar on mobile. Visible on mobile only.-->
+                    <a href="#" data-toggle-state="aside-toggled" data-no-persist="true" class="visible-xs sidebar-toggle">
+                        <em class="fa fa-navicon"></em>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                @if (!string.IsNullOrEmpty(SessionHelper.PasswordExpiryNotification))
+                {
+                    <li class="dropdown dropdown-list hidden">
+                        <a href="#" data-toggle="dropdown">
+                            <em class="icon-bell"></em>
+                            <div class="label label-danger">1</div>
+                        </a>
+                        <!-- START Dropdown menu-->
+                        <ul class="dropdown-menu animated flipInX">
+                            <li>
+                                <!-- START list group-->
+                                <div class="list-group">
+                                    <!-- list item-->
+                                    <a class="list-group-item" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area = "", controller = "Account", action = "ChangePassword"})">
+                                        <div class="media-box">
+                                            <div class="pull-left">
+                                                <em class="fa fa-user-secret fa-2x text-warning"></em>
+                                            </div>
+                                            <div class="media-box-body clearfix">
+                                                <p class="m0">Password Expiry</p>
+                                                <p class="m0 text-muted">
+                                                    <small>@SessionHelper.PasswordExpiryNotification</small>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <!-- last list item-->
+                                    <a href="#" class="list-group-item hidden">
+                                        <small>More notifications</small>
+                                        <span class="label label-danger pull-right">14</span>
+                                    </a>
+                                </div>
+                                <!-- END list group-->
+                            </li>
+                        </ul>
+                        <!-- END Dropdown menu-->
+                    </li>
+                }
+                <li class="dropdown dropdown-list">
+                    <a href="#" title="@Comman.PROFILE_TEXT" data-toggle="dropdown">
+                        @SessionHelper.CurrentUser.Name (@SessionHelper.CurrentDealer.DealerName)
+                        <em class="fa fa-chevron-down"></em>
+                    </a>
+                    <ul class="dropdown-menu animated flipInX">
+                        <li>
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <div id="user-block" class="bg-gray-light" aria-expanded="true">
+                                        <div class="item user-block">
+                                            <!-- User picture-->
+                                            <div class="user-block-picture">
+                                                <img src="~/Content/img/avatar.png" alt="Avatar" />
+                                            </div>
+                                            <!-- Name and Role-->
+                                            <div class="user-block-info">
+                                                <span class="user-block-name">@SessionHelper.CurrentUser.Name</span>
+                                                @*<span class="user-block-role">@SessionHelper.CurrentUser.Role.ToString()</span>*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a class="list-group-item" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area = "", controller = "Account", action = "ChangePassword"})">
+                                    <span>@Comman.CHANGE_PASSWORD_TAB</span>
+                                    <span class="pull-right"><small><i class="fa fa-2x fa-user-secret text-warning"></i></small></span>
+                                </a>
+                                <a href="@Url.RouteUrl(new {area = "", controller = "Account", action = "Logout" })" class="list-group-item">
+                                    <span>@Comman.LOGOUT_Tab</span>
+                                    <span class="pull-right"><small><i class="fa fa-2x fa-lock text-danger"></i></small></span>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- END Nav wrapper-->
+    </nav>
+    <!-- END Top Navbar-->
+}
+@section sidebar_navigation
+
+{
+    <nav data-sidebar-anyclick-close="" class="sidebar">
+        <!-- START sidebar nav-->
+        <ul class="nav" id="sidebar_navigation">
+            <li class="nav-heading">
+                <span>@Comman.NAVIGATION</span>
+            </li>
+            @if (Global.FeatureActionMappings.ContainsKey("Configuration") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Configuration") || Global.FeatureActionMappings.ContainsKey("Email Config") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Email Config") || Global.FeatureActionMappings.ContainsKey("SMS Config") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("SMS Config") || Global.FeatureActionMappings.ContainsKey("Holiday") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Holiday") || Global.FeatureActionMappings.ContainsKey("Source") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Source") || Global.FeatureActionMappings.ContainsKey("WrapUpTemplate") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("WrapUpTemplate") || Global.FeatureActionMappings.ContainsKey("User") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("User") || Global.FeatureActionMappings.ContainsKey("DealerAgent") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("DealerAgent"))
+            {
+                <li class="nav-item">
+                    <a href="#admin_nav" title="@Comman.ADMINISTRATION" data-toggle="collapse">
+                        <em class="fa fa-gears"></em>
+                        <span>@Comman.ADMINISTRATION_NAV</span>s
+                    </a>
+                    <ul id="admin_nav" class="nav sidebar-subnav collapse">
+                        <li class="sidebar-subnav-header">@Comman.ADMINISTRATION</li>
+                        @if (Global.FeatureActionMappings.ContainsKey("Configuration") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Configuration"))
+                        {
+                            <li>
+                                <a href="@Url.RouteUrl(new { controller = "Configuration", action = "Index"  })" title="Configuration">
+                                    <span>Configuration</span>
+                                </a>
+                            </li>
+                        }
+                        @if (Global.FeatureActionMappings.ContainsKey("Email Config") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Email Config"))
+                            {
+                                <li class="">
+                                    <a href="@Url.RouteUrl(new { controller = "EmailConfig", action = "Index"  })" title="@Comman.EMAIL_CONFIGURATION_TITLE">
+                                        <span>@Comman.EMAIL_CONFIGURATION_NAV</span>
+                                    </a>
+                                </li>
+                            }
+                            @if (Global.FeatureActionMappings.ContainsKey("SMS Config") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("SMS Config"))
+                            {
+                                <li class="">
+                                    <a href="@Url.RouteUrl(new { controller = "SMSConfiguration", action = "Index"  })" title="@Comman.SMS_CONFIGURATION_TITLE">
+                                        <span>@Comman.SMS_CONFIGURATION_NAV</span>
+                                    </a>
+                                </li>
+                            }
+                        @if (Global.FeatureActionMappings.ContainsKey("Holiday") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Holiday"))
+                        {
+                            <li>
+                                <a href="@Url.RouteUrl(new { controller = "Holiday",action = "Index"  })" title="@Comman.HOLIDAY_MANAGEMENT_TITLE">
+                                    <span>@Comman.HOLIDAY_NAV</span>
+                                </a>
+                            </li>
+                        }
+                        @if (Global.FeatureActionMappings.ContainsKey("Source") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Source"))
+                        {
+                            <li>
+                                <a href="@Url.RouteUrl(new { controller = "Source",action = "Index"  })" title="@Comman.SOURCE_TITLE">
+                                    <span>@Comman.SOURCE_NAV</span>
+                                </a>
+                            </li>}
+
+                        @* @if (Global.FeatureActionMappings.ContainsKey("WrapUpReasonCode") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("WrapUpReasonCode"))
+                            {
+                                <li>
+                                    <a href="@Url.RouteUrl(new { controller = "WrapUpReasonCode",action = "Index"  })" title="@Comman.WRAP_REASON_CODE_TITLE">
+                                        <span>@Comman.WRAPUP_NAV</span>
+                                    </a>
+                                </li>
+                            }*@ @*
+                                @if (Global.FeatureActionMappings.ContainsKey("User") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("User"))
+                                      {
+                                          <li>
+                                              <a href="@Url.RouteUrl(new { controller = "User", action = "Index" })" title="@Comman.USER_MANAGEMENT_TITLE">
+                                                  <span>@Comman.USER_MANAGEMENT_NAV</span>
+                                              </a>
+                                          </li>
+                                      }
+                            *@
+
+                            @*@if (Global.FeatureActionMappings.ContainsKey("Agent") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Agent"))
+                                {
+                                    <li>
+                                        <a href="@Url.RouteUrl(new { controller = "Agent", action = "Index"  })" title="Agent Management">
+                                            <span>Agent Management</span>
+                                        </a>
+                                    </li>}*@
+                            @*@if (Global.FeatureActionMappings.ContainsKey("DealerAgent") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("DealerAgent"))
+                                {
+                                    <li>
+                                        <a href="@Url.RouteUrl(new { controller = "DealerAgent", action = "Index"  })" title="Dealer Agent Management">
+                                            <span>Dealer Agent </span>
+                                        </a>
+                                    </li>
+                                }*@
+                            @*@if (Global.FeatureActionMappings.ContainsKey("WrapUpTemplate") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("WrapUpTemplate"))
+                                {
+                                    <li>
+                                        <a href="@Url.RouteUrl(new { controller = "PreviewWrapUpResonCode", action = "Index"  })" title="WrapUp Template">
+                                            <span>WrapUp Template </span>
+                                        </a>
+                                    </li>
+                                }*@
+                            <li>
+                                <a href="@Url.RouteUrl(new { controller = "DealerSkillGroups",action = "Index"  })" title="Skill Groups">
+                                    <span>SkillGroups</span>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </li>
+
+
+            }
+
+
+            <li class="nav-item" id="dashboard_nav">
+                <a href="@Url.RouteUrl(new { area = "", controller = "Home", action = "Index" })" title="@Comman.DASHBOARD_NAV">
+                    <em class="fa fa-dashboard"></em>
+                    <span>@Comman.DASHBOARD_NAV</span>
+                </a>
+            </li>
+
+            @*<li class="nav-item" id="rechurn_nav">
+                    <a href="@Url.RouteUrl(new { area = "", controller = "RechurnPolicy", action = "Index" })" title="ReChurn">
+                        <em class="fa fa-bandcamp"></em>
+                        <span>ReChurn</span>
+                    </a>
+                </li>*@
+
+            @if (Global.FeatureActionMappings.ContainsKey("Campaign") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Campaign") || Global.FeatureActionMappings.ContainsKey("EmailCampaign") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("EmailCampaign") || Global.FeatureActionMappings.ContainsKey("SMS Campaign") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("SMS Campaign") || Global.FeatureActionMappings.ContainsKey("PreviewCampaign") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("PreviewCampaign"))
+            {
+
+                @*<li class="nav-item" id="dashboard_nav">
+                    <a href="@Url.RouteUrl(new { area = "", controller = "Campaign", action = "Index" })" title="Voice Campaigns">
+                        <em class="icon-call-out"></em>
+                        <span>@Comman.CAMPAIGN_NAV</span>
+                    </a>
+                </li>*@
+                 <li class="nav-item">
+                    <a href="#campaign_nav" data-toggle="collapse" title="@Comman.CAMPAIGN_MANAGEMENT_TITLE">
+                        <em class="icon-call-out"></em>
+                        <span>@Comman.CAMPAIGN_NAV</span>
+                    </a>
+                    <ul id="campaign_nav" class="nav sidebar-subnav collapse">
+                        <li class="sidebar-subnav-header">@Comman.CAMPAIGN_NAV</li>
+                        @if (Global.FeatureActionMappings.ContainsKey("Campaign") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Campaign"))
+                        {
+                            <li>
+                                <a href="@Url.RouteUrl(new { area = "", controller = "Campaign", action = "Index" })" title="Voice Campaigns">
+                                    <span>Voice</span>
+                                </a>
+                            </li>}
+
+                         @if (Global.FeatureActionMappings.ContainsKey("EmailCampaign") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("EmailCampaign"))
+                    {
+                        <li>
+                            <a href="@Url.RouteUrl(new { area = "", controller = "EmailCampaign", action = "Index" })" title="@Comman.EMAIL_SEND_TITLE">
+                                <span>Email</span>
+                            </a>
+                        </li>}
+                    @if (Global.FeatureActionMappings.ContainsKey("SMS Campaign") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("SMS Campaign"))
+                    {
+                        <li>
+                            <a href="@Url.RouteUrl(new { area = "", controller = "SMSCampaign", action = "Index" })" title="SMS">
+                                <span>SMS</span>
+                            </a>
+                        </li>}
+
+
+                @if (Global.FeatureActionMappings.ContainsKey("PreviewCampaign") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("PreviewCampaign"))
+                    {
+
+                                    <li>
+                                        <a href="@Url.RouteUrl(new { area = "", controller = "PreviewCampaign", action = "Index" })" title="Preview Campaign">
+                                            <span>Preview Campaign</span>
+                                        </a>
+                                    </li>}
+                            </ul>
+                        </li>
+            }
+
+
+            @*<li class="nav-item">
+                    <a href="@Url.RouteUrl(new { area = "", controller = "ContactList", action = "Index" })" title="@Comman.CONTACTLIST_MANAGEMENT_TITLE">
+                        <em class="fa fa-list"></em>
+                        <span>@Comman.CONTACTLIST_NAV</span>
+                    </a>
+                </li>*@
+            @if (Global.FeatureActionMappings.ContainsKey("ContactList") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("ContactList") || Global.FeatureActionMappings.ContainsKey("MultiContactList") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("MultiContactList"))
+            {
+                <li class="nav-item">
+                    @*<a href="#contactlist_nav" data-toggle="collapse" title="Contact List">
+                            <em class="fa fa-list"></em>
+                            <span>@Comman.CONTACTLIST_NAV</span>
+                        </a>
+                            <ul id="contactlist_nav" class="nav sidebar-subnav collapse">
+                            <li class="sidebar-subnav-header">@Comman.CONTACTLIST_NAV</li>
+                            @if (Global.FeatureActionMappings.ContainsKey("ContactList") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("ContactList") )
+                            {
+                                <li>
+                                    <a href="@Url.RouteUrl(new { area = "", controller = "ContactList", action = "Index" })" title="Single">
+                                        <span>Single</span>
+                                    </a>
+                                </li>}
+                            @if (Global.FeatureActionMappings.ContainsKey("MultiContactList") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("MultiContactList"))
+                            {
+                                <li>
+                                    <a href="@Url.RouteUrl(new { area = "", controller = "MultipleMap", action = "Index" })" title="Multiple">
+                                        <span>Multiple</span>
+                                    </a>
+                                </li>}
+                        </ul>*@
+
+                    <a href="@Url.RouteUrl(new { area = "", controller = "ContactList", action = "Index" })" title="@Comman.CONTACTLIST_NAV">
+                        <em class="fa fa-list"></em>
+                        <span>@Comman.CONTACTLIST_NAV</span>
+                    </a>
+                </li>
+            }
+
+            @if (Global.FeatureActionMappings.ContainsKey("PCB") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("PCB") || Global.FeatureActionMappings.ContainsKey("PCB") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("PCB"))
+            {
+                <li class="nav-item">
+                    <a href="@Url.RouteUrl(new { area = "", controller = "PCB", action = "Index" })" title="@Comman.PCB_NAV">
+                        <em class="icon-call-in"></em>
+                        <span>@Comman.PCB_NAV</span>
+                    </a>
+                </li>
+            }
+
+            @*<li class="nav-item">
+                    <a href="@Url.RouteUrl(new { area = "", controller = "MultipleMap", action = "Index" })" title="MultiMap">
+                        <em class="fa fa-list"></em>
+                        <span>MultiMap</span>
+                    </a>
+                </li>*@
+            @if (Global.FeatureActionMappings.ContainsKey("Email Template") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Email Template") || Global.FeatureActionMappings.ContainsKey("SMS Template") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("SMS Template"))
+                {
+                    <li class="nav-item">
+                        <a href="#template_nav" title="Templates" data-toggle="collapse">
+                            <em class="fa fa-envelope"></em>
+                            <span>Templates</span>
+                        </a>
+                        <ul id="template_nav" class="nav sidebar-subnav collapse">
+                            <li class="sidebar-subnav-header">Templates</li>
+                            @if (Global.FeatureActionMappings.ContainsKey("Email Template") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Email Template"))
+                            {
+                                <li>
+                                    <a href="@Url.RouteUrl(new { area = "", controller = "EmailTemplate", action = "Index" })" title="@Comman.EMAIL_TEMPLATE_NAV">
+                                        <span>@Comman.EMAIL_NAV</span>
+                                    </a>
+                                </li>}
+                            @if (Global.FeatureActionMappings.ContainsKey("SMS Template") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("SMS Template"))
+                            {
+                                <li class="nav-item">
+                                    <a href="@Url.RouteUrl(new { area = "", controller = "SMSTemplate", action = "Index" })" title="SMS">
+                                        <span>SMS</span>
+                                    </a>
+                                </li>}
+                        </ul>
+                    </li>
+                }
+
+            @if (Global.FeatureActionMappings.ContainsKey("DNC (UCCE)") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("DNC (UCCE)") || Global.FeatureActionMappings.ContainsKey("Custom DNC") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Custom DNC") || Global.FeatureActionMappings.ContainsKey("NationalDNC") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("NationalDNC"))
+            {
+                <li class="nav-item">
+                    <a href="#dnc_nav" title="Do Not Call" data-toggle="collapse">
+                        <em class="icon-ban"></em>
+                        <span>Do Not Call</span>
+                    </a>
+                    <ul id="dnc_nav" class="nav sidebar-subnav collapse">
+                        <li class="sidebar-subnav-header">Do Not Call</li>
+                        @if (Global.FeatureActionMappings.ContainsKey("DNC (UCCE)") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("DNC (UCCE)"))
+                        {
+                            <li>
+                                <a href="@Url.RouteUrl(new { area = "", controller = "DNCApi", action = "Index" })" title="System DNC">
+                                    <span>System DNC</span>
+                                </a>
+                            </li>
+                        }
+                        @if (Global.FeatureActionMappings.ContainsKey("Custom DNC") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("Custom DNC"))
+                        {
+                            <li class="nav-item">
+                                <a href="@Url.RouteUrl(new { area = "", controller = "DNCCustom", action = "Index" })" title="Exclusion List">
+                                    <span>Exclusion List</span>
+                                </a>
+                            </li>}
+                        @if (Global.FeatureActionMappings.ContainsKey("GlobalDNC") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("GlobalDNC"))
+                        {
+                            <li class="nav-item">
+                                <a href="@Url.RouteUrl(new { area = "", controller = "GlobalDNC", action = "Index" })" title="GlobalDNC">
+                                    <span>GlobalDNC</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+
+            @*@if (Global.FeatureActionMappings.ContainsKey("AuditTrail") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("AuditTrail"))
+                {
+
+                    <li class="nav-item">
+                        <a href="@Url.RouteUrl(new { area = "", controller = "AuditTrail", action = "Index" })" title="@Comman.AUDIT_TRAIL_TITLE">
+                            <em class="fa fa-eye"></em>
+                            <span>@Comman.AUDIT_TRAIL_NAV</span>
+                        </a>
+                    </li>
+                }*@
+
+            @*@if (Global.FeatureActionMappings.ContainsKey("CallReport") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("CallReport") || Global.FeatureActionMappings.ContainsKey("StartTimeReport") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("StartTimeReport") || Global.FeatureActionMappings.ContainsKey("OutboundCall") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("OutboundCall") || Global.FeatureActionMappings.ContainsKey("AgentStateReport") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("AgentStateReport") || Global.FeatureActionMappings.ContainsKey("CallDetailInterval") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("CallDetailInterval"))
+                {
+                    <li class="nav-item">
+                        <a href="#Report_nav" title="Call Report" data-toggle="collapse">
+                            <em class="icon-call-in"></em>
+                            <span>Reports</span>
+                        </a>
+                        <ul id="Report_nav" class="nav sidebar-subnav collapse">
+
+                           @if (Global.FeatureActionMappings.ContainsKey("CallReport") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("CallReport"))
+                           {
+
+                            <li class="nav-item">
+                                <a href="@Url.RouteUrl(new { area = "", controller = "CallbackReport", action = "Index" })" title="CallReport">
+                                    <span>Call Report</span>
+                                </a>
+                            </li>
+                           }
+                           @if (Global.FeatureActionMappings.ContainsKey("StartTimeReport") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("StartTimeReport"))
+                           {
+
+                            <li class="nav-item">
+                                <a href="@Url.RouteUrl(new { area = "", controller = "StartTime", action = "Index" })" title="Start Time Report">
+                                    <span>StartTime Report</span>
+                                </a>
+                            </li>
+                           }
+                           @if (Global.FeatureActionMappings.ContainsKey("OutboundCall") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("OutboundCall"))
+                           {
+
+                            <li class="nav-item">
+                                <a href="@Url.RouteUrl(new { area = "", controller = "OutboundCall", action = "Index" })" title="Outbound Call">
+                                    <span>OutboundCall Report</span>
+                                </a>
+                            </li>
+                           }
+
+
+                            @if (Global.FeatureActionMappings.ContainsKey("AgentStateReport") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("AgentStateReport"))
+                            {
+
+                                <li class="nav-item">
+                                    <a href="@Url.RouteUrl(new { area = "", controller = "OutboundAgentState", action = "Index" })" title="Agent State Report">
+                                        <span>Agent State Report</span>
+                                    </a>
+                                </li>
+                            }
+
+                            @if (Global.FeatureActionMappings.ContainsKey("CallDetailInterval") && SessionHelper.CurrentUser.FeatureMap.ContainsKey("CallDetailInterval"))
+                            {
+
+                                <li class="nav-item">
+                                    <a href="@Url.RouteUrl(new { area = "", controller = "CallDetailInterval", action = "Index" })" title="Call Detail Interval Report">
+                                        <span>Call Detail Interval Report</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                }*@
+
+
+
+
+        </ul>
+        <!-- END sidebar nav-->
+    </nav>
+}
+
+@section page_content{
+    @RenderSection("page_content", true)
+}
+@section page_scripts{
+    @RenderSection("page_scripts", false)
+}
+@RenderBody()
+<script type="text/javascript">
+    /**
+
+    */
+    $(function () {
+        var isDashboard = document.getElementById('dashboard_nav') != null && $('#dashboard_nav').hasClass('active');
+        if (!isDashboard) {
+            var keepAlive = window.setInterval(function () {
+                if (keepAliveCounter < 4) {
+                    $.ajax({
+                        url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.AccountController.KeepAlive), new { area="",controller="Account"})',
+                        type: 'HEAD',
+                        complete: function () { keepAliveCounter++; }
+                    });
+                }
+            }, 50000);
+        }
+        if (localStorage) {
+            localStorage.removeItem('last_attempt');
+            localStorage.removeItem('login_error_message');
+            localStorage.removeItem('login_attempts');
+        }
+    });
+</script>

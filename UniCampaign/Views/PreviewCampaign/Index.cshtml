@@ -1,0 +1,144 @@
+﻿@using UniCampaignE.Web.Localization
+@{
+    Layout = "~/Views/Shared/_UniCampaignLayout.cshtml";
+}
+@section page_content{
+    <link href="~/Content/c3.min.css" rel="stylesheet" />
+    <div class="content-heading">
+        Campaign Management (PREVIEW)
+        <div class="pull-right">
+            <div class="btn-group">
+                <a class="btn btn-primary bg-primary-dark text-bold" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-failure="globalAjaxErrorHandler" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new {area="",controller="PreviewCampaign",action="Add" })">
+                    <span>Add</span>&nbsp;&nbsp;<i class="fa fa-plus"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-flat panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        Campaigns (Preview)
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive p0">
+                        <table id="grid" class="table table-striped table-bordered table-condensed" data-source="@Url.Action(nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.ListCampaigns))"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section page_scripts{
+    <script src="~/Scripts/d3.min.js"></script>
+    <script src="~/Scripts/c3.min.js"></script>
+    <script type="text/javascript">
+         var gridConfig = {};
+        gridConfig.holidayAssignUrl = '@Url.RouteUrl(new { area = "", controller = nameof(UniCampaignE.Web.Controllers.PreviewCampaignController).Replace("Controller", ""), action = nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.AssignHoliday), campaignId = UrlParameter.Optional })';
+        function dateRenderer(value) {
+
+            var val = moment(value);
+            if (val.isValid()) {
+                return val.format("YYYY-MM-DD");
+            } else {
+                return '';
+            }
+
+        }
+        function timeRenderer(value) {
+            var dur = moment.duration(value);
+            var val = moment('00', 'HH');
+            val.add(dur.asSeconds(), 'seconds');
+            if (val.isValid()) {
+                return val.format('HH:mm');
+            } else {
+                return '';
+            }
+        }
+
+        $(document).ready(function (e) {
+            grid = $("#grid").grid({
+                primaryKey: "Id",
+                uiLibrary: "bootstrap",
+                iconsLibrary: 'fontawesome',
+                notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+                columns: [
+                    { field: "Name", title: "Name" },
+                    {
+                        field: 'Enabled', title: 'Enabled', width: 80,
+                        align: 'center',
+                        renderer: function (val, record, $cell, $displayEl, id) {
+                            debugger;
+                            var displayValue = val ? 'Yes' : 'No';
+                            $displayEl.html('<a href="javascript:void(0);" class="change-state" title="@Campaign.LABEL_DOUBLE_CLICK_TO_CHANGE" data-current="' + id + '">' + displayValue + '</a>');
+                        }
+                    },
+                    { field: "StartTime", title: "Start Time", renderer: timeRenderer, width: 145 },
+                    { field: "EndTime", title: "End Time", renderer: timeRenderer, width: 145 },
+                    { field: 'StartDate', title: 'StartDate', renderer: dateRenderer, width: 170 },
+                    { field: 'EndDate', title: 'EndDate', renderer: dateRenderer, width: 170 },
+                     {
+                        title: "@Campaign.GRID_CONTACTS",
+                        minWidth: 10,
+                        priority: 3,
+                        field: "",
+                        align: 'center',
+                        width: 115,
+                        tmpl: '<a data-ajax="true"  data-ajax-loading="#loader" data-ajax-confirm="@Campaign.LABEL_REMOVE_ALL_CONTACTS" data-ajax-success="globalAjaxSuccessHandler" data-ajax-failure="globalAjaxErrorHandler" data-ajax-method="DELETE" href="@Url.RouteUrl(new { area = "", controller = "PreviewCampaign", action = nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.RemoveContacts), id = UrlParameter.Optional })/{Id}"><small>@GridComman.GRID_REMOVE</small></a>' ,
+                           
+                    },
+                    {
+                        title: 'Contact List',
+                        tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-failure="globalAjaxErrorHandler" ' +
+                               'data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" ' +
+                               'href="@Url.RouteUrl(new { area="",controller= "PreviewCampaign", action=nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.AssignContactList),campaignId = UrlParameter.Optional}){Id}">' +
+                               '<small>@GridComman.GRID_ASSIGN</small></a>' +
+                               '<a class="pull-right" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-failure="globalAjaxErrorHandler" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area="",controller="PreviewCampaign",action=nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.AssignedLists),campaignId = UrlParameter.Optional})/{Id}"><small>@Campaign.CONTACTLIST_STATUS</small></a>',
+                        width: 140
+                    },
+                                        {
+                        title: '@Campaign.HOLIDAYS_TEXT',
+                        width: 85,
+                        field: '',
+                        @*@holidaySupported*@
+                        align: 'center',
+                        tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-failure="globalAjaxErrorHandler" ' +
+                            'data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" ' +
+                            'href="' + gridConfig.holidayAssignUrl + '{Id}">' +
+                            '<small>@GridComman.GRID_ASSIGN/@GridComman.GRID_VIEW</small></a>'
+                    },
+                    { field: '', title: '', width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-failure="globalAjaxErrorHandler" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area="",controller="Home",action=nameof(UniCampaignE.Web.Controllers.HomeController.CampaignStats),campaignId = UrlParameter.Optional}){Id}"><span class="fa fa-bar-chart-o"></span></a>', tooltip: '@GridComman.GRID_STATS' },
+                    { title: "", minWidth: 10, priority: 2, field: "Edit", width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-failure="globalAjaxErrorHandler" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area="",controller="PreviewCampaign",action=nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.Edit),id = UrlParameter.Optional}){Id}"><span class="fa fa-edit"></span></a>', tooltip: "@GridComman.GRID_EDIT" },
+                    { title: "", minWidth: 10, priority: 3, field: "Delete", width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-confirm="@ContactList.DELETE_BUTTON_ALERT" data-ajax-success="globalAjaxSuccessHandler" data-ajax-failure="globalAjaxErrorHandler" data-ajax-method="DELETE" href="@Url.RouteUrl(new { area="",controller= "PreviewCampaign", action=nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.Delete),id = UrlParameter.Optional})/{Id}?campaign={Name}"><span class="fa fa-trash-o"></span></a>', tooltip: "@GridComman.GRID_DELETE" }
+                ],
+                pager: { enable: true, limit: 8, sizes: [8, 15, 25] }
+            });
+        });
+
+                function changeState(Campid) {
+            $.ajax({
+                url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.ChangeState))',
+                type: "POST",
+                data: { Campid: Campid },
+                success: globalAjaxSuccessHandler,
+                error: globalAjaxErrorHandler
+            });
+        }
+
+        $('#grid').on('dblclick', '.change-state', function (e) {
+            var id = $(this).attr('data-current');
+            debugger;
+            var row = grid.getById(id);
+
+
+            if (row.HasActiveHoliday == true) {
+                showGlobalNotification('error', 'State can not be changed as ' + row.Name + ' has active holiday');
+                return;
+            }
+            $('#loader').show();
+            changeState(row.Id);
+        });
+    </script>
+}

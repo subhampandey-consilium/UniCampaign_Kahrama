@@ -1,0 +1,315 @@
+﻿
+@using UniCampaignE.Web.Localization
+@model  UniCampaignE.Core.Models.CustomDNCDetails
+<div class="modal-dialog" id="DNCCustom_form">
+    @{
+        string action = ViewBag.Action;
+    }
+    @*@using (Ajax.BeginForm(action, "DNCCustom", new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler" }))
+    {*@
+    <form id="multiple_selection_form" method="post" action="@Url.Action(nameof(UniCampaignE.Web.Controllers.DNCCustomController.AddMultiple), new { controller = "DNCCustom", area = "" })">
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        @Html.HiddenFor(mod => mod.DNCId)
+                        <label class="control-label col-xs-4">@CustomDNC.DNC_PHONE_LABEL <span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.PhoneNumber, new { Class = "form-control", placeholder = CustomDNC.DNC_PHONE_PLACEHOLDER, Id= "PhoneNumber" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@CustomDNC.DNC_CAMPAIGN_LABEL<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <select class="form-control" name="@nameof(Model.CampaignId)" id="campaign_list"></select>
+
+                        </div>
+
+
+
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group hidden">
+                        <label class="control-label col-xs-4">Date<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date date-picker">
+                                @{
+                                    if (Model != null)
+                                    {
+                                        @Html.TextBox(nameof(Model.StartDate), string.Format("{0:yyyy-MM-dd}", Model.StartDate), new { data_required = "", @class = "form-control", id = "holiday_start_date" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(mod => mod.StartDate, new { @class = "form-control", id = "DNC_start_date", placeholder = Campaign.START_DATE })
+                                    }
+                                }
+                                <span class="input-group-addon">
+                                    <span class="fa fa-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group hidden">
+                        <label class="control-label col-xs-4">@Campaign.START_TIME<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date time-picker">
+                                @Html.TextBoxFor(mod => mod.StartTime, new { Class = "form-control", placeholder = Campaign.START_TIME, id = "DNC_start_time" })
+                                <span class="input-group-addon">
+                                    <span class="fa fa-clock-o"></span>
+                                </span>
+                            </div>
+
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group hidden">
+                        <label class="control-label col-xs-4">@Campaign.END_TIME<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date time-picker">
+                                @Html.TextBoxFor(mod => mod.EndTime, new { Class = "form-control", placeholder = Campaign.END_TIME, id = "DNC_end_time" })
+                                <span class="input-group-addon">
+                                    <span class="fa fa-clock-o"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group hidden">
+                        <label class="control-label col-xs-4">Repeats</label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.EnumDropDownListFor(mod => mod.Recurrence, new { @class = "form-control", id = "DNC_recurrence" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group hidden">
+                        <label class="control-label col-xs-4">Repeats After<span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.RecurrenceInterval, new { @class = "form-control inline", id = "DNC_recurrence_interval", style = "width:80%;" })&nbsp;&nbsp;<span class="help-block text-bold text-right inline"></span>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group hidden">
+                        <label class="control-label col-xs-4">Ends On</label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="input-group date date-picker">
+                                @{
+                                    if (Model != null && Model.EndDate.HasValue)
+                                    {
+                                        @Html.TextBox(nameof(Model.EndDate), string.Format("{0:yyyy-MM-dd}", Model.EndDate), new { Class = "form-control", id = "holiday_end_date" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(mod => mod.EndDate, new { Class = "form-control", id = "DNC_end_date" })
+                                    }
+                                }
+                                <span class="input-group-addon">
+                                    <span class="fa fa-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+        </div>
+        @*    }*@
+</form>
+    <script type="text/javascript">
+        $(function () {
+            var $MultipleSelectionForm = $('#multiple_selection_form');
+            $MultipleSelectionForm.on('submit', function (e) {
+                e.preventDefault();
+                debugger;
+                var url = $(this).attr('action');
+                var CampaignCollection = [];
+                var CampaignCollection = $('#campaign_list', $MultipleSelectionForm).val();
+                //for (var i = 0; i < filters.length; i++) {
+                //    var theFilter = contactListUtil.parseFilter($(filters[i]));
+                //    if (theFilter) {
+                //        filterCollection.push(theFilter);
+                //    }
+                //}
+                var ContactMap = {
+                    PhoneNumber: $('#PhoneNumber', $MultipleSelectionForm).val(),
+                    StartDate: $('#DNC_start_date', $MultipleSelectionForm).val(),
+                    StartTime: $('#DNC_start_time', $MultipleSelectionForm).val(),
+                    EndTime: $('#DNC_end_time', $MultipleSelectionForm).val(),
+                    Recurrence: $('#DNC_recurrence', $MultipleSelectionForm).val(),
+                    RecurrenceInterval: $('#DNC_recurrence_interval', $MultipleSelectionForm).val(),
+                    EndDate: $('#DNC_end_date', $MultipleSelectionForm).val(),
+                    CampaignIdList: CampaignCollection,
+                }
+
+
+
+
+
+
+
+                console.log(ContactMap);
+                $.ajax({
+                    beforeSend: function (e) {
+                        $('#loader').show();
+                    },
+                    url: url,
+                    success: globalAjaxSuccessHandler,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    error: globalAjaxErrorHandler,
+                    data: JSON.stringify(ContactMap)
+                });
+                return false;
+            });
+
+
+
+
+
+
+
+
+        });
+    </script>
+
+
+
+</div>
+
+<script>
+
+    $(document).ready(function (e) {
+        $('#campaign_list').select2({
+            width: '100%',
+            language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+            placeholder: {
+                id: -1,
+                text: '@CustomDNC.CUSTOM_DNC_CAMPAIGN_SELECT_PLACE_HOLDER'
+            },
+            multiple:true,
+            //minimumInputLength: 1,
+            theme: 'bootstrap',
+            ajax: {
+                //delay: 10,
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ListCampaigns), new { area = "", controller = "Campaign" })';
+                    var q = "";
+                    var page = params.page || 1;
+                    q = 'page=' + page;
+                    q += '&limit=10';
+                    q += '&dropdown=1';
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+                },
+                processResults: function (data, params) {
+                    var obj = {};
+                    console.log(data);
+                    obj.results = data.records.map(function (item) {
+                        return {
+                            id: item.Id,
+                            text: item.Name
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false
+        });
+        if (currentCampaign.id !== undefined) {
+            debugger;
+            var option = $('<option selected></option>').val(0);
+            $(option).text(currentCampaign.text).val(currentCampaign.id);
+            $('#campaign_list').append(option).trigger('change');
+            currentCampaign = {};
+        }
+    });
+    $(function (e) {
+
+        var $formContext = $('#DNCCustom_form');
+        var datePickerOptions = {
+            format: 'YYYY-MM-DD',
+            allowInputToggle: true,
+            showClear: true,
+            showClose: true,
+            icons: globalDateTimePickerIcons,
+            sideBySide: true,
+            useCurrent: true
+        };
+        var timePickerOptions = {
+            format: 'HH:mm',
+            allowInputToggle: true,
+            showClear: true,
+            showClose: true,
+            icons: globalDateTimePickerIcons,
+            sideBySide: false,
+            useCurrent: true
+        };
+
+        $formContext.on('change', '#DNC_recurrence', function (e) {
+            var $intervalContext = $('#DNC_recurrence_interval', $formContext).parentsUntil('.form-group').parent();
+            var $endDateContext = $('#DNC_end_date', $formContext).parentsUntil('.form-group').parent();
+            var $helpBlock = $('.help-block', $intervalContext);
+            var type = $('#DNC_recurrence', $formContext).prop('selectedIndex');
+            if (type != 0) {
+                $intervalContext.removeClass('hidden');
+                $endDateContext.removeClass('hidden');
+                $input = $('input', $intervalContext);
+                if ($input.val() == null) {
+                    $input.val(1);
+                }
+                switch (type) {
+                    case 1:
+                        $helpBlock.text('days');
+                        break;
+                    case 2:
+                        $helpBlock.text('weeks');
+                        break;
+                    case 3:
+                        $helpBlock.text('months');
+                        break;
+                    case 4:
+                        $helpBlock.text('years');
+                        break;
+                }
+            } else {
+                if (!$intervalContext.hasClass('hidden')) {
+                    $intervalContext.addClass('hidden');
+                }
+                if (!$endDateContext.hasClass('hidden')) {
+                    $endDateContext.addClass('hidden');
+                }
+                $('input', $intervalContext).val(null);
+                $('input', $endDateContext).val(null);
+                $helpBlock.text('');
+            }
+        });
+        $('.date-picker', $formContext).datetimepicker(datePickerOptions);
+        $('.time-picker', $formContext).datetimepicker(timePickerOptions);
+        $('#DNC_recurrence', $formContext).trigger('change');
+        validateHoliday = function () {
+            return true;
+        }
+    });
+    </script>

@@ -1,0 +1,29 @@
+﻿@using UniCampaignE.Web.Localization
+@model UniCampaignE.Web.Models.ContactListBasicViewModel
+<div class="modal-dialog">
+    @using (Ajax.BeginForm(nameof(UniCampaignE.Web.Controllers.ContactListController.AddandAssign), new { area = "", controller = "ContactList" }, new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", UpdateTargetId = "modal_editor", InsertionMode = InsertionMode.Replace, OnFailure = "globalAjaxErrorHandler", OnSuccess = "hideGlobalNotification" }, new { id = "the_form" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@ContactList.SELECT_SOURCE_TYPE</label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.EnumDropDownListFor(mod => mod.Type, ContactList.SELECT, new { @class = "form-control", id = "source_type" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        $('#source_type').on('change', function (e) {
+            $('#the_form').submit();
+        });
+    </script>
+</div>

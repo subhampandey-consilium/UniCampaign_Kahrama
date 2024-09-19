@@ -1,0 +1,99 @@
+﻿@using UniCampaignE.Web.Localization
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Campaigns</h4>
+        </div>
+        <div class="modal-body">
+            <div class="panel panel-primary">
+                <div class="panel-body">
+                    <div class="form-group input-group">
+                        <input class="form-control" id="campaign_search_term" type="text" placeholder="Search ...">
+                        <span class="input-group-addon" role="button" id="campaign_search_clear">
+                            <i class="fa fa-close"></i>
+                        </span>
+                    </div>
+                    <div id="scrollable_list" class="panel panel-flat p0 m0">
+                        <div class="panel-body p0 m0">
+                            <div id="inner_scrollable_list" class="list-group pb0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript">
+    var campaignListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ListCampaigns), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.CampaignController).Replace("Controller", "")})';
+    var queryParams = {};
+    queryParams.page = 1;
+    queryParams.term = '';
+    queryParams.limit = 7;
+    queryParams.more = false;
+    queryParams.current = 0;
+
+    function getCampaigns() {
+        if (!$('#scrollable_list').hasClass('whirl standard')) {
+            $('#scrollable_list').addClass('whirl standard');
+        }
+        var generateUrl = function () {
+            var url = campaignListUrl;
+            var q = "";
+            var page = queryParams.page || 1;
+            var limit = queryParams.limit || 7;
+            q = 'page=' + page
+            q += '&limit=' + limit;
+            if (queryParams.term) {
+                q += '&searchString=' + encodeURIComponent(queryParams.term);
+            }
+            url += "?" + q;
+            return url;
+        };
+        $.ajax({
+            url: generateUrl(),
+            success: function (data) {
+                $('#scrollable_list').removeClass('whirl standard');
+                queryParams.more = (queryParams.limit * queryParams.page) < data.total;
+                if (queryParams.page == 1) {
+                    $('#inner_scrollable_list').html('');
+                }
+                $.each(data.records, function (idx, item) {
+                    var assigned = ' hidden';
+                    var elem = $('<div class="list-group-item campaign" data-identity="' + item.Id + '" data-name="' + item.Name + '" role="button">' + item.Name + '<span class="label label-primary pull-right pv-sm' + assigned + '"><span class="fa fa-check"></span></span></div>');
+                    $('#inner_scrollable_list').append(elem);
+                });
+            },
+            error: globalAjaxErrorHandler
+        });
+    }
+    $(function (e) {
+        $('#scrollable_list').slimScroll({ height: '195px' }).bind('slimscroll', function (e, pos) {
+            if (pos == 'bottom' && queryParams.more) {
+                queryParams.page++;
+                getCampaigns();
+            }
+        });
+        $('#campaign_search_term').on('keyup', function (e) {
+            var str = $(this).val();
+            if ((e.keyCode >= 48 && e.keyCode <= 90) || (e.keyCode >= 96 && e.keyCode <= 105) || str.length == 0) {
+                var regex = new RegExp("^[a-zA-Z0-9\./\_/]{1,32}$");
+                if (regex.test(str)) {
+                    queryParams.term = str;
+                } else {
+                    queryParams.term = '';
+                }
+                getCampaigns();
+            }
+        });
+        $('#campaign_search_clear').on('click', function (e) {
+            $('#campaign_search_term').val('');
+            $('#campaign_search_term').trigger('keyup');
+            $('#scrollable_list').slimScroll({ scrollTo: '0px' });
+        });
+        getCampaigns();
+
+    });
+</script>

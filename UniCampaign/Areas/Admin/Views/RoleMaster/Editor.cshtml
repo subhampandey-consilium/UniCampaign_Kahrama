@@ -1,0 +1,133 @@
+﻿@model UniCampaignE.Core.Models.RoleMaster
+
+@using UniCampaignUCCE
+@{
+    var postBackUrl = Model != null ? Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.RoleMasterController.Update), new
+    {
+        controller = nameof(UniCampaignE.Web.Areas.Admin.Controllers.RoleMasterController).Replace("Controller", ""),
+        area = "Admin"
+    }) : Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.RoleMasterController.Add), new
+    {
+        controller = nameof(UniCampaignE.Web.Areas.Admin.Controllers.RoleMasterController).Replace("Controller", ""),
+        area = "Admin"
+    });
+    Dictionary<string, List<string>> selectedFeatures = Model != null ? Model.FeatureMap.ToDictionary(fe => fe.Name, fe => fe.Actions) : new Dictionary<string, List<string>>();
+}
+<div class="modal-dialog modal-lg" id="role_form">
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-horizantal" role="form">
+                <div class="form-group">
+                    @Html.HiddenFor(mod => mod.RoleMasterId, new { id = "r_id" })
+                    <label class="control-label col-xs-4">Role Name <span class="text-danger">*</span></label>
+                    <div class="col-xs-8 col-lg-7">
+                        @Html.TextBoxFor(mod => mod.Name, new { id = "r_name", Class = "form-control", placeholder = "Role_Name" })
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                                             
+           @foreach (var feature in Global.FeatureActionMappings)
+        {
+            <div class="form-group  feature-name">
+                <div class="col-xs-4">
+                    <div class="c-checkbox">
+                        <label>
+                            @if (selectedFeatures.ContainsKey(feature.Key))
+                            {
+                                <input type="checkbox" checked="checked" data-value="@feature.Key" class="feature-name-value" />
+                            }
+                            else
+                            {
+                                <input type="checkbox" data-value="@feature.Key" class="feature-name-value" />
+                            }
+
+                            <span class="fa fa-check"></span>@feature.Key
+                        </label>
+                    </div>
+                </div>
+                <div class="col-xs-8 col-lg-7">
+                    @foreach (var action in feature.Value)
+                    {
+                        <div class="c-checkbox checkbox-inline action-name mt-sm ml0 mr-sm">
+                            <label>
+                                @if (selectedFeatures.ContainsKey(feature.Key) && selectedFeatures[feature.Key].Contains(action))
+                                {
+                                    <input type="checkbox" checked="checked" data-value="@action" class="action-checked-value" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" data-value="@action" class="action-checked-value" />
+                                }
+                                <span class="fa fa-check"></span>@action
+                            </label>
+                        </div>
+                    }
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        }
+                                           
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <input type="submit" class="btn btn-primary" data-postback-url="@postBackUrl" id="btn_save_roles" value="Save" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var roles = new Object();
+    $('#role_form').on('change', '.action-checked-value', function (e) {
+        var context = $(this).parentsUntil('.form-group').parent();
+        if ($(this).is(':checked') && !$('.feature-name-value', $(context)).is(':checked')) {
+            $('.feature-name-value', $(context))[0].checked = true;
+        }
+    });
+    $('#role_form').on('change', '.feature-name-value', function (e) {
+        var context = $(this).parentsUntil('.form-group').parent();
+        if (!$(this).is(':checked')) {
+            $('.action-checked-value', $(context)).each(function (idx, elem) {
+                $(elem)[0].checked = false;
+            });
+        }
+    });
+    $('#btn_save_roles').on('click', function (e) {
+        var postBackUrl = $(this).attr('data-postback-url');
+        roles.RoleMasterId = $('#r_id').val();
+        roles.Name = $('#r_name').val();
+        roles.FeatureMap = [];
+        $('.feature-name').each(function (idx, elem) {
+            var checked = $(this).find('.feature-name-value').first().is(':checked');
+            if (checked) {
+                var obj = {};
+                obj.Actions = [];
+                obj.Name = $(this).find('.feature-name-value').first().attr('data-value');
+                $('.action-name', $(this)).each(function (idx, elem) {
+                    if ($(this).find('.action-checked-value').first().is(':checked')) {
+                        obj.Actions.push($(this).find('.action-checked-value').first().attr('data-value'));
+                    }
+                });
+                roles.FeatureMap.push(obj);
+            }
+        });
+        $.ajax({
+            type: 'POST',
+            beforeSend: function () {
+                $('#loader').show();
+            },
+            url: postBackUrl,
+            data: roles,
+            success: globalAjaxSuccessHandler,
+            error: globalAjaxErrorHandler
+        });
+    });
+</script>

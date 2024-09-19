@@ -1,0 +1,349 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Core.Common
+@model UniCampaignE.Core.Models.Tenant
+@{
+    string name = string.Empty;
+    string primaryScheme = "https", secondaryScheme = "https";
+    string primaryServer = string.Empty;
+    string primaryUsername = string.Empty;
+    string primaryPassword = string.Empty;
+    string primaryFtp = string.Empty;
+    string primaryFtpPort = string.Empty;
+    string primaryFtpUsername = string.Empty;
+    string primaryFtpPassword = string.Empty;
+    string primaryFtpDirectory = string.Empty;
+    string primaryDncLocation = string.Empty;
+    string primaryFinesseServer = string.Empty;
+    string primaryFinesseUserName = string.Empty;
+    string primaryFinessePassword = string.Empty;
+    string primaryFinesseProtocol = "http";
+    string primaryDb = string.Empty;
+    string primaryDbUser = string.Empty;
+    string primaryDbPassword = string.Empty;
+
+    string secondaryServer = string.Empty;
+    string secondaryUsername = string.Empty;
+    string secondaryPassword = string.Empty;
+    string secondaryFtp = string.Empty;
+    string secondaryFtpPort = string.Empty;
+    string secondaryFtpUsername = string.Empty;
+    string secondaryFtpPassword = string.Empty;
+    string secondaryFtpDirectory = string.Empty;
+    string secondaryDncLocation = string.Empty;
+    string secondaryFinesseServer = string.Empty;
+    string secondaryFinesseUserName = string.Empty;
+    string secondaryFinessePassword = string.Empty;
+    string secondaryFinesseProtocol = "http";
+    string secondaryDb = string.Empty;
+    string secondaryDbUser = string.Empty;
+    string secondaryDbPassword = string.Empty;
+
+    if (Model != null && Model.Configuration != null)
+    {
+        var config = new Config(Model);
+        name = Model.Name;
+        primaryScheme = config.Get(Config.Primary.Scheme);
+        primaryServer = config.Get(Config.Primary.Host);
+        primaryUsername = config.Get(Config.Primary.User);
+        primaryPassword = config.Get(Config.Primary.Password);
+
+        primaryFtp = config.Get(Config.Primary.FtpHost);
+        primaryFtpPort = config.Get(Config.Primary.FtpPort);
+        primaryFtpUsername = config.Get(Config.Primary.FtpUser);
+        primaryFtpPassword = config.Get(Config.Primary.FtpPassword);
+        primaryFtpDirectory = config.Get(Config.Primary.FtpDirectory);
+        primaryDncLocation = config.Get(Config.Primary.DncPath);
+
+        primaryFinesseServer = config.Get(Config.Primary.FinesseHost);
+        primaryFinesseUserName = config.Get(Config.Primary.FinesseUser);
+        primaryFinessePassword = config.Get(Config.Primary.FinessePassword);
+        primaryFinesseProtocol = !string.IsNullOrEmpty(config.Get(Config.Primary.FinesseProtocol)) ? config.Get(Config.Primary.FinesseProtocol) : "http";
+
+        primaryDb = config.Get(Config.Primary.DbName);
+        primaryDbUser = config.Get(Config.Primary.DbUser);
+        primaryDbPassword = config.Get(Config.Primary.DbPassword);
+
+        secondaryScheme = config.Get(Config.Secondary.Scheme);
+        secondaryServer = config.Get(Config.Secondary.Host);
+        secondaryUsername = config.Get(Config.Secondary.User);
+        secondaryPassword = config.Get(Config.Secondary.Password);
+
+        secondaryFtp = config.Get(Config.Secondary.FtpHost);
+        secondaryFtpPort = config.Get(Config.Secondary.FtpPort);
+        secondaryFtpUsername = config.Get(Config.Secondary.FtpUser);
+        secondaryFtpPassword = config.Get(Config.Secondary.FtpPassword);
+        secondaryFtpDirectory = config.Get(Config.Secondary.FtpDirectory);
+        secondaryDncLocation = config.Get(Config.Secondary.DncPath);
+
+        secondaryFinesseServer = config.Get(Config.Secondary.FinesseHost);
+        secondaryFinesseUserName = config.Get(Config.Secondary.FinesseUser);
+        secondaryFinessePassword = config.Get(Config.Secondary.FinessePassword);
+        secondaryFinesseProtocol = string.IsNullOrEmpty(config.Get(Config.Secondary.FinesseProtocol)) ? "http" : config.Get(Config.Secondary.FinesseProtocol);
+
+        secondaryDb = config.Get(Config.Secondary.DbName);
+        secondaryDbUser = config.Get(Config.Secondary.DbUser);
+        secondaryDbPassword = config.Get(Config.Secondary.DbPassword);
+    }
+}
+<div class="form-horizontal" id="tenant_configuration">
+    @Html.HiddenFor(mod => mod.TenantId)
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="form-group pl-lg">
+                <label class="control-label pull-left">@Configuration.CONFIGURATION_NAME<span class="error inline">*</span></label>
+                <div class="col-lg-6 col-xs-7">
+                    @Html.TextBoxFor(mod => mod.Name, new { @class = "form-control", value = name })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12" role="tabpanel">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="active">
+                    <a href="#primary" data-toggle="tab">@Configuration.PRIMARY_SERVER_TAB</a>
+                </li>
+                <li>
+                    <a href="#secondary" data-toggle="tab">@Configuration.SECONDARY_SERVER_TAB</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active b0 p0" role="tabpanel" id="primary">
+                    <div class="col-lg-6 p0">
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.HOST<span class="error inline">*</span></label>
+                            <div class="col-lg-7 col-xs-8">
+                                <div class="col-lg-5 p0">
+                                    <select class="form-control" id="tenant_configuration_primary_scheme" name="PrimaryScheme">
+                                        <option value="http">@Configuration.LABEL_HTTP</option>
+                                        <option value="https">@Configuration.LABEL_HTTPS</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-7 pr0">
+                                    <input type="text" class="form-control" name="PrimaryServer" value="@primaryServer" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.USERNAME<span class="error inline">*</span></label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" name="PrimaryUsername" class="form-control" value="@primaryUsername" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.PASSSWORD<span class="error inline">*</span></label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="password" class="form-control" name="PrimaryPassword" value="@primaryPassword" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_LOCATION</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="PrimaryDNC" value="@primaryDncLocation" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_HOST</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="PrimaryFTP" value="@primaryFtp" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_PORT</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="PrimaryFTPPort" value="@primaryFtpPort" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_USERNAME</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="PrimaryFTPUsername" value="@primaryFtpUsername" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_PASSWORD</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="password" class="form-control" name="PrimaryFTPPassword" value="@primaryFtpPassword" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 p0">
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_DIRECTORY</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="PrimaryFTPDirectory" value="@primaryFtpDirectory" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.FINESSE_HOST</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <div class="col-lg-5 p0">
+                                    <select class="form-control" id="tenant_configuration_primary_finesse_scheme" name="PrimaryFinesseProtocol">
+                                        <option value="http">@Configuration.LABEL_HTTP</option>
+                                        <option value="https">@Configuration.LABEL_HTTPS</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-7 pr0">
+                                    <input type="text" class="form-control" name="PrimaryFinesseServer" value="@primaryFinesseServer" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.FINESSE_USERNAME<span class="error inline">*</span></label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="PrimaryFinesseUserName" value="@primaryFinesseUserName" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.FINESSE_PASSWORD<span class="error inline">*</span></label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="password" class="form-control" name="PrimaryFinessePassword" value="@primaryFinessePassword" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DATABASE_NAME</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="PrimaryDB" value="@primaryDb" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DATABASE_USER</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="PrimaryDBUser" value="@primaryDbUser" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DATABASE_PASSWORD</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="password" class="form-control" name="PrimaryDBPassword" value="@primaryDbPassword" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="tab-pane b0 p0" role="tabpanel" id="secondary">
+                    <div class="col-lg-6 p0">
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.HOST</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <div class="col-lg-5 p0">
+                                    <select class="form-control" id="tenant_configuration_secondary_scheme" name="SecondaryScheme">
+                                        <option value="http">@Configuration.LABEL_HTTP</option>
+                                        <option value="https">@Configuration.LABEL_HTTPS</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-7 pr0">
+                                    <input type="text" class="form-control" name="SecondaryServer" value="@secondaryServer" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.USERNAME</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryUsername" value="@secondaryUsername" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.PASSSWORD</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="password" class="form-control" name="SecondaryPassword" value="@secondaryPassword" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_LOCATION</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryDNC" value="@secondaryDncLocation" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_HOST</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryFTP" value="@secondaryFtp" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_PORT</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryFTPPort" value="@secondaryFtpPort" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_USERNAME</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryFTPUsername" value="@secondaryFtpUsername" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_PASSWORD</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="password" class="form-control" name="SecondaryFTPPassword" value="@secondaryFtpPassword" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 p0">
+
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DNC_FTP_DIRECTORY</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryFTPDirectory" value="@secondaryFtpDirectory" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.FINESSE_HOST</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <div class="col-lg-5 p0">
+                                    <select class="form-control" id="tenant_configuration_secondary_finesse_scheme" name="SecondaryFinesseProtocol">
+                                        <option value="http">@Configuration.LABEL_HTTP</option>
+                                        <option value="https">@Configuration.LABEL_HTTPS</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-7 pr0">
+                                    <input type="text" class="form-control" name="SecondaryFinesseServer" value="@secondaryFinesseServer" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.FINESSE_USERNAME</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryFinesseUserName" value="@secondaryFinesseUserName" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.FINESSE_PASSWORD</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="password" class="form-control" name="SecondaryFinessePassword" value="@secondaryFinessePassword" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DATABASE_NAME</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryDB" value="@secondaryDb" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DATABASE_USER</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="text" class="form-control" name="SecondaryDBUser" value="@secondaryDbUser" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-lg-4">@Configuration.DATABASE_PASSWORD</label>
+                            <div class="col-lg-7 col-xs-8">
+                                <input type="password" class="form-control" name="SecondaryDBPassword" value="@secondaryDbPassword" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+<script type="text/javascript">
+    document.getElementById("tenant_configuration_primary_scheme").value = '@primaryScheme';
+    document.getElementById('tenant_configuration_secondary_scheme').value = '@secondaryScheme';
+    document.getElementById('tenant_configuration_primary_finesse_scheme').value = '@primaryFinesseProtocol';
+    document.getElementById('tenant_configuration_secondary_finesse_scheme').value = '@secondaryFinesseProtocol';
+</script>

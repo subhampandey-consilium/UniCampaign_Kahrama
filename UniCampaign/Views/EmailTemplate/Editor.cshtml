@@ -1,0 +1,105 @@
+﻿@using UniCampaignE.Web.Localization
+@model  UniCampaignE.Core.Models.EmailTemplate
+<link href="~/Content/summernote.css" rel="stylesheet" />
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-horizantal" role="form">
+                <div class="form-group">
+                    @Html.HiddenFor(mod => mod.TemplateId, new { id = "tempid" })
+                    <label class="control-label col-xs-4">@EmailTemplate.NAME_TEMPLATE<span class="text-danger">*</span></label>
+                    <div class="col-xs-8 col-lg-7">
+                        <div class="col-lg-7 col-xs--8">
+                            <input type="text" id="txtTempalteName" class="form-control" />
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="form-group">
+                    <div class="form-horizantal" role="form">
+                        <div class="form-group">
+                            <div class="col-lg-offset-1 col-lg-11" id="editor" style="min-height:350px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+            <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+        </div>
+    </div>
+</div>
+
+
+<script src="~/Scripts/summernote.min.js"></script>
+<script>
+    var addUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.EmailTemplateController.Add), new { area = "", controller = "EmailTemplate" })';
+    var editUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.EmailTemplateController.Update), new { area = "", controller = "EmailTemplate" })';
+    $(document).ready(function (e) {
+        var editor;
+        $('#editor').summernote({
+            height: 350,                 
+            minHeight: null,            
+            maxHeight: null,
+            dialogsInBody: true,
+            dialogsFade: false,
+            toolbar: [
+                ['misc', ['undo', 'redo']],
+                ['font', ['bold', 'italic', 'underline', 'strikethrough']],
+                ['style', ['fontname', 'fontsize', 'color']],
+                ['paragraph', ['paragraph', 'ol', 'ul', 'style']],
+                ['insert', ['hr', 'picture', 'link', 'table']]
+            ]
+        });
+    });
+    $("#saveButton").click(function (e) {
+        var checkid = document.getElementById('tempid').value;
+        if (checkid == null || checkid == '') {
+            $.ajax({
+                type: "POST",
+                url: addUrl,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    TemplateName: $("#txtTempalteName").val(),
+                    EmailBody: $('#editor').summernote('code'),
+                }),
+                success: globalAjaxSuccessHandler,
+                error: globalAjaxErrorHandler
+            });
+        }
+        else {
+            $.ajax({
+                type: "POST",
+                url: editUrl,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                {
+                    TemplateId: checkid,
+                    TemplateName: $("#txtTempalteName").val(),
+                    EmailBody: $('#editor').summernote('code'),
+                }),
+                success: globalAjaxSuccessHandler,
+                error: globalAjaxErrorHandler
+            });
+        }
+    });
+
+</script>
+@if (!(Model == null))
+{
+
+    <script>
+        document.getElementById('txtTempalteName').value = '@Model.TemplateName';
+        $('#editor').summernote('code', `@Html.Raw(Model.EmailBody)`);
+    </script>
+
+}
+
+

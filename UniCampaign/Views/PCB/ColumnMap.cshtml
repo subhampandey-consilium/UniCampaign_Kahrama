@@ -1,0 +1,128 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Core.Constants.API
+@model UniCampaignE.Web.Models.BulkPCBColumnMapViewModel
+<div class="modal-dialog" id="pcb_bulk_map_editor">
+    <div class="modal-content">
+        @using (Ajax.BeginForm(nameof(UniCampaignE.Web.Controllers.PCBController.MapColumns), new AjaxOptions() { HttpMethod = "POST", AllowCache = false, LoadingElementId = "loader", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler", OnBegin = "validateColumns" }))
+        {
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@PCB.BULK_UPLOAD_TITLE</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    @Html.HiddenFor(pcb => pcb.BulkPCBId)
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PersonalCallbackHeaderFields.Phone <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownListFor(pcb => pcb.PhoneIndex, Model.HeaderRowDropDown, new { @class = "form-control", id = "pcb_phone" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PersonalCallbackHeaderFields.CallbackDateTime <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownListFor(pcb => pcb.CallbackDateTimeIndex, Model.HeaderRowDropDown, new { @class = "form-control", id = "pcb_date_time" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PersonalCallbackHeaderFields.MaxAttempts <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.DropDownListFor(pcb => pcb.MaxAttemptsIndex, Model.HeaderRowDropDown, new { @class = "form-control", id = "pcb_max_attempts" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PersonalCallbackHeaderFields.AccountNumber</label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="col-xs-1 col-lg-2">
+                                <div class="checkbox c-checkbox pl0">
+                                    <label>
+                                        <input type="checkbox" class="pcb-column"><span class="fa fa-check"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-xs-10 col-lg-10 p0">
+                                @Html.DropDownListFor(pcb => pcb.AccountNumberIndex, Model.HeaderRowDropDown, new { @class = "form-control", disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PersonalCallbackHeaderFields.FirstName</label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="col-xs-1 col-lg-2">
+                                <div class="checkbox c-checkbox pl0">
+                                    <label>
+                                        <input type="checkbox" class="pcb-column"><span class="fa fa-check"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-xs-10 col-lg-10 p0">
+                                @Html.DropDownListFor(pcb => pcb.FirstNameIndex, Model.HeaderRowDropDown, new { @class = "form-control", disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PersonalCallbackHeaderFields.LastName</label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="col-xs-1 col-lg-2">
+                                <div class="checkbox c-checkbox pl0">
+                                    <label>
+                                        <input type="checkbox" class="pcb-column"><span class="fa fa-check"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-xs-10 col-lg-10 p0">
+                                @Html.DropDownListFor(pcb => pcb.LastNameIndex, Model.HeaderRowDropDown, new { @class = "form-control", disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PersonalCallbackHeaderFields.CampaignDN</label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div class="col-xs-1 col-lg-2">
+                                <div class="checkbox c-checkbox pl0">
+                                    <label>
+                                        <input type="checkbox" class="pcb-column"><span class="fa fa-check"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-xs-10 col-lg-10 p0">
+                                @Html.DropDownListFor(pcb => pcb.CampaignDnIndex, Model.HeaderRowDropDown, new { @class = "form-control", disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="error">
+                        @Html.ValidationSummary()
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+        }
+    </div>
+</div>
+<script type="text/javascript">
+    $('#pcb_bulk_map_editor').on('change', '.pcb-column', function (e) {
+        $(this).parentsUntil('.form-group').find('select').first().prop('disabled', !$(this).is(':checked'));
+    });
+    function validateColumns() {
+        var indices = [];
+        indices.push($('#pcb_phone').val());
+        indices.push($('#pcb_date_time').val());
+        indices.push($('#pcb_max_attempts').val());
+        if (_.uniq(indices).length != indices.length) {
+            showGlobalNotification('error', '@PCB.COLUMN_MAP_ERROR_MSG');
+            return false;
+        }
+        return true;
+    }
+</script>

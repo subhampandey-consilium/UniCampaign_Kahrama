@@ -1,0 +1,236 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+@model  UniCampaignE.Core.Models.PreviewCampaign
+<div class="modal-dialog">
+    <form id="PreviewCampaign_Form"  method="post" action="@Url.Action(nameof(UniCampaignE.Web.Controllers.PreviewCampaignController.Save), new { controller = "PreviewCampaign", area = "" })">
+            <div class="modal-content">
+                <div class="modal-header bg-primary-dark">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+                </div>
+                <div class="modal-body">
+                  <div class="form-horizontal" id="preview_campaign_form" role="form">
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">@Comman.NAME_LABEL <span class="error inline">*</span></label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.HiddenFor(mod => mod.Id, new { id = "campaign_id" })
+                                    @Html.TextBoxFor(mod => mod.Name, new { @class = "form-control", placeholder = Comman.NAME_LABEL, id = "campaign_name" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">Description</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.TextBoxFor(mod => mod.Description, new { @class = "form-control", placeholder = "Description" ,id = "description" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">Status</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <div id="theCheckbox" class="checkbox c-checkbox mt-sm">
+                                        <label>
+                                            @{string check = "";}
+                                            @if (Model != null && Model.Enabled)
+                                            {
+                                                check = @"checked='checked'";
+                                            }
+                                            <input type="checkbox" id="enabled_check" @check />
+                                            <span class="fa fa-check"></span>@Campaign.ENABLED
+                                        </label>
+                                    </div>
+                                    @Html.HiddenFor(mod => mod.Enabled, new { id = "cmp_enabled" })
+
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">Active Hours<span class="error inline">*</span></label>
+                                <div class="col-xs-4 col-lg-3">
+                                    @Html.TextBoxFor(mod => mod.StartTime, new { @class = "form-control time-picker", id = "start_time_picker" })
+                                </div>
+                                <span class="col-lg-1 col-xs-1 mt-sm text-bold"> to </span>
+                                <div class="col-lg-3 col-xs-4">
+                                    @Html.TextBoxFor(mod => mod.EndTime, new { @class = "form-control time-picker", id = "end_time_picker" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">Start Date</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <div class="input-group date-picker">
+                                        @if (Model != null && Model.StartDate.HasValue)
+                                        {
+                                            @Html.TextBox(nameof(Model.StartDate), Model.StartDate.Value.ToString("yyyy-MM-dd"), new { @class = "form-control" , id = "start_date_picker" })
+                                        }
+                                        else
+                                        {
+                                            @Html.TextBoxFor(mod => mod.StartDate, new { @class = "form-control" , id = "start_date_picker" })
+                                        }
+                                        <span class="input-group-addon" role="button"><i class="icon-calendar"></i></span>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">End Date</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <div class="input-group date-picker">
+                                        @if (Model != null && Model.EndDate.HasValue)
+                                        {
+                                            @Html.TextBox(nameof(Model.EndDate), Model.EndDate.Value.ToString("yyyy-MM-dd"), new { @class = "form-control" , id = "end_date_picker" })
+                                        }
+                                        else
+                                        {
+                                            @Html.TextBoxFor(mod => mod.EndDate, new { @class = "form-control" , id = "end_date_picker" })
+                                        }
+                                        <span class="input-group-addon" role="button"><i class="icon-calendar"></i></span>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">Default Target Country</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.DropDownListFor(mod => mod.TargetCountry, UniCampaignE.Web.HelperLib.DropDownHelper.GetCountries(), new { @class = "form-control", id = "country_select" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">
+                                    @Campaign.TIME_ZONE
+                                </label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.DropDownListFor(mod => mod.TimeZone, DropDownHelper.GetTimeZones(), new { @class = "form-control", id = "time_zone" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">Prefix</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    @Html.TextBoxFor(mod => mod.Prefix, new { @class = "form-control", placeholder = "Prefix", id = "prefix" })
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">
+                                    Assign Skills
+                                </label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <div class="panel panel-body p-lg">
+                                        <div id="skill_group_container" style="overflow:auto;height:400px;width:200px">
+                                            <div class="list-group">
+                                                @foreach (var sg in ViewBag.Skills as IEnumerable<Tuple<string, int, bool>>)
+                                                {
+                                                    string assigned = sg.Item3 ? "checked=\"checked\"" : string.Empty;
+                                                    <div class="list-group-item">
+                                                        <div class="media-box">
+                                                            <div class="pull-right">
+                                                                <div class="checkbox c-checkbox checkbox-inline mt0">
+                                                                    <label>
+                                                                        <input type="checkbox" class="skill-group" @assigned data-current="@sg.Item2" /><span class="fa fa-check"></span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="media-box-body">
+                                                                <div class="m0">@sg.Item1</div>
+                                                            </div>
+                                                            <div class="clearfix"></div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                      <div class="clearfix"></div>
+                   </div>
+                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                        <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+                    </div>
+                
+            </div>
+        </form>
+</div>
+
+
+<script type="text/javascript">
+    $('.modal-dialog').addClass('modal-lg');
+    var $form = $('#PreviewCampaign_Form');
+    //$('#skill_group_container').slimscroll({ height: '300px', width: '250px' });
+
+
+    $form.on('submit', function (e) {
+        debugger;
+        var assignedSkillGroups = [];
+        $('.skill-group:checked').each(function (idx, elem) {
+            assignedSkillGroups.push($(elem).data('current'));
+        });
+		   $('.modal-content').on('change', '#enabled_check', function (e) {
+           $('#cmp_enabled').val($(this).is(':checked'));
+            });
+		
+        e.preventDefault();
+        var url = $(this).attr('action');
+        debugger;
+        var theCampaignListList = {
+            Id: $('#campaign_id', $form).val(),
+            Name: $('#campaign_name', $form).val(),
+            Description: $('#description', $form).val(),
+            Enabled: $('#cmp_enabled', $form).val(),
+            StartTime: $('#start_time_picker', $form).val(),
+            EndTime: $('#end_time_picker', $form).val(),
+            StartDate: $('#start_date_picker', $form).val(),
+            EndDate: $('#end_date_picker', $form).val(),
+            TargetCountry: $('#country_select', $form).val(),
+            TimeZone: $('#time_zone', $form).val(),
+            SkillGroups: assignedSkillGroups,
+            Prefix: $('#prefix', $form).val(),
+        };
+        $.ajax({
+            beforeSend: function (e) {
+                $('#loader').show();
+            },
+            url: url,
+            success: globalAjaxSuccessHandler,
+            type: 'POST',
+            contentType: 'application/json',
+            error: globalAjaxErrorHandler,
+            data: JSON.stringify(theCampaignListList)
+        });
+        return false;
+    });
+
+
+    var timePickerOptions = {
+        format: 'HH:mm',
+        maxDate: moment('23:59', 'HH:mm'),
+        minDate: moment('00:00', 'HH:mm'),
+        showClear: true,
+        showClose: true,
+        toolbarPlacement: 'bottom',
+        icons: globalDateTimePickerIcons
+    };
+    var datePickerOptions = {
+        format: 'YYYY-MM-DD',
+        useCurrent: true,
+        showClear: true,
+        showClose: true,
+        toolbarPlacement: 'bottom',
+        icons: globalDateTimePickerIcons
+    };
+    $('.time-picker').datetimepicker(timePickerOptions);
+    $('.date-picker').datetimepicker(datePickerOptions);
+    var language = '@System.Globalization.CultureInfo.CurrentCulture.Name';
+    $('#country_select').select2({ width: '100%', language: language, theme: 'bootstrap', closeOnSelect: true });
+</script>

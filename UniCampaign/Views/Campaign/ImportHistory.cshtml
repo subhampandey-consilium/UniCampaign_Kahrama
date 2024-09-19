@@ -1,0 +1,285 @@
+﻿@using UniCampaignE.Web.Localization
+@model Dictionary<string, string>
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="form-horizontal col-lg-7">
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Campaign.SELECT_CONTACT_LIST</label>
+                        <div class="col-lg-7 col-xs-8">
+                            @Html.DropDownList("ContactMaps", Model.Select(map => new SelectListItem() { Text = map.Value, Value = map.Key }), "Select", new { @class = "form-control", id = "map_select" })
+                        </div>
+                    </div>
+                </div>
+                <div data-toggle="buttons" class="btn-group col-lg-3" id="history_display_options">
+                    <label class="btn btn-primary active" data-type="grid">
+                        <input name="chart_type_option" value="grid" type="radio"><i class="fa fa-table fa-lg"></i>
+                    </label>
+                    <label class="btn btn-primary" data-type="pie">
+                        <input name="chart_type_option" value="pie" type="radio"><i class="fa fa-pie-chart fa-lg"></i>
+                    </label>
+                    <label class="btn btn-primary" data-type="bar">
+                        <input name="chart_type_option" value="bar" type="radio"><i class="fa fa-bar-chart-o fa-lg"></i>
+                    </label>
+                    <select id="Dialingpriority" style="display:none" onchange="updatepriority();"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select>
+                    <a href=""  style="color:red; display:none;" id="stopbutton" onclick="stoplist()"><i title="Stop Contact List" class="fa fa-stop"></i></a> 
+                    <a href="" style="display:none;" id="Resume" onclick="startlist()"><i title="Resume Contact List" style="color:#009933" class="fa fa-play"></i></a>
+                </div>
+                <div class="col-lg-1">
+                    <a class="btn btn-primary" target="_blank" id="details_link" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.ImportDetails), id = ViewBag.CampaignId,name = ViewBag.CampaignName })">
+                        More Details
+                    </a>
+                </div>
+
+                @*<div class="col-lg-1">
+                    <select id="Dialingpriority_{Id}" onchange="updatepriority();"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select>
+                    <a data-ajax="true" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="stopSuccessHandler" data-ajax-method="POST" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StopCallingList)})' + '?mapid={MapId}&status=6&name={ListName}" style="color:red" id="stopbutton_{MapId}_{ListId}"><i title="Stop Contact List" class="fa fa-stop"></i></a> <a data-ajax="true" data-ajax-failure="globalAjaxErrorHandler" data-ajax-success="stopSuccessHandler" data-ajax-method="POST" href="@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StartCallingList)})' + '?mapid={MapId}&status=3&name={ListName}" id="Resume_{MapId}_{ListId}"><i title="Resume Contact List" style="color:#009933" class="fa fa-play"></i></a>
+                </div>*@
+
+            </div>
+            <div class="row">
+                <div class="col-lg-12 hidden" id="history_chart_contianer">
+                    <div id="history_chart">
+
+                    </div>
+                </div>
+                <div class="col-lg-12 hidden" id="history_grid_container">
+                    <div class="table-responsive">
+                        <table id="history_grid" class="table table-striped table-bordered table-condensed"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var gridSettings = {
+        primaryKey: 'Id',
+        iconsLibrary: 'fontawesome',
+        columns: [
+            { field: "AttemptedOn", title: "@GridComman.GRID_DATETIME_FORMAT" },
+            { field: 'TotalRecords', title: '@Campaign.GRID_TOTAL_RECORDS', minWidth: 60, priority: 6 },
+            { field: "RecordsImported", title: "@Campaign.GRID_RECORDS_IMPORTED", priority: 8 },
+            { field: "InvalidRecords", title: "@Campaign.GRID_INVALID_RECORDS", minWidth: 50, priority: 4 },
+            { field: "DuplicatesFiltered", title: "@Campaign.GRID_DUPLICATES_FILTERED", minWidth: 30, priority: 5 },
+            { field: "DNCFiltered", title: "Excluded", minWidth: 30, priority: 7 },
+            { field: "Status", title: "Status", minWidth: 50, priority: 5 }
+        ],
+        uiLibrary: "bootstrap",
+        notFoundText: "@GridComman.GRID_NO_RECORD_FOUND",
+        pager: { enable: true, limit: 5, sizes: [5, 10] }
+    };
+
+    ////////////////////////////
+    function updatepriority() {
+        debugger;
+        var selectid = "#Dialingpriority"
+        var priorityvalue = $(selectid).val();
+        var mapId = $('#map_select').val();
+        $.ajax({
+            type: 'POST',
+            url: '@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.ChangeMapPriority) })' + "?listId=" + mapId + "&Priority=" + priorityvalue,
+            success: function (response) {
+                debugger;
+                showGlobalNotification('success', response);
+            },
+            error: function (xhr, st, desc) {
+                debugger;
+                showGlobalNotification('error', responseText);
+            }
+        });
+
+    }
+    //////////////////////////
+    var historyChart, historyGrid;
+    $('#map_select').select2({ width: '100%', language: '@System.Globalization.CultureInfo.CurrentCulture.Name', placeholder: '@Campaign.SELECT_A_LIST_TEXT', theme: 'bootstrap' }).on('change', function (e) {
+        if (historyChart !== undefined) {
+            historyChart.unload();
+            historyChart = undefined;
+        }
+        var displayOption = $('#history_display_options').find('.active').first().attr('data-type');
+        displayData(displayOption, $(this).val());
+    });
+    $('#history_display_options').on('click', '.btn', function (e) {
+        var displayOption = $(this).attr('data-type');
+        var mapId = $('#map_select').val();
+        if (mapId != '') {
+            displayData(displayOption, mapId);
+        }
+    });
+    function displayData(displayOption, mapId) {
+        if (displayOption == 'grid') {
+            if ($('#history_grid_container').hasClass('hidden')) {
+                $('#history_grid_container').removeClass('hidden');
+            }
+            if (!$('#history_chart_contianer').hasClass('hidden')) {
+                $('#history_chart_contianer').addClass('hidden');
+            }
+            if (historyChart !== undefined) {
+                historyChart.unload();
+                historyChart = undefined;
+            }
+            var dataSource = {
+                url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.History),new { area="",controller="Campaign" })',
+                data: {
+                    mapId: mapId
+                }
+            };
+            debugger;
+            gridSettings.dataSource = dataSource;
+            $('#history_grid').grid('destroy', true, true);
+            historyGrid = $('#history_grid').grid(gridSettings);
+            //////////////////////
+
+
+
+            $('#Dialingpriority').show();
+            $.ajax({
+                type: 'GET',
+                url: "?listId=" + mapId,//@*'@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.Getpriority)})' +*@
+                success: function (response) {
+                    debugger;
+                    $('#Dialingpriority').val(response);
+                    //  var data = historyGrid.getAll();
+                    getlistStatus();
+
+                },
+                error: function (xhr, st, desc) {
+                    debugger;
+                    showGlobalNotification('error', responseText);
+                }
+            });
+
+
+        }
+        else {
+            if ($('#history_chart_contianer').hasClass('hidden')) {
+                $('#history_chart_contianer').removeClass('hidden');
+            }
+            if (!$('#history_grid_container').hasClass('hidden')) {
+                $('#history_grid_container').addClass('hidden');
+            }
+            var chartOptions = {};
+            chartOptions.size = { height: '300', width: '450' };
+            chartOptions.bindto = '#history_chart';
+            chartOptions.axis = {
+                x: {
+                    type: 'timeseries',
+                    tick: {
+                        format: '%d-%m-%Y %H:%M'
+                    }
+                }
+            };
+            chartOptions.onrendered = function () {
+                console.log(this);
+            };
+            chartOptions.tooltip = { position: function () { return { top: 0, left: 0 }; } };
+            chartOptions.data = {
+                labels: true,
+                url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.History),new { paginate=false,area="",controller="Campaign"})' + '&mapId=' + mapId,
+                mimeType: 'json',
+                keys: { x: 'AttemptedOn', value: ['DuplicatesFiltered', 'DNCFiltered', 'RecordsImported', 'InvalidRecords'] },
+                type: displayOption,
+                xFormat: '%d-%m-%Y %H:%M',
+                empty: {
+                    label: {
+                        text: "@Campaign.NO_DATA_TEXT"
+                    }
+                },
+                names: {
+                    InvalidRecords: 'Invalid',
+                    RecordsImported: 'Imported',
+                    DNCFiltered: 'Excluded',
+                    DuplicatesFiltered: 'Duplicates'
+                }
+            };
+            chartOptions.legend = { position: 'right' };
+            if (historyChart === undefined) {
+                historyChart = c3.generate(chartOptions);
+            } else {
+                historyChart.transform(displayOption);
+            }
+        }
+
+    };
+
+    function startlist() {
+        var mapId = $('#map_select').val();
+        $.ajax({
+            type: 'POST',
+            // type: 'GET',
+            // dataType: 'json',
+            url: '@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StartCallingList) })' + "?mapid=" + mapId + "&status=3&name=''",
+            // data: { mapid: mapId, status: "3", name: "" },
+            success: function (response) {
+                debugger;
+                getlistStatus();
+                showGlobalNotification('success', response);
+            },
+            error: function (xhr, st, desc) {
+                debugger;
+                getlistStatus();
+                showGlobalNotification('error', responseText);
+            }
+        });
+    };
+    function stoplist() {
+        var mapId = $('#map_select').val();
+        $.ajax({
+            type: 'POST',
+            url: '@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.StopCallingList) })' + "?mapid=" + mapId + "&status=6&name=''",
+            success: function (response) {
+                debugger;
+                getlistStatus();
+                showGlobalNotification('success', response);
+            },
+            error: function (xhr, st, desc) {
+                debugger;
+                getlistStatus();
+                showGlobalNotification('error', responseText);
+            }
+        });
+    }
+
+    function getlistStatus() {
+        var mapId = $('#map_select').val();
+        $.ajax({
+            type: 'GET',
+            url: '@Url.RouteUrl(new { area="",controller="Campaign",action=nameof(UniCampaignE.Web.Controllers.CampaignController.ListSatus) })' + "?mapid=" + mapId,
+            success: function (response) {
+                debugger;
+                if (response == "Processing" || response == "Processed" || response == "Completed" || response == "Rechurned" || response == "Appended") {
+                    var id = "#stopbutton";
+                    var id2 = "#Resume";
+                    $(id).hide();
+                    $(id2).hide();
+                }
+                if (response == "Stopped" || response == "Failed" || response == "Paused" || response == "Paused") {
+                    var id = "#stopbutton";
+                    var idresume = "#Resume";
+                    $(id).hide();
+                    $(idresume).show();
+                }
+                if (response == "Assigned" || response == "PreProcessed" || response == "Scheduled") {
+                    var id = "#stopbutton";
+                    var idresume = "#Resume";
+                    $(id).show();
+                    $(idresume).hide();
+                }
+                //showGlobalNotification('success', response);
+            },
+            error: function (xhr, st, desc) {
+                debugger;
+                // showGlobalNotification('error', responseText);
+            }
+        });
+
+    }
+
+</script>

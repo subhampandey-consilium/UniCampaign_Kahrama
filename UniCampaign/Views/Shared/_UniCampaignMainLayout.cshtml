@@ -1,0 +1,133 @@
+﻿@using UniCampaignE.Web.Localization;
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>UniCampaign - @ViewBag.Title</title>
+    <!--Window Icon-->
+    <link rel="shortcut icon" href="~/Content/img/fav.ico">
+    <!--Font Awesome-->
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <!-- SIMPLE LINE ICONS-->
+    <link href="~/Content/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" />
+    <!-- ANIMATE.CSS-->
+    <link href="~/Content/animate.css/animate.min.css" rel="stylesheet" />
+    <!-- WHIRL (spinners)-->
+    <link href="~/Content/whirl/whirl.css" rel="stylesheet" />
+    <!-- WEATHER ICONS-->
+    @*<link href="~/Content/weather-icons/css/weather-icons.min.css" rel="stylesheet" />*@
+    <!-- =============== BOOTSTRAP STYLES ===============-->
+    @{
+        string currentLanguage = System.Globalization.CultureInfo.CurrentCulture.Name.Contains("zh") ? System.Globalization.CultureInfo.CurrentCulture.Name : System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+        string bootstrapLib = System.Globalization.CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "bootstrap-rtl.css" : "bootstrap.min.css";
+        string appLib = System.Globalization.CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "app-rtl.css" : "app.css";
+    }
+    <link href="~/Content/@bootstrapLib" rel="stylesheet" />
+    @*<link href="~/Content/bootstrap.min.css" rel="stylesheet" id="bscss" />*@
+    <!-- =============== APP STYLES ===============-->
+    <link href="~/Content/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+    <link href="~/Content/@appLib" rel="stylesheet" id="maincss" />
+    <link href="~/Content/select2.min.css" rel="stylesheet" />
+    <link href="~/Content/select2-bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/lobibox.min.css" rel="stylesheet" />
+    <link href="~/Content/theme/test.css" rel="stylesheet" />
+    <link href="~/Content/gijgo/combined/gijgo.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        .error {
+            color: red;
+            display: block;
+        }
+
+        #loader {
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            position: fixed;
+            display: none;
+        }
+
+            #loader .loader-inner {
+                margin: auto;
+                width: 100%;
+                top: 42%;
+                position: absolute;
+                color: blue;
+            }
+
+        .select2-container .select2-search,
+        .select2-container .select2-search__field {
+            width: 100% !important;
+        }
+    </style>
+    @RenderSection("head", required: false)
+</head>
+<body>
+    <div class="modal" id="modal_editor"></div>
+    <div id="loader" class="whirl duo" style="opacity:.6;">
+        <div class="loader-inner text-center text-md">
+            @Comman.PLEASE_WAIT_LOADER
+        </div>
+    </div>
+    <div class="wrapper">
+        <!-- top navbar-->
+        <header class="topnavbar-wrapper">
+            @RenderSection("top_navigation", false)
+        </header>
+        <!-- sidebar-->
+        <aside class="aside">
+            <!-- START Sidebar (left)-->
+            <div class="aside-inner">
+                @RenderSection("sidebar_navigation", false)
+
+            </div>
+            <!-- END Sidebar (left)-->
+        </aside>
+        <!-- Main section-->
+        <section>
+            <!-- Page content-->
+            <div class="content-wrapper">
+                @RenderSection("page_content", true)
+            </div>
+        </section>
+        <!-- Page footer-->
+        <footer>
+            <span>&copy; @DateTime.Now.Year - Consilium Inc.</span>
+        </footer>
+    </div>
+    <!-- JQUERY-->
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <!-- MODERNIZR-->
+    <script src="~/Scripts/modernizr-2.8.3.js"></script>
+    <script src="~/Scripts/modernizr.custom.js"></script>
+    <!-- JQuery Easing -->
+    <script src="~/Scripts/jquery.easing.js"></script>
+    <script src="~/Scripts/animo.js"></script>
+    <!-- BOOTSTRAP-->
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <!-- STORAGE API-->
+    <script src="~/Scripts/jquery.storageapi.js"></script>
+    <script src="~/Scripts/app.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+    <script src="~/Scripts/jquery.slimscroll.js"></script>
+    <script src="~/Scripts/gijgo/modular/core.min.js"></script>
+    <script src="~/Scripts/gijgo/modular/checkbox.min.js"></script>
+    <script src="~/Scripts/gijgo/modular/grid.min.js"></script>
+    <script src="~/Scripts/select2.full.min.js"></script>
+    <script src="~/Scripts/select2-i18n/@{@currentLanguage}.js"></script>
+    <script src="~/Scripts/underscore-min.js"></script>
+    <script src="~/Scripts/jquery.form.js"></script>
+    <script src="~/Scripts/lobibox.js"></script>
+    <script src="~/Scripts/layout.js"></script>
+    <script src="~/Scripts/sweetalert2.min.js"></script>
+    @RenderSection("page_scripts", false)
+    @RenderBody()
+</body>
+</html>

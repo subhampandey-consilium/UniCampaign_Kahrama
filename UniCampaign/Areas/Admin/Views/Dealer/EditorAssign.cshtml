@@ -1,0 +1,119 @@
+﻿@using UniCampaignE.Web.Localization
+@model int
+<div class="modal-dialog">
+
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="dealer_id" value="@Model" />
+            <div class="panel panel-primary scrollable_list">
+                <div class="panel panel-body p-sm">
+
+                    <div class="form-group col-lg-12">
+                        <input type="text" class="form-control" id="skill_search_term" />
+                    </div>
+                    <div class="clearfix"></div>
+                    <div id="skill_group_container">
+                        <div class="list-group" id="inner_scrollable_list">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <button type="button" class="btn btn-primary" id="btn_save" data-postback-url="@Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.DealerController.AssignSkills),new { area="admin", controller="Dealer"})">@Comman.SAVE_BUTTON_TEXT</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var skillGroupUrl = '@Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.SkillGroupController.ListUnAssignedSkills), new { area = "admin" , controller = "SkillGroup"})';
+    var queryParams = {};
+    queryParams.page = 1;
+    queryParams.term = '';
+    queryParams.limit = 12;
+    queryParams.more = false;
+    queryParams.current = 0;
+    var generateUrl = function () {
+        var url = skillGroupUrl;
+        var q = "";
+        var page = queryParams.page || 1;
+        var limit = queryParams.limit || 12;
+        q = 'page=' + page
+        q += '&limit=' + limit;
+        if (queryParams.term) {
+            q += '&searchString=' + encodeURIComponent(queryParams.term);
+        }
+        url += "?" + q;
+        return url;
+    };
+    function loadSkillGroups() {
+        if (!$('#scrollable_list').hasClass('whirl standard')) {
+            $('#scrollable_list').addClass('whirl standard');
+        }
+        $.ajax({
+            url: generateUrl(),
+            success: function (data) {
+                console.log('success', data);
+                debugger;
+                $('#scrollable_list').removeClass('whirl standard');
+                queryParams.more = (queryParams.limit * queryParams.page) < data.total;
+                if (queryParams.page == 1) {
+                    $('#inner_scrollable_list').html('');
+                }
+                $.each(data.records, function (idx, item) {
+                    var assigned = ' hidden';
+                    var elem = $('<div class="list-group-item skill-group" data-identity="' + item.SkillTargetID + '" data-name="' + item.EnterpriseName + '" role="button">' + item.EnterpriseName + '<span class="label label-primary pull-right pv-sm' + assigned + '"><span class="fa fa-check"></span></span></div>');
+                    $('#inner_scrollable_list').append(elem);
+                });
+            },
+            error: globalAjaxErrorHandler
+        });
+    }
+    $(function (e) {
+        $('#skill_group_container').slimscroll({ height: '300px', }).bind('slimscroll', function (e, pos) {
+            if (pos == 'bottom' && queryParams.more) {
+                queryParams.page++;
+                loadSkillGroups();
+            }
+        });
+        $('#skill_search_term').on('keyup', function (e) {
+            var regex = new RegExp("^[a-zA-Z0-9\./\_/]{2,32}$");
+            var str = $(this).val();
+            if (str.length <= 2) {
+                queryParams.term = "";
+                queryParams.page = 1;
+            } else if (regex.test(str)) {
+                queryParams.term = str;
+            }
+            loadSkillGroups();
+        });
+        $('#inner_scrollable_list').on('click', '.skill-group', function () {
+            $('.label-primary', $(this)).toggleClass('hidden');
+        });
+        loadSkillGroups();
+        $('.modal-dialog').on('click', '#btn_save', function (e) {
+            var assignedSkillGroups = [];
+            $('.skill-group').each(function (idx, elem) {
+                if (!$('.label-primary', $(elem)).hasClass('hidden')) {
+                    var skillGroup = { SkillTargetID: $(elem).data('identity'), EnterpriseName: $(elem).data('name'), Dealer: { Id: $('#dealer_id').val() } };
+                    assignedSkillGroups.push(skillGroup);
+                }
+            });
+            console.log('selected ', assignedSkillGroups);
+            $.ajax({
+                url: $(this).data('postback-url'),
+                method: 'POST',
+                data: {
+                    skillGroups: assignedSkillGroups
+                },
+                success: globalAjaxSuccessHandler,
+                error: globalAjaxErrorHandler
+            });
+            return false;
+        });
+    });
+</script>

@@ -1,0 +1,79 @@
+﻿@using UniCampaignE.Web.Localization
+@{
+    Layout = "~/Views/Shared/_UniCampaignAdminLayout.cshtml";
+}
+@section page_content{
+    <div class="content-heading">
+        SkillGroup Management
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-flat panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        SkillGroups
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-inline pull-right pr-lg">
+                                <div class="form-group pb-lg">
+                                    <label class="control-label">Search</label>
+                                    <input type="text" class="form-control" value="" id="search_skill" />
+                                </div>
+                                <div class="form-group pb-lg">
+                                    <select class="form-control" id="skill_url">
+                                        <option value="@Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.SkillGroupController.ListUnAssignedSkills))">UnAssigned</option>
+                                        <option value="@Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.SkillGroupController.ListAssignedSkills))">Assigned</option>
+                                        <option value="@Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.SkillGroupController.ListSkills))">All</option>
+                                    </select>
+                                </div>
+                                <div class="form-group pb-lg">
+                                    <input type="button" id="btn_filter_skill" class="btn btn-primary" value="Filter" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive p0">
+                        <table id="grid" class="table table-striped table-bordered table-condensed"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section page_scripts{
+    <script type="text/javascript">
+        function loadData() {
+            var additionalData = {};
+            if ($('#search_skill').val() != '') {
+                additionalData.searchString = $('#search_skill').val();
+            }
+            console.log(additionalData);
+            grid = $("#grid").grid({
+                primaryKey: "SkillTargetID",
+                uiLibrary: "bootstrap",
+                iconsLibrary: 'fontawesome',
+                notFoundText: "No records found",
+                dataSource: { url: $('#skill_url').val(), data: additionalData },
+                columns: [
+                    { field: "EnterpriseName", title: "Skill Group" },
+                    { field: "DealerName", title: '@Comman.GROUP_TITLE' }
+                ],
+                pager: { enable: true, limit: 8, sizes: [8, 15, 25] }
+            });
+        }
+        $(document).ready(function (e) {
+            loadData();
+
+        });
+        $(document).on('click', '#btn_filter_skill', function (e) {
+            $('#grid').grid('destroy');
+            $('#grid').addClass('table table-striped table-bordered table-condensed');
+            loadData();
+        });
+
+
+    </script>
+}

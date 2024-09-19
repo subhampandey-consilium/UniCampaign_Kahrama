@@ -1,0 +1,94 @@
+﻿@using UniCampaignE.Web.HelperLib
+@model UniCampaignE.Core.Models.ContactFilter
+
+<div class="unicampaign-filter">
+    <div class="form-group btn-group-sm pull-right p0 m0">
+        <button class="btn btn-primary btn-add-filter" type="button"><i class="fa fa-plus"></i><span>&nbsp;&nbsp;Add Filter</span></button>
+    </div>
+    <div class="clearfix"></div>
+    <ul class="nav filter-tabs nav-tabs">
+        @if (Model?.Filters.Count > 0)
+        {
+            string active = "active";
+            for (int x = 0; x < Model.Filters.Count; x++)
+            {
+                var filterId = $"Filter_{x}";
+                <li class="@active"><a data-toggle="tab" href="#@filterId">@filterId</a></li>
+                active = string.Empty;
+            }
+        }
+        else
+        {
+            <li class="active"><a data-toggle="tab" href="#Filter_0">Filter_0</a></li>
+        }
+    </ul>
+    <div class="filter-collection p-sm tab-content p-lg">
+        @if (Model != null && Model.Filters.Count > 0)
+        {
+            string activeClass = "in active";
+            var hiddenClass = "hidden";
+            for (int i = 0; i < Model.Filters.Count; i++)
+            {
+                var filterId = $"Filter_{i}";
+                <div id="@filterId" data-number="@i" class="filter-expression tab-pane fade @activeClass">
+                    <div role="form">
+                        <div class="form-group pull-right btn-group-sm">
+                            <button type="button" class="btn btn-default btn-reset-filter"><i class="fa fa-close"></i><span>&nbsp;&nbsp;Reset</span></button>
+                            <button type="button" class="btn btn-danger @hiddenClass btn-remove-filter"><i class="fa fa-remove"></i><span>&nbsp;&nbsp;Remove</span></button>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group form-group-sm pull-left">
+                            <div class="form-inline">
+                                <div class="form-group form-group-sm">
+                                    <label class="control-label">Type&nbsp;&nbsp;</label>
+                                    @Html.EnumDropDownListFor(mod => mod.Filters[i].OperatorType, new { @class = "form-control filter-type" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="form-group pull-right m0 p0">
+                            <span class="btn btn-link btn-add-filter-condition text-bold">Add Condition</span>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="form-group filter-condition-collection" role="form">
+                            <label class="control-label">Conditions</label>
+                            @Html.Partial("EditorContactFilterCondition", Model.Filters[i].Conditions)
+
+                        </div>
+                    </div>
+                </div>
+                activeClass = string.Empty;
+                hiddenClass = string.Empty;
+            }
+        }
+        else
+        {
+            <div id="Filter_0" data-number="0" class="filter-expression tab-pane fade in active">
+                <div role="form">
+                    <div class="form-group pull-right btn-group-sm">
+                        <button type="button" class="btn btn-default btn-reset-filter"><i class="fa fa-close"></i><span>&nbsp;&nbsp;Reset</span></button>
+                        <button type="button" class="btn btn-danger hidden btn-remove-filter"><i class="fa fa-remove"></i><span>&nbsp;&nbsp;Remove</span></button>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group form-group-sm pull-left">
+                        <div class="form-inline">
+                            <div class="form-group form-group-sm">
+                                <label class="control-label">Type&nbsp;&nbsp;</label>
+                                @Html.DropDownList(nameof(Model.OperatorType), DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Models.LogicalOperator)), new { @class = "form-control filter-type" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group pull-right m0 p0">
+                        <span class="btn btn-link btn-add-filter-condition text-bold">Add Condition</span>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group filter-condition-collection" role="form">
+                        <label class="control-label">Conditions</label>
+                        @Html.Partial("EditorContactFilterCondition", new List<UniCampaignE.Core.Models.ConditionalExpression>())
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

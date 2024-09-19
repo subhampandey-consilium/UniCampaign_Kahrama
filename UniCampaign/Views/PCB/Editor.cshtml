@@ -1,0 +1,240 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+@using UniCampaignE.Core.Constants.API;
+@model UniCampaignE.Web.Models.PCBViewModel
+<div class="modal-dialog">
+    @{
+        string action = ViewBag.Action;
+    }
+    @using (Ajax.BeginForm(action, new { area = "", controller = "PCB" }, new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", UpdateTargetId = "modal_editor", InsertionMode = InsertionMode.Replace, OnSuccess = "globalAjaxSuccessHandler", OnFailure="globalAjaxErrorHandler" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        @Html.HiddenFor(pcb => pcb.PCBId)
+                        <label class="control-label col-xs-4">@PCB.CAMPAIGN_DN</label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(pcb => pcb.CampaignDn, new { @class = "form-control", placeholder = PCB.CAMPAIGN_DN_PLACE_HOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PCB.FIRST_NAME</label>
+                        <div class="col-lg-7 col-xs--8">
+                            @Html.TextBoxFor(pcb => pcb.FirstName, new { @class = "form-control", placeholder = PCB.FIRST_NAME_PLACE_HOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PCB.LAST_NAME</label>
+                        <div class="col-lg-7 col-xs--8">
+                            @Html.TextBoxFor(pcb => pcb.LastName, new { @class = "form-control", placeholder = PCB.LAST_NAME_PLACE_HOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PCB.ACCOUNT_NUMBER</label>
+                        <div class="col-lg-7 col-xs--8">
+                            @Html.TextBoxFor(pcb => pcb.AccountNumber, new { @class = "form-control", placeholder = PCB.ACCOUNT_NUMBER_PLACE_HOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PCB.MAX_ATTEMPTS<span class="text-danger"></span></label>
+                        <div class="col-lg-7 col-xs--8">
+                            @Html.TextBoxFor(pcb => pcb.MaxAttempts, new { @class = "form-control", placeholder = PCB.MAX_ATTEMPTS_PLACE_HOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PCB.PHONE<span class="text-danger">*</span></label>
+                        <div class="col-lg-7 col-xs--8">
+                            @Html.TextBoxFor(pcb => pcb.Phone, new { @class = "form-control", placeholder = PCB.PHONE_PLACE_HOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PCB.CAMPAIGN<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <select class="form-control" name="@nameof(Model.Campaign)" id="campaign_list">
+                            </select>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PCB.CALL_BACK_DATETIME<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div id="datetimepicker1" class="input-group date">
+                                @{
+                                    if (Model != null)
+                                    {
+                                        @Html.TextBox("CallbackDateTime", string.Format("{0:yyyy-MM-dd HH:mm:ss}", Model.CallbackDateTime), new { Class = "form-control" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(pcb => pcb.CallbackDateTime, new { Class = "form-control" })
+                                    }
+                                }
+                                <span class="input-group-addon">
+                                    <span class="fa fa-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@PCB.AGENT<span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <select class="form-control" name="@nameof(Model.Agent)" id="agent_list">
+                            </select>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+
+        </div>
+                                    }
+    <script type="text/javascript">
+        $(document).ready(function (e) {
+            $('#saveButton').click(function(e){
+                var campaign = $('#campaign_list').val();
+                var agent = $('#agent_list').val();
+                console.log(campaign);
+                console.log(agent);
+            });
+        });
+        $(document).ready(function (e) {
+            $('#campaign_list').select2({
+                language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+                placeholder: {
+                    id:'-1',
+                    text: '@PCB.CAMPAIGN_LIST_PLACE_HOLDER'
+                },
+                width: '100%',
+                theme: 'bootstrap',
+                ajax: {
+                    delay:250,
+                    cache: true,
+                    dataType: 'json',
+                    url: function (params)
+                    {
+                        var url = '@Url.Action("ListCampaigns", new { area = "", controller = "Campaign" })';
+                        var q = "";
+                        var page = params.page || 1;
+                        q = 'page=' + page
+                        q += '&limit=10';
+                        if (params.term) {
+                            q += '&searchString=' + encodeURIComponent(params.term);
+                        }
+                        url += "?" + q;
+                        return url;
+                    },
+                    processResults: function (data, params)
+                    {
+                        var obj = {};
+                        obj.results = data.records.map(function (item) {
+                            return {
+                                id: item.Id ,
+                                text: item.Name
+                            }
+                        });
+                        if (!params.page) {
+                            params.page = 1;
+                        }
+                        obj.pagination = {
+                            more: (10 * params.page) < data.total
+                        }
+                        return obj;
+                    }
+                },
+                escapeMarkup: function (markup) { return markup; },
+                closeOnSelect: true,
+                tags:false
+
+            });
+            $('#agent_list').select2({
+                language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+                placeholder: {
+                    id:'-1',
+                    text: '@PCB.AGENT_SELECT_PLACE_HOLDER'
+                },
+                width: '100%',
+                theme: 'bootstrap',
+                ajax: {
+                    delay: 250,
+                    cache: true,
+                    dataType: 'json',
+                    url: function (params)
+                    {
+                        var url = '@Url.Action("ListAgents", new { area = "", controller = "Agent" })';
+                        var q = "";
+                        var page = params.page || 1;
+                        q = 'page=' + page
+                        q += '&limit=10';
+                        if (params.term) {
+                            q += '&searchString=' + encodeURIComponent(params.term);
+                        }
+                        url += "?" + q;
+                        return url;
+                    },
+                    processResults: function (data, params)
+                    {
+                        var obj = {};
+                        obj.results = data.records.map(function (item) {
+                            return {
+                                id: item.Id,
+                                text: item.Name
+                            }
+                        });
+                        if (!params.page) {
+                            params.page = 1;
+                        }
+                        obj.pagination = {
+                            more: (10 * params.page) < data.total
+                        }
+                        return obj;
+                    }
+                },
+                escapeMarkup: function (markup) { return markup; },
+                closeOnSelect: true
+            });
+            if(@ViewBag.Edit==1)
+            {
+                var CampaignAdd = '@{if (Model != null && !string.IsNullOrEmpty(Model.Campaign)) { @Model.Campaign} }';
+                var option = $('<option selected></option>').val(0);
+                var CampaignEdit = '@{if (Model != null && !string.IsNullOrEmpty(Model.CampaignName)) { @Model.CampaignName} }';
+                $(option).text(CampaignEdit).val(CampaignAdd);
+                $('#campaign_list').append(option).trigger('change');
+
+                var AgentAdd = '@{if (Model != null && !string.IsNullOrEmpty(Model.Agent)) { @Model.Agent} }';
+                var option = $('<option selected></option>').val(0);
+                var AgentEdit = '@{if (Model != null && !string.IsNullOrEmpty(Model.AgentName)) { @Model.AgentName} }';
+                $(option).text(AgentEdit).val(AgentAdd);
+                $('#agent_list').append(option).trigger('change');
+            }
+        });
+        $('#datetimepicker1').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm', defaultDate: moment().add(15,'minutes'), icons: {
+                time: "fa fa-clock-o",
+                date: "fa fa-calendar",
+                up: "fa fa-chevron-up",
+                down: "fa fa-chevron-down",
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        });
+    </script>
+</div>

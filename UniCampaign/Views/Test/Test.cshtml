@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<!-- Styling -->
+<link rel="stylesheet" href="/desktop/thirdparty/bootstrap/3.2.0/css/bootstrap.css" type="text/css" />
+<link rel="stylesheet" href="SampleGadget.css" type="text/css" />
+
+
+<!-- jQuery -->
+<script type="text/javascript" src="/desktop/assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="/desktop/thirdparty/bootstrap/3.2.0/js/bootstrap.min.js"></script>/>
+<!-- Finesse Library -->
+<script type="text/javascript" src="/desktop/assets/js/finesse.js"></script>
+
+<body class="claro">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                        <div class="form-horizontal col-xs-5">
+                            <div class="form-group">
+                                <label class="control-label">Name</label>
+                                <p class="form-control-static">Customer Name</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">NRIC</label>
+                                <input type="text" class="form-control" value="u372648716">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">DOB</label>
+                                <input type="date" class="form-control" value="1990/06/06">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Age</label>
+                                <input type="text" class="form-control" value="27">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Address</label>
+                                <textarea class="form-control">
+                                    P.O. Box 283 8562 Fusce Rd.
+                                    Frederick Nebraska 20620
+                                    (372) 587-2335
+                                </textarea>
+                            </div>
+                        </div>
+                        <div class="form-horizontal col-xs-offset-1 col-xs-5">
+                            <div class="form-group">
+                                <label class="control-label">Telephone</label>
+                                <p class="form-control-static">9821853844</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Credit Card Number</label>
+                                <input type="text" class="form-control" value="5500 XXXX XXXX 0004">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Policy Holding</label>
+                                <p class="form-control-static">Life</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Policy Status</label>
+                                <select class="form-control">
+                                    <option>Active</option>
+                                    <option>InActive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+<script type="text/javascript">
+    gadgets.HubSettings.onConnect = function () {
+    };
+</script>

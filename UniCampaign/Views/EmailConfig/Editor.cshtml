@@ -1,0 +1,94 @@
+﻿@using UniCampaignE.Web.Localization
+@model  UniCampaignE.Core.Models.EmailConfig
+<div class="modal-dialog">
+    @{
+        string action = ViewBag.Action;
+    }
+    @using (Ajax.BeginForm(action, "EmailConfig", new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" id="addEmailConfigForm" role="form">
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Comman.NAME_LABEL <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.Name, new { @class = "form-control", placeholder = Comman.NAME_LABEL })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.HiddenFor(mod => mod.ConfigId)
+                        <label class="control-label col-xs-4">@Email.EMAIL_CONFIG_HOST_LABEL <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.EmailHost, new { Class = "form-control", placeholder = Email.EMAIL_CONFIG_HOST_PLACEHOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Email.EMAIL_CONFIG_PORT_LABEL <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.SMTPPort, new { Class = "form-control", placeholder = Email.EMAIL_CONFIG_PORT_PLACEHOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Email.EMAIL_CONFIG_USERNAME_LABEL <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.Username, new { Class = "form-control", placeholder = Email.EMAIL_CONFIG_USERNAME_PLACEHOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Email.EMAIL_CONFIG_PASSWORD_LABEL <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.PasswordFor(mod => mod.Password, new { Class = "form-control", placeholder = Email.EMAIL_CONFIG_PASSWORD_PLACEHOLDER, value = Model != null ? Model.Password : "" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Email.EMAIL_CONFIG_FROM_LABEL <span class="error inline">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.FromAddress, new { Class = "form-control", placeholder = Email.EMAIL_CONFIG_FROM_PLACEHOLDER })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">SSL</label>
+                        <div class="col-xs-8 col-lg-7">
+                            <div id="theCheckbox" class="checkbox c-checkbox">
+                                <label>
+                                    @{string check = "";}
+                                    @if (Model != null && Model.SSLEnabled)
+                                    {
+                                        check = @"checked='checked'";
+                                    }
+                                    <input type="checkbox" id="ssl_check" @check />
+                                    <span class="fa fa-check"></span>@Email.EMAIL_SSL_LABEL
+                                </label>
+                            </div>
+                            @Html.Hidden(nameof(Model.SSLEnabled), Model != null && Model.SSLEnabled, new { id = "ssl_enabled" })
+
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+        </div>
+                                        }
+</div>
+
+<script type="text/javascript">
+    $('#ssl_check').on('change', function (e) {
+        $('#ssl_enabled').val($(this).is(':checked'));
+    });
+
+</script>

@@ -1,0 +1,1166 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+@model UniCampaignE.Core.Models.ContactMapGroup
+<div class="modal-dialog">
+    <form id="assign_list_form" method="post" action="@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.AssignContactListGroup), new { controller = "Campaign", area = "" })">
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div id="step_one">
+                        @Html.HiddenFor(mod => mod.CampaignId, new { id = "campaignId" })
+                        <div class="form-group hidden">
+                            <label class="control-label col-xs-4">
+                                Parent List<span class="text-danger">*</span>
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                @*<select class="form-control" name="Parent" id="map_list"></select>*@
+
+                                <select class="form-control" data-value="@Model.ParentMapId" data-text="@Model.ParentMapName" id="map_list">
+                                    <option value="@Model.ParentMapId" selected="selected">@Model.ParentMapId</option>
+                                </select>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">
+                                @Campaign.CONTACT_LIST<span class="text-danger">*</span>
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                <select class="form-control" id="contact_list" name="@nameof(Model.ContactListId)"></select>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">@ContactList.COUNTRY_LABEL<span class="error inline">*</span></label>
+                            <div class="col-xs-8 col-lg-7">
+                                @Html.DropDownListFor(mod => mod.TargetCountry, DropDownHelper.GetCountries(), new { @class = "form-control", id = "country_list" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        @*<div class="form-group">
+                                <label class="control-label col-xs-4">Dialing Priority</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select id="dialing_Priority" class="form-control">
+                                        <option selected="selected" placeholder="Select Priority"></option>
+                                        <option selected>1</option>
+                                        <option>2</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>5</option>
+                                        <option>6</option>
+                                        <option>7</option>
+                                        <option>8</option>
+                                        <option>9</option>
+                                        <option>10</option>
+                                    </select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>*@
+
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">
+                                @Campaign.TIME_ZONE
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                @Html.DropDownListFor(mod => mod.TimeZone, DropDownHelper.GetTimeZones(), new { @class = "form-control", id = "timezone" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden">
+                            <label class="control-label col-xs-4">
+                                @Campaign.SCHEDULE
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                <div class="checkbox c-checkbox mt-sm">
+                                    <label>
+                                        <input type="checkbox" id="schedule_check" />
+                                        <span class="fa fa-check"></span>@Campaign.ENABLE
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden" id="schedule_area">
+                            <label class="control-label col-xs-4">@Campaign.SCHEDULED_TIME</label>
+                            <div class="col-xs-8 col-lg-7" id="schedule_time">
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden">
+                            <label class="control-label col-xs-4">
+                                @Campaign.RECURRENCE
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                @Html.DropDownListFor(mod => mod.Recurrence, DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.RecurrenceType)).Where(re => re.Value == "1" || re.Value == "3"), new { @class = "form-control", @id = "recurrence" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden" id="interval_area">
+                            <label class="control-label col-xs-4">
+                                @Campaign.RECURRENCE_INTERVAL
+                            </label>
+                            <div class="col-xs-4 col-lg-3">
+                                @Html.TextBoxFor(mod => mod.RecurrenceInterval, new { @class = "form-control", @id = "recurrence_interval" })
+                            </div>
+                            <div class="col-lg-3 col-xs-4">
+                                @Html.EnumDropDownListFor(mod => mod.RecurrenceUnit, new { @class = "form-control", @id = "recurrence_unit" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+
+                        <div class="form-group hidden">
+                            <label class="control-label col-xs-4">
+                                @Campaign.OVERWRITE_DATA
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                <div class="checkbox c-checkbox mt-sm">
+                                    <label>
+                                        @{string check3 = "";}
+                                        @if (Model != null && Model.OverwriteData)
+                                        {
+                                            check3 = @"checked='checked'";
+                                        }
+                                        <input type="checkbox" id="overwrite_check" @check3 />
+                                        <span class="fa fa-check" id=""></span>@Campaign.ENABLE
+                                    </label>
+                                    @Html.Hidden(nameof(Model.OverwriteData), Model != null && Model.OverwriteData, new { @id = "overwrite_data" })
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                    <div id="step_two" class="hidden">
+                        <div class="">
+
+                            <div class="checkbox c-checkbox mt0 col-xs-3">
+                                <label>
+                                    @{string check1 = "";}
+
+                                    @if (Model != null && Model.MapLimitIsActive == true)
+                                    {
+
+                                        check1 = @"checked='checked'";
+                                    }
+
+                                    <input type="checkbox" id="c_TargetCheck" class="target_check" @check1 />
+                                    <span class="fa fa-check"></span><b>Threshold</b>
+                                </label>
+                                @Html.Hidden(nameof(Model.MapLimitIsActive), Model != null && Model.MapLimitIsActive, new { @class = "target_check1", @id = "c_TargetCheck1" })
+                                @Html.Hidden("CheckThreshold", Model.MapLimitIsActive)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">
+                                Group Data By<span class="text-danger">*</span>
+                            </label>
+                            <div class="col-xs-8 col-lg-7 group-map" style="max-height:200px; overflow-y:auto;">
+                                <button class="btn btn-sm btn-primary btn-add-group pull-right">Add</button>
+                                <div class="clearfix"></div>
+                                <div class="form-group group-row pt-lg">
+                                    <div class="col-xs-9">
+                                        <select class="header-row"></select>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden">
+                            <label class="control-label col-xs-4">
+                                Threshold Conditions
+                            </label>
+                            <div class="col-xs-8 col-lg-7 ">
+                                <button class="btn btn-sm btn-primary btn-add-threshold pull-right">Add</button>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden">
+                            <div class="threshold-map" style="max-height:340px; overflow-y:auto">
+                                <div class="form-group conditional-threshold pt-lg">
+                                    <div class="panel panel-primary col-lg-11 col-lg-offset-1">
+                                        <div class="panel-body">
+                                            <div class="row">
+                                                <div class="col-xs-3 col-xs-offset-9">
+                                                    <button class="btn btn-sm btn-danger btn-remove-threshold pull-right hidden"><i class="fa fa-remove"></i></button>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-3">
+                                                    <strong class="form-control-static">If No of Records</strong>
+                                                </div>
+                                                <div class="col-lg-3 col-xs-6">
+                                                    <select class="form-control input-sm conditional-operator">
+                                                        <option value="1">=</option>
+                                                        <option value="3">></option>
+                                                        <option value="4"><</option>
+                                                        <option value="5">>=</option>
+                                                        <option value="6"><=</option>
+
+                                                    </select>
+                                                </div>
+                                                <div class="col-xs-5 col-lg-4">
+                                                    <input type="text" class="form-control input-sm record-count" />
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+
+                                            <div class="row pt-lg">
+                                                <div class="col-lg-3">
+                                                    <strong class="form-control-static">Threshold</strong>
+                                                </div>
+                                                <div class="col-lg-4 col-xs-5">
+                                                    <input type="text" class="form-control input-sm threshold-value" />
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <select class="form-control input-sm threshold-value-type">
+                                                        <option value="2">Fixed Value</option>
+                                                        <option value="1">Percentage</option>
+                                                    </select>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group hidden">
+                            <label class="col-xs-4">
+                                Default Threshold
+                            </label>
+                            <div class="col-xs-4 col-lg-3">
+                                @Html.TextBoxFor(mod => mod.DefaultThreshold, new { @class = "default-threshold form-control" })
+                            </div>
+                            <div class="col-xs-5 col-lg-4">
+                                @Html.EnumDropDownListFor(mod => mod.DefaultThresholdType, new { @class = "form-control default-threshold-type" })
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div id="step_three" class="hidden">
+                        <div class="col-lg-6 p0">
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE01<span class="text-danger">*</span></label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone01)" id="phone01"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 p0">
+                            <div class="form-group" id="map_headers">
+                                <label class="control-label col-xs-4">@Campaign.HEADERS</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <div class="checkbox c-checkbox mt0 mb0">
+                                        <label>
+                                            @{string checkHeaders = "";}
+                                            @if (Model != null && Model.KeepHeaders)
+                                            {
+                                                checkHeaders = @"checked='checked'";
+                                            }
+                                            <input type="checkbox" id="header_check" @checkHeaders />
+                                            <span class="fa fa-check"></span>@Campaign.KEEP_HEADERS
+                                        </label>
+                                        @Html.Hidden(nameof(Model.KeepHeaders), Model != null && Model.KeepHeaders, new { @id = "keep_headers" })
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="col-lg-6 p0 header-map">
+                            <div class="form-group form-group-sm hidden">
+                                <label class="control-label col-xs-4">@Campaign.ACCOUNT_NUMBER</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.AccountNumber)" id="accountNumber"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.FIRST_NAME</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FirstName)" id="firstName"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.LAST_NAME</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.LastName)" id="lastName"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE02</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone02)" id="phone02"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE03</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone03)" id="phone03"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE04</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone04)" id="phone04"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE05</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone05)" id="phone05"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE06</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone06)" id="phone06"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 p0 header-map">
+
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE07</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone07)" id="phone07"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE08</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone08)" id="phone08"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE09</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone09)" id="phone09"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">@Campaign.PHONE10</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.Phone10)" id="phone10"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div id="step_four" class="hidden">
+                        <div class="col-lg-6 p0">
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 1</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar1)" id="future_use_varchar1"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 p0">
+                            <div class="form-group" id="map_headers">
+                                <label class="control-label col-xs-4">Extra Column 2</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar2)" id="future_use_varchar2"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="col-lg-6 p0 header-map">
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 3</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar3)" id="future_use_varchar3"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 4</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar4)" id="future_use_varchar4"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 5</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar5)" id="future_use_varchar5"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 6</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar6)" id="future_use_varchar6"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 7</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar7)" id="future_use_varchar7"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 8</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar8)" id="future_use_varchar8"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 9</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar9)" id="future_use_varchar9"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 p0 header-map">
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 10</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar10)" id="future_use_varchar10"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 11</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar11)" id="future_use_varchar11"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 12</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar12)" id="future_use_varchar12"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 13</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar13)" id="future_use_varchar13"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 14</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar14)" id="future_use_varchar14"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label class="control-label col-xs-4">Extra Column 15</label>
+                                <div class="col-xs-8 col-lg-7">
+                                    <select class="form-control header-row" name="@nameof(Model.FutureUseVarchar15)" id="future_use_varchar15"></select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="hidden" id="step_five">
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">
+                                @Campaign.DUPLICATE_FILTER
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                <div class="checkbox c-checkbox mt-sm">
+                                    <label>
+                                        @{string check = "";}
+                                        @if (Model != null && Model.FilterDuplicates)
+                                        {
+                                            check = @"checked='checked'";
+                                        }
+                                        <input type="checkbox" id="duplicate_check" @check />
+                                        <span class="fa fa-check"></span>@Campaign.ENABLE
+                                    </label>
+                                    @Html.Hidden(nameof(Model.FilterDuplicates), Model != null && Model.FilterDuplicates, new { @id = "filter_duplicates" })
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden" id="duplicate_filter_column_container">
+                            <label class="control-label col-xs-4">
+                                @Campaign.DUPLICATE_RULES
+                            </label>
+                            <div class="col-xs-9 col-lg-8">
+                                <div class="row">
+                                    <span class="btn btn-xs btn-primary pull-right" id="btn_add_duplicate_rule" role="button">@Comman.ADD_BUTTON_TEXT <small class="fa fa-plus"></small></span>
+                                </div>
+                                <div id="duplicate_rule_parent">
+                                    <div class="row mt-sm duplicate-rule">
+                                        <div class="col-lg-10">
+                                            @*@Html.ListBoxFor(mod=>mod.DuplicateRules,new MultiSelectList(ImportHeaderFields.AllHeaders),new{@class="form-control duplicate-rule-fields" })*@
+                                            <select class="form-control duplicate-rule-fields" name="DuplicateRulesSelect"></select>
+                                            <input type="hidden" name="@nameof(Model.DuplicateRules)" class="campignRule" id="duplicate_rule" />
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <small class="btn btn-xs btn-danger mt-sm btn-remove-duplicate-rule campignRule" role="button"><span class="fa fa-remove"></span></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4">
+                                Exclusion List Filter
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                <div class="checkbox c-checkbox mt-sm">
+                                    <label>
+                                        @{string check2 = "";}
+                                        @if (Model != null && Model.FilterDNC)
+                                        {
+                                            check2 = @"checked='checked'";
+                                        }
+                                        <input type="checkbox" id="dnc_check" @check2 />
+                                        <span class="fa fa-check"></span>@Campaign.ENABLE
+                                    </label>
+                                    @Html.Hidden(nameof(Model.FilterDNC), Model != null && Model.FilterDNC, new { @id = "filter_dnc" })
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden" id="sourceType_export">
+                            <label class="control-label col-xs-4">
+                                Export Action
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                @Html.EnumDropDownListFor(mod => mod.UpdateAction, new { @class = "form-control", @id = "export_action" })
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="form-group hidden" id="updateOptions">
+
+                            <label class="control-label col-xs-4">
+                                Field to Update
+                            </label>
+                            <div class="col-xs-8 col-lg-7">
+                                <select class="form-control header-row" name="@nameof(Model.UpdateActionField)" id="update_column"></select>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default disabled" id="btn_previous">@Comman.BUTTON_PREVIOUS</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <button type="button" class="btn btn-primary" id="btn_next">@Comman.BUTTON_NEXT</button>
+                <input type="submit" class="btn btn-primary hidden" id="btn_save" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        var contactListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.ListContactMaps), new { area = "", controller = "Campaign" })';
+        debugger;
+        $('#map_list').select2({
+            width: '100%',
+            multiple: false,
+            placeholder: 'Select Parent List',
+            theme: 'bootstrap',
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true,
+            language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+            placeholder: {
+                id: 0,
+                text: 'Select Parent List'
+            },
+            theme: 'bootstrap',
+            ajax: {
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    var url = contactListUrl;
+                    var q = "campaignId=" + @Model.CampaignId;
+                    var page = params.page || 1;
+                    q += '&page=' + page;
+                    q += '&limit=10';
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+
+                },
+                processResults: function (data, params) {
+                    var obj = {};
+                    obj.results = data.records.map(function (item) {
+                        return {
+                            id: item.MapId,
+                            text: item.Name
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true
+        });
+
+
+
+        $(function () {
+            debugger;
+            var $contactMapGroupForm = $('#assign_list_form');
+            $contactMapGroupForm.on('click', '.btn-remove-group', function (e) {
+                e.preventDefault();
+                $(this).parentsUntil('.group-row').parent().remove();
+            });
+            $contactMapGroupForm.on('click', '.btn-remove-threshold', function (e) {
+                e.preventDefault();
+                $(this).parentsUntil('.conditional-threshold').parent().remove();
+            });
+            $contactMapGroupForm.on('click', '.btn-add-group', function (e) {
+                e.preventDefault();
+                var $firstRow = $('.group-row', $contactMapGroupForm).first();
+                var newRow = $('<div class="form-group group-row pt-lg"><div class="col-xs-9"><select class="header-row"></select></div><div class="col-xs-2"><button class="btn btn-sm btn-danger btn-remove-group"><i class="fa fa-close"></i></button></div><div class="clearfix"></div></div>');
+                var options = $('option', $('.header-row', $contactMapGroupForm).first()).clone(false);
+                $('.header-row', $(newRow)).append($(options));
+
+                $('.group-map', $contactMapGroupForm).append($(newRow));
+                $('.header-row', $('.group-map', $contactMapGroupForm)).select2({
+                    width: '100%',
+                    theme: 'bootstrap',
+                    multiple: false,
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#modal_editor')
+                });
+                var numberOfFields = $('.group-row', $contactMapGroupForm).length;
+            });
+            $contactMapGroupForm.on('click', '.btn-add-threshold', function (e) {
+                e.preventDefault();
+                $firstConiditionalThreshold = $('.conditional-threshold', $contactMapGroupForm).first();
+                var newConditionalThreshold = $firstConiditionalThreshold.clone(false);
+                $('.btn-remove-threshold', $(newConditionalThreshold)).removeClass('hidden');
+                $('.threshold-map', $contactMapGroupForm).append($(newConditionalThreshold));
+
+            });
+            var IsCrm = false;
+            var allHeaders = [];
+            var identifier = '@ViewBag.Identifier';
+            var filters = $('.filter - condition - attribute', $contactMapGroupForm).html();
+            var incrementalRecurrence = '@((int)UniCampaignE.Core.Constants.RecurrenceType.Incremental)';
+            //$('#recurrence').find('option[value="' + incrementalRecurrence + '"]').first().attr('disabled', 'disabled');
+            $('.header-row', $contactMapGroupForm).each(function (e) {
+                var header = $(this).attr('name');
+                if (header == identifier) {
+                    $(this).attr('disabled', 'disabled');
+                    return;
+                }
+                allHeaders.push($(this).attr('name'));
+            });
+            //allHeaders = _.sortBy(allHeaders, function (header) { return header });
+            var duplicateRuleHtml = $('#duplicate_rule_parent', $contactMapGroupForm).html();
+            var listOptions = {
+                language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+                placeholder: '@Campaign.SELECT_CONTACT_LIST',
+                width: '100%',
+                theme: 'bootstrap',
+                multiple: false,
+                dropdownParent: $('#modal_editor'),
+                minimumResultsForSearch: 4,
+                ajax: {
+                    cache: true,
+                    dataType: 'json',
+                    url: function (params) {
+                        var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.ContactListController.ListContactLists), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.ContactListController).Replace("Controller", "")})';
+                        var q = "";
+                        var page = params.page || 1;
+                        q = 'page=' + page;
+                        q += '&purpose=@UniCampaignE.Core.Constants.ListPurpose.Voice';
+                        q += '&limit=10';
+                        if (params.term) {
+                            q += '&searchString=' + encodeURIComponent(params.term);
+                        }
+                        url += "?" + q;
+                        return url;
+                    },
+                    processResults: function (data, params) {
+                        var obj = {};
+                        obj.results = data.records.map(function (item) {
+                            return {
+                                id: item.Id,
+                                text: item.Name
+                            }
+                        });
+                        if (!params.page) {
+                            params.page = 1;
+                        }
+                        obj.pagination = {
+                            more: (10 * params.page) < data.total
+                        }
+                        return obj;
+                    }
+                },
+                escapeMarkup: function (markup) { return markup; },
+                closeOnSelect: true
+            };
+
+            $('#contact_list', $contactMapGroupForm).select2(listOptions).on('change', function (e) {
+                $('#loader').show();
+                $.ajax({
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { listId: $('#contact_list', $contactMapGroupForm).val() },
+                    url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.ContactListController.GetHeaders), new { controller = nameof(UniCampaignE.Web.Controllers.ContactListController).Replace("Controller",""), area = ""})',
+                    success: function (response) {
+                        var hasHeaders = response.HasHeaders;
+                        var headers = response.Headers;
+                        if (!hasHeaders) {
+                            $('#map_headers', $contactMapGroupForm).addClass('hidden');
+                        }
+                        $('.header-row', $contactMapGroupForm).empty();
+                        var selectElements = $('.filter-condition-attribute', $contactMapGroupForm);
+                        $('.header-row', $contactMapGroupForm).append('<option value="">@Comman.SELECT_LAVEL</option>');
+                        _.each(headers, function (item, key, list) {
+                            $(selectElements).append('<option value="' + item.Value + '">' + item.Key + '</option>');
+                            $('.header-row', $contactMapGroupForm).append('<option value="' + item.Value + '">' + item.Key + '</option>');
+                        });
+                        $('#loader').hide();
+                        $('#btn_next', $contactMapGroupForm).removeAttr('disabled');
+                    },
+                    error: function (xhr, st, desc) {
+                        globalAjaxErrorHandler(xhr, st, desc);
+                        $('#btn_next', $contactMapGroupForm).attr('disabled', 'disabled');
+                    }
+                });
+            });
+
+            $('#country_list', $contactMapGroupForm).select2({
+                width: '100%',
+                theme: 'bootstrap',
+                multiple: false,
+                closeOnSelect: true
+            });
+            $('#recurrence', $contactMapGroupForm).on('change', function (e) {
+                if ($(this).val() == 0 || $(this).val() == "@{var r = (int)UniCampaignE.Core.Constants.RecurrenceType.Single; @r}") {
+                    $('#interval_area', $contactMapGroupForm).addClass('hidden');
+                    $('#recurrence_interval', $contactMapGroupForm).val('');
+                    return;
+                }
+                if ($('#interval_area', $contactMapGroupForm).hasClass('hidden')) {
+                    $('#interval_area', $contactMapGroupForm).removeClass('hidden');
+                }
+            });
+            $('#duplicate_check', $contactMapGroupForm).on('change', function (e) {
+                $('#filter_duplicates', $contactMapGroupForm).val($(this).is(':checked'));
+                if ($(this).is(':checked')) {
+                    $('#duplicate_filter_column_container', $contactMapGroupForm).removeClass('hidden');
+                } else {
+                    $('#duplicate_filter_column_container', $contactMapGroupForm).addClass('hidden');
+                }
+            });
+            $('#c_TargetCheck', $contactMapGroupForm).on('change', function (e) {
+                debugger;
+                $('#c_TargetCheck1', $contactMapGroupForm).val($(this).is(':checked'));
+
+            });
+            $('#dnc_check', $contactMapGroupForm).on('change', function (e) {
+                $('#filter_dnc', $contactMapGroupForm).val($(this).is(':checked'));
+            });
+            $('#dialing_Priority', $contactMapGroupForm).on('change', function (e) {
+                $('#dialing_Priority', $contactMapGroupForm).val($(this).val());
+            });
+
+            function initDuplicateRule(selector) {
+                $(selector).select2({
+                    data: allHeaders,
+                    width: '100%',
+                    theme: 'bootstrap',
+                    language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+                    placeholder: '@Campaign.SELECT_FIELDS',
+                    multiple: true,
+                    tags: true,
+                    allowClear: true,
+                    closeOnSelect: false,
+                    dropdownAutoWidth: true
+                });
+            }
+
+            $('#btn_next', $contactMapGroupForm).on('click', function (e) {
+
+                hideGlobalNotification();
+                if (!$('#step_two', $contactMapGroupForm).hasClass('hidden')) {
+                    $('#step_two', $contactMapGroupForm).addClass('hidden');
+                    $('#step_three', $contactMapGroupForm).removeClass('hidden');
+                    $('#btn_next', $contactMapGroupForm).removeClass('hidden');
+                    $('.modal-dialog').addClass('modal-lg');
+                    return;
+                }
+                if (!$('#step_three', $contactMapGroupForm).hasClass('hidden')) {
+                    // $('.modal-dialog', $contactMapGroupForm).removeClass('modal-lg');
+                    $('#step_three', $contactMapGroupForm).addClass('hidden');
+                    $('#step_four', $contactMapGroupForm).removeClass('hidden');
+
+
+                    return;
+                }
+
+                if (!$('#step_four', $contactMapGroupForm).hasClass('hidden')) {
+                    $('.modal-dialog').removeClass('modal-lg');
+                    $('#step_four', $contactMapGroupForm).addClass('hidden');
+                    $('#step_five', $contactMapGroupForm).removeClass('hidden');
+                    $('#btn_save', $contactMapGroupForm).removeClass('hidden')
+                    initDuplicateRule('.duplicate-rule-fields', $contactMapGroupForm);
+                    $(this).addClass('hidden');
+                    return;
+                }
+
+                var selectedContactList = $('#contact_list', $contactMapGroupForm).val();
+                if ($('#contact_list', $contactMapGroupForm).val() == null) {
+                    showGlobalNotification('error', '@Campaign.ERROR_SELECT_A_CONTACT_LIST');
+                    return;
+                }
+
+                //$('.modal-dialog', $contactMapGroupForm).addClass('modal-lg');
+                $('#step_one', $contactMapGroupForm).addClass('hidden');
+                $('#step_two', $contactMapGroupForm).removeClass('hidden');
+                $('#btn_previous', $contactMapGroupForm).removeClass('disabled');
+                if ($('#contact_list', $contactMapGroupForm).val() != null) {
+                    $.ajax({
+                        type: 'GET',
+                        dataType: 'json',
+                        data: { listId: $('#contact_list', $contactMapGroupForm).val() },
+                        url: '@Url.Action(nameof(UniCampaignE.Web.Controllers.ContactListController.GetContactList), new { controller = nameof(UniCampaignE.Web.Controllers.ContactListController).Replace("Controller",""), area = ""})',
+                        success: function (response) {
+                            IsCrm = response.IsCRM;
+                            if (IsCrm) {
+                                if ($('#sourceType_export', $contactMapGroupForm).hasClass('hidden')) {
+                                    $('#sourceType_export', $contactMapGroupForm).removeClass('hidden');
+                                }
+                            }
+                        },
+                        error: function (xhr, st, desc) {
+                            globalAjaxErrorHandler(xhr, st, desc);
+
+                        }
+                    });
+                }
+            });
+            $('#btn_previous', $contactMapGroupForm).on('click', function (e) {
+                if (!$('#step_five', $contactMapGroupForm).hasClass('hidden')) {
+                    $('#btn_save', $contactMapGroupForm).addClass('hidden');
+                    $('#btn_next', $contactMapGroupForm).removeClass('hidden');
+                    $('#step_five', $contactMapGroupForm).addClass('hidden');
+                    $('#step_four', $contactMapGroupForm).removeClass('hidden');
+                    $('.modal-dialog').addClass('modal-lg');
+                    return;
+                }
+                if (!$('#step_four', $contactMapGroupForm).hasClass('hidden')) {
+                    $('#btn_next', $contactMapGroupForm).removeClass('hidden');
+                    $('#step_four', $contactMapGroupForm).addClass('hidden');
+                    $('#step_three', $contactMapGroupForm).removeClass('hidden');
+                    return;
+                }
+                if (!$('#step_three', $contactMapGroupForm).hasClass('hidden')) {
+                    $('#btn_next', $contactMapGroupForm).removeClass('hidden');
+                    $('#step_three', $contactMapGroupForm).addClass('hidden');
+                    $('#step_two', $contactMapGroupForm).removeClass('hidden');
+                    $('.modal-dialog').removeClass('modal-lg');
+                    return;
+                }
+                $('#step_two', $contactMapGroupForm).addClass('hidden');
+                //$('.modal-dialog', $contactMapGroupForm).removeClass('modal-lg');
+                $('.modal-dialog').removeClass('modal-lg');
+                $('#step_one', $contactMapGroupForm).removeClass('hidden');
+                $(this).addClass('disabled');
+            });
+            $('.modal-content', $contactMapGroupForm).on('change', '#header_check', function (e) {
+                $('#keep_headers', $contactMapGroupForm).val($(this).is(':checked'));
+                if ($(this).is(':checked')) {
+                    $('.header-map', $contactMapGroupForm).addClass('hidden');
+                } else {
+                    $('.header-map', $contactMapGroupForm).removeClass('hidden');
+                }
+            });
+            $('.modal-content', $contactMapGroupForm).on('change', '#overwrite_check', function (e) {
+                $('#overwrite_data', $contactMapGroupForm).val($(this).is(':checked'));
+            });
+
+            $('.modal-content', $contactMapGroupForm).on('change', '#schedule_check', function (e) {
+                var checked = $(this).is(':checked');
+                if (!checked) {
+                    $('#schedule_area', $contactMapGroupForm).addClass('hidden');
+                    $('#schedule_time', $contactMapGroupForm).empty();
+                } else {
+                    $('#schedule_area', $contactMapGroupForm).removeClass('hidden');
+                    var html = '<div id="scheduleTimePicker" class="input-group date"><input type="text" name="@nameof(Model.ScheduledStart)" placeholder="Schedule Date and Time" class="form-control" /><span class="input-group-addon"><span class="fa fa-calendar"></span></span></div>';
+                    $('#schedule_time', $contactMapGroupForm).html(html);
+                    $('#schedule_time', $contactMapGroupForm).find('#scheduleTimePicker').first().datetimepicker({
+                        icons: globalDateTimePickerIcons,
+                        format: 'YYYY-MM-DD HH:mm',
+                        sideBySide: true,
+                        //minDate: moment().subtract(0, 'days'),
+                        defaultDate: moment(),
+                        showClear: true,
+                        showClose: true,
+                        useCurrent: true,
+                        keepInvalid: false,
+                        useStrict: true,
+                        toolbarPlacement: 'bottom',
+                        widgetPositioning: {
+                            horizontal: 'auto',
+                            vertical: 'bottom'
+                        }
+                    })
+                }
+            });
+            $('.header-row', $contactMapGroupForm).select2({
+                width: '100%',
+                theme: 'bootstrap',
+                multiple: false,
+                dropdownAutoWidth: true,
+                dropdownParent: $('#modal_editor')
+            });
+
+            $('#btn_add_duplicate_rule', $contactMapGroupForm).on('click', function (e) {
+                if ($('.duplicate-rule', $contactMapGroupForm).length == 3) {
+                    showGlobalNotification('error', 'Maximum three duplicate rules apply');
+                    return;
+                }
+                $('#duplicate_rule_parent', $contactMapGroupForm).append(duplicateRuleHtml);
+                var uniqueId = _.uniqueId('duplicate_rule_', $contactMapGroupForm);
+                $('.duplicate-rule-fields', $contactMapGroupForm).last().attr('id', uniqueId);
+                initDuplicateRule('#' + uniqueId);
+            });
+
+            $('#duplicate_rule_parent', $contactMapGroupForm).on('click', '.btn-remove-duplicate-rule', function (e) {
+                if ($('.duplicate-rule', $contactMapGroupForm).length > 1) {
+                    $(this).parentsUntil('.duplicate-rule', $contactMapGroupForm).parent().remove();
+                } else {
+                    $('.duplicate-rule-fields', $contactMapGroupForm).first().val('').trigger('change');
+                    $('#duplicate_check', $contactMapGroupForm).prop('checked', false).trigger('change');
+                }
+            });
+            $('#duplicate_rule_parent', $contactMapGroupForm).on('select2:select', '.duplicate-rule-fields', function () {
+                $(this).siblings('input').first().val($(this).val());
+            });
+            $('#duplicate_rule_parent', $contactMapGroupForm).on('select2:unselect', '.duplicate-rule-fields', function () {
+                $(this).siblings('input').first().val($(this).val());
+            });
+            $('#export_action', $contactMapGroupForm).on('change', function (e) {
+                if ($(this).val() != 2) {
+                    $('#updateOptions', $contactMapGroupForm).addClass('hidden');
+                    $('#update_column', $contactMapGroupForm).val('');
+                    return;
+                }
+                if ($('#updateOptions', $contactMapGroupForm).hasClass('hidden')) {
+                    $('#updateOptions', $contactMapGroupForm).removeClass('hidden');
+                }
+            });
+            $contactMapGroupForm.on('submit', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('action');
+                var filterCollection = [];
+                var filters = $('.unicampaign-filter > .filter-collection > .filter-expression', $contactMapGroupForm);
+                for (var i = 0; i < filters.length; i++) {
+                    var theFilter = contactListUtil.parseFilter($(filters[i]));
+                    if (theFilter) {
+                        filterCollection.push(theFilter);
+                    }
+                }
+                var contactMapGroup = {
+                    CampaignId: $('#campaignId', $contactMapGroupForm).val(),
+                    ContactListId: $('#contact_list', $contactMapGroupForm).val(),
+                    TargetCountry: $('#country_list', $contactMapGroupForm).val(),
+                    TimeZone: $('#timezone', $contactMapGroupForm).val(),
+                    Phone01: $('#phone01', $contactMapGroupForm).val(),
+                    AccountNumber: $('#accountNumber', $contactMapGroupForm).val(),
+                    FirstName: $('#firstName', $contactMapGroupForm).val(),
+                    LastName: $('#lastName', $contactMapGroupForm).val(),
+                    Phone02: $('#phone02', $contactMapGroupForm).val(),
+                    Phone03: $('#phone03', $contactMapGroupForm).val(),
+                    Phone04: $('#phone04', $contactMapGroupForm).val(),
+                    Phone05: $('#phone05', $contactMapGroupForm).val(),
+                    Phone06: $('#phone06', $contactMapGroupForm).val(),
+                    Phone07: $('#phone07', $contactMapGroupForm).val(),
+                    Phone08: $('#phone08', $contactMapGroupForm).val(),
+                    Phone09: $('#phone09', $contactMapGroupForm).val(),
+                    Phone10: $('#phone10', $contactMapGroupForm).val(),
+                    TimeZoneBias: $('#timezone_bias', $contactMapGroupForm).val(),
+                    DstObserved: $('#dst_observed', $contactMapGroupForm).val(),
+                    FutureUseVarchar1: $('#future_use_varchar1', $contactMapGroupForm).val(),
+                    FutureUseVarchar2: $('#future_use_varchar2', $contactMapGroupForm).val(),
+                    FutureUseVarchar3: $('#future_use_varchar3', $contactMapGroupForm).val(),
+                    FutureUseVarchar4: $('#future_use_varchar4', $contactMapGroupForm).val(),
+                    FutureUseVarchar5: $('#future_use_varchar5', $contactMapGroupForm).val(),
+                    FutureUseVarchar6: $('#future_use_varchar6', $contactMapGroupForm).val(),
+                    FutureUseVarchar7: $('#future_use_varchar7', $contactMapGroupForm).val(),
+                    FutureUseVarchar8: $('#future_use_varchar8', $contactMapGroupForm).val(),
+                    FutureUseVarchar9: $('#future_use_varchar9', $contactMapGroupForm).val(),
+                    FutureUseVarchar10: $('#future_use_varchar10', $contactMapGroupForm).val(),
+                    FutureUseVarchar11: $('#future_use_varchar11', $contactMapGroupForm).val(),
+                    FutureUseVarchar12: $('#future_use_varchar12', $contactMapGroupForm).val(),
+                    FutureUseVarchar13: $('#future_use_varchar13', $contactMapGroupForm).val(),
+                    FutureUseVarchar14: $('#future_use_varchar14', $contactMapGroupForm).val(),
+                    FutureUseVarchar15: $('#future_use_varchar15', $contactMapGroupForm).val(),
+                    Filters: filterCollection,
+                }
+                if ($('#schedule_check', $contactMapGroupForm).is(':checked')) {
+                    contactMapGroup.StartDateTime = $('#start_time', $contactMapGroupForm).val();
+                }
+                contactMapGroup.Recurrence = $('#recurrence', $contactMapGroupForm).val();
+                if (contactMapGroup.Recurrence != 1) {
+                    contactMapGroup.RecurrenceInterval = $('#recurrence_interval', $contactMapGroupForm).val();
+                    contactMapGroup.RecurrenceUnit = $('#recurrence_unit', $contactMapGroupForm).val();
+
+                }
+                if ($('#overwrite_check', $contactMapGroupForm).is(':checked')) {
+                    contactMapGroup.OverwriteData = $('#overwrite_data', $contactMapGroupForm).val();
+                }
+                if ($('#c_TargetCheck', $contactMapGroupForm).is(':checked')) {//s
+                    debugger;
+                    contactMapGroup.MapLimitIsActive = $('#c_TargetCheck1', $contactMapGroupForm).val();
+                    debugger;
+                }
+                debugger;
+                var thresholdStatus = $('#CheckThreshold', $contactMapGroupForm).val();
+                if (thresholdStatus == "True") {
+                    if ($('#c_TargetCheck', $contactMapGroupForm).is(':checked')) {
+
+                    }
+                    else {
+                        showGlobalNotification('error', 'Campaign is Configure with threshold, Please check Threshold');
+                        return;
+                    }
+                }
+                else {
+                    if ($('#c_TargetCheck', $contactMapGroupForm).is(':checked')) {
+                        showGlobalNotification('error', 'Campaign is not Configure with threshold, Please Uncheck Threshold');
+                        return;
+                    }
+                }
+                if ($('#header_check', $contactMapGroupForm).is(':checked')) {
+                    contactMapGroup.KeepHeaders = $('#keep_headers', $contactMapGroupForm).val();
+                }
+                if ($('#duplicate_check', $contactMapGroupForm).is(':checked')) {
+                    debugger;
+                    contactMapGroup.FilterDuplicates = $('#duplicate_check', $contactMapGroupForm).is(':checked')
+                    if ($('#duplicate_rule', $contactMapGroupForm)) {
+                        var duplicateFilters = $('.duplicate-rule-fields', $contactMapGroupForm);
+                        var duplicateCollection = [];
+                        for (var i = 0; i < duplicateFilters.length; i++) {
+                            var duplicateRule = $(duplicateFilters[i]).val();
+                            if (duplicateRule.length == 0) {
+                                showGlobalNotification('error', 'Please enter duplicate rule');
+                                $('.duplicate-rule-fields', $contactMapGroupForm).focus();
+                                return false;
+                            }
+                            duplicateCollection.push(duplicateRule);
+
+                        }
+
+                        contactMapGroup.DuplicateRules = duplicateCollection;
+                    }
+
+                }
+                contactMapGroup.FilterDNC = $('#filter_dnc', $contactMapGroupForm).val();
+                contactMapGroup.DialingPriority = $('#dialing_Priority', $contactMapGroupForm).val();
+
+                if (!$('sourceType_export', $contactMapGroupForm).hasClass('hidden')) {
+                    contactMapGroup.ExportAction = $('#export_action', $contactMapGroupForm).val();
+                    if (!$('updateOptions', $contactMapGroupForm).hasClass('hidden')) {
+                        contactMapGroup.FieldToUpdate = $('#update_column', $contactMapGroupForm).val();
+                    }
+                }
+                contactMapGroup.DefaultThreshold = $('.default-threshold', $contactMapGroupForm).val();
+                contactMapGroup.DefaultThresholdType = $('.default-threshold-type', $contactMapGroupForm).val();
+                var groupDataBy = [];
+                $('.group-row', $contactMapGroupForm).each(function (e) {
+                    groupDataBy.push($('.header-row', $(this)).val());
+                });
+
+                debugger;
+                var duplicates = groupDataBy.reduce(function (acc, el, i, arr) {
+                    if (arr.indexOf(el) !== i && acc.indexOf(el) < 0) acc.push(el); return acc;
+                }, []);
+                if (duplicates.length > 0) {
+                    showGlobalNotification('error', 'Group by criteria cannot be same');
+                    return false;
+                }
+
+                if (groupDataBy[0] == ""||groupDataBy.length==0) {
+                    debugger;
+                    showGlobalNotification('error', 'Enter the atleast one group');                  
+                    return false;
+                }
+                //if (contactMapGroup.DefaultThreshold == '0') {
+
+                //    showGlobalNotification('error', 'Enter the default threshold value');
+                //    $('.default-threshold', $ContactMapForm).focus();
+                //    return false;
+                //}
+                var thresholdConditions = [];
+                $('.conditional-threshold', $contactMapGroupForm).each(function (e) {
+                    var condition = {};
+                    condition.OperatorType = $('.conditional-operator', $(this)).val();
+                    condition.Attribute = 'Count';
+                    condition.Value = $('.record-count', $(this)).val();
+
+                    var conditionalThreshold = {};
+                    conditionalThreshold.Condition = condition;
+                    conditionalThreshold.ThresholdType = $('.threshold-value-type', $(this)).val();
+                    conditionalThreshold.ThresholdValue = $('.threshold-value', $(this)).val();
+                    thresholdConditions.push(conditionalThreshold);
+                });
+
+                contactMapGroup.FieldsToGroupByWith = groupDataBy;
+                contactMapGroup.ThresholdConfig = thresholdConditions;
+                console.log(contactMapGroup.ThresholdConfig);
+                console.log(JSON.stringify(contactMapGroup));
+                $.ajax({
+                    beforeSend: function (e) {
+                        $('#loader').show();
+                    },
+                    url: url,
+                    success: globalAjaxSuccessHandler,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    error: globalAjaxErrorHandler,
+                    data: JSON.stringify(contactMapGroup)
+                });
+                return false;
+            });
+        });
+    </script>
+</div>

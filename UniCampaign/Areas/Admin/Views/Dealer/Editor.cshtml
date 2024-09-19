@@ -1,0 +1,75 @@
+﻿
+@model UniCampaignE.Core.Models.Dealer
+@using UniCampaignE.Web.Localization
+@using UniCampaignE.Web.HelperLib
+<div class="modal-dialog">
+    @{
+        string action = ViewBag.Action;
+    }
+
+    @using (Ajax.BeginForm(action, new { area = "admin", controller = "Dealer" }, new AjaxOptions() { HttpMethod = "POST", LoadingElementId = "loader", OnSuccess = "globalAjaxSuccessHandler", OnFailure = "globalAjaxErrorHandler" }))
+    {
+        <div class="modal-content">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+            </div>
+            <div class="modal-body">
+                    <div class="form-group">
+                        @Html.HiddenFor(mod => mod.DealerId)
+                        <label class="control-label col-xs-4">@Comman.GROUP_TITLE Name <span class="text-danger">*</span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            @Html.TextBoxFor(mod => mod.DealerName, new { Class = "form-control", placeholder = @Comman.GROUP_TITLE + " Name" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div> 
+               @*<div class="form-group">
+      <label class="control-label col-xs-4">Select Agents<span class="text-danger">*</span></label>
+        <div class="col-xs-8 col-lg-7">
+      @Html.ListBoxFor(mod => mod.SelectedAgents, new MultiSelectList(ViewBag.Agents, "Value", "Text"),new  { Class = "form-control", @multiple = "multiple" ,id="AgentsId" })
+
+        </div>
+        <div class="clearfix"></div>
+    </div> *@          
+                <div class="form-group">
+                    
+                    <label class="control-label col-xs-4">@Comman.GROUP_TITLE Code <span class="text-danger">*</span></label>
+                    <div class="col-xs-8 col-lg-7">
+                        @Html.TextBoxFor(mod => mod.DealerCode, new { Class = "form-control", placeholder = @Comman.GROUP_TITLE + " Code" })
+                    </div>
+                    <div class="clearfix"></div>
+                </div> 
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.SAVE_BUTTON_TEXT" />
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model != null)
+{
+    <script type="text/javascript">
+        debugger;
+        $('#DealerName').attr('disabled', 'disabled');
+            $('#DealerName').val(@Model.DealerName);
+         
+         
+    </script>
+}
+@section scripts{
+<link href="~/Content/select2.min.css" rel="stylesheet" />
+    <script>
+   
+        $(function()
+        {
+            $("#AgentsId").multiselect({
+                includeSelectAllOption:true
+            });
+        })
+    </script>
+  
+    }
+
+

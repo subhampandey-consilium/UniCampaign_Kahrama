@@ -1,0 +1,520 @@
+﻿@using UniCampaignE.Web.Localization;
+@using UniCampaignE.Web.HelperLib;
+@using UniCampaignE.Core.Constants;
+@model dynamic
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>UniCampaign - @ViewBag.Title</title>
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <!-- SIMPLE LINE ICONS-->
+    <link href="~/Content/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" />
+    <!-- ANIMATE.CSS-->
+    <link href="~/Content/animate.css/animate.min.css" rel="stylesheet" />
+    <!-- WHIRL (spinners)-->
+    <link href="~/Content/whirl/whirl.css" rel="stylesheet" />
+    <!-- =============== PAGE VENDOR STYLES ===============-->
+    <link rel="shortcut icon" href="~/Content/img/fav.ico">
+    <!-- WEATHER ICONS-->
+    @*<link href="~/Content/weather-icons/css/weather-icons.min.css" rel="stylesheet" />*@
+    <!-- =============== BOOTSTRAP STYLES ===============-->
+    @{
+        string currentLanguage = System.Globalization.CultureInfo.CurrentCulture.Name.Contains("zh") ? System.Globalization.CultureInfo.CurrentCulture.Name : System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+        string bootstrapLib = System.Globalization.CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "bootstrap-rtl.css" : "bootstrap.css";
+        string appLib = System.Globalization.CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "app-rtl.css" : "app.css";
+    }
+    <link href="~/Content/@bootstrapLib" rel="stylesheet" />
+    @*<link href="~/Content/bootstrap.min.css" rel="stylesheet" id="bscss" />*@
+    <!-- =============== APP STYLES ===============-->
+    <link href="~/Content/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+    <link href="~/Content/@appLib" rel="stylesheet" id="maincss" />
+    <link href="~/Content/gijgo/combined/gijgo.min.css" rel="stylesheet" />
+    <link href="~/Content/select2.min.css" rel="stylesheet" />
+    <link href="~/Content/select2-bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/lobibox.min.css" rel="stylesheet" />
+    <title>@Page.Title</title>
+    <style>
+        .content-wrapper {
+            min-height: 570px;
+        }
+
+        .error {
+            color: red;
+            display: block;
+        }
+
+        #loader {
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            position: fixed;
+            display: none;
+        }
+
+            #loader .loader-inner {
+                margin: auto;
+                width: 100%;
+                top: 42%;
+                position: absolute;
+                color: blue;
+            }
+
+        .select2-container .select2-search,
+        .select2-container .select2-search__field {
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal" id="modal_editor"></div>
+    <div id="loader" class="whirl duo" style="opacity:.6;">
+        <div class="loader-inner text-center text-md">
+            @Comman.PLEASE_WAIT_LOADER
+        </div>
+    </div>
+    <div class="wrapper">
+        <!-- top navbar-->
+        <header class="topnavbar-wrapper">
+            <nav role="navigation" class="navbar topnavbar">
+                <!-- START navbar header-->
+                <div class="navbar-header">
+                    <a href="@Url.RouteUrl("default")" class="navbar-brand">
+                        <div class="brand-logo">
+                            <img src="~/Content/img/logo-resized.png" class="img-responsive" />
+                        </div>
+                        <div class="brand-logo-collapsed">
+                            <img src="~/Content/img/logo-single.png" class="img-responsive" />
+                        </div>
+                    </a>
+                </div>
+                <!-- END navbar header-->
+                <!-- START Nav wrapper-->
+                <div class="nav-wrapper">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <!-- Button used to collapse the left sidebar. Only visible on tablet and desktops-->
+                            <a href="#" data-toggle-state="aside-collapsed" data-no-persist="true" class="hidden-xs">
+                                <em class="fa fa-navicon"></em>
+                            </a>
+                            <!-- Button to show/hide the sidebar on mobile. Visible on mobile only.-->
+                            <a href="#" data-toggle-state="aside-toggled" data-no-persist="true" class="visible-xs sidebar-toggle">
+                                <em class="fa fa-navicon"></em>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown dropdown-list">
+                            <a href="#" title="@Comman.PROFILE_TEXT" data-toggle="dropdown">
+                                @SessionHelper.CurrentUser.Name (@SessionHelper.CurrentTenant.Name)
+                                <em class="fa fa-chevron-down"></em>
+                            </a>
+                            <ul class="dropdown-menu animated flipInX">
+                                <li>
+                                    <div class="list-group">
+                                        <div class="list-group-item">
+                                            <div id="user-block" class="bg-gray-light" aria-expanded="true">
+                                                <div class="item user-block">
+                                                    <!-- User picture-->
+                                                    <div class="user-block-picture">
+                                                        <img src="~/Content/img/avatar.png" alt="Avatar" />
+                                                    </div>
+                                                    <!-- Name and Role-->
+                                                    <div class="user-block-info">
+                                                        <span class="user-block-name">@SessionHelper.CurrentUser.Name</span>
+                                                        <span class="user-block-role">@SessionHelper.CurrentUser.Role</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a class="list-group-item" data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area = "", controller = "Account", action = "ChangePassword" })">
+                                            <span>@Comman.CHANGE_PASSWORD_TAB</span>
+                                            <span class="pull-right"><small><i class="fa fa-2x fa-user-secret text-warning"></i></small></span>
+                                        </a>
+                                        <a href="@Url.RouteUrl(new { area = "", controller = "Account", action = "Logout" })" class="list-group-item">
+                                            <span>@Comman.LOGOUT_Tab</span>
+                                            <span class="pull-right"><small><i class="fa fa-2x fa-lock text-danger"></i></small></span>
+                                        </a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <!-- END Nav wrapper-->
+            </nav>
+        </header>
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-dark">
+                        <div class="panel-body p-sm">
+                            <div class="form-inline" id="filter_form">
+                                <div class="form-group">
+                                    <label class="control-label">Campaign</label>
+                                    <select class="form-control" data-value="@Model.Id" data-text="@Model.Name" id="campaign_list">
+                                        @if (Model != null)
+                                        {
+                                            <option value="@Model.Id" selected="selected">@Model.Name</option>
+                                        }
+                                    </select>
+
+                                </div>
+                                <div class="form-group ml-lg">
+                                    <label class="control-label">Contact List</label>
+                                    @if (Model != null && Model.Map != null)
+                                    {
+                                        <select class="form-control" data-value="@Model.Map.Id" data-text="@Model.Map.Name" id="map_list" disabled="disabled">
+                                            <option value="@Model.Map.Id" selected="selected">@Model.Map.Name</option>
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <select class="form-control" id="map_list" disabled="disabled"></select>
+                                    }
+                                </div>
+                                <div class="form-group ml-lg">
+                                    <label class="control-label">Attempted On</label>
+                                    <select class="form-control" id="attempt_list" disabled="disabled"></select>
+                                </div>
+                                <div class="form-group ml-lg">
+                                    <label class="control-label">Status</label>
+                                    @Html.DropDownList("status", DropDownHelper.GetConstants(typeof(RecordStatus)), "Select Status", new { @class = "form-control", id = "status_list" })
+                                </div>
+
+                                <div class="form-group ml-lg">
+                                    <label class="control-label">SMS Result</label>
+                                    @Html.DropDownList("SMSResult", DropDownHelper.GetConstants(typeof(EmailResult)), "Select Result", new { @class = "form-control", id = "SMSResult_list" })
+                                </div>
+                                <div class="form-group pt-lg ml-lg">
+                                    <button class="btn btn-primary mt-sm" id="btn_view_report">View</button>
+                                    <button class="btn btn-primary mt-sm" id="btn_download_report">Download As CSV</button>
+                                    <button class="btn btn-default mt-sm" id="btn_reset">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-sm">
+                <div class="col-lg-12">
+                    <div class="table-responsive p0">
+                        <table id="grid" class="table table-bordered table-condensed table-striped"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MODERNIZR-->
+    <script src="~/Scripts/modernizr-2.8.3.js"></script>
+    <script src="~/Scripts/modernizr.custom.js"></script>
+    <!-- JQUERY-->
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <!-- JQuery Easing -->
+    <script src="~/Scripts/jquery.easing.js"></script>
+    <script src="~/Scripts/animo.js"></script>
+    <!-- BOOTSTRAP-->
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <!-- STORAGE API-->
+    <script src="~/Scripts/jquery.storageapi.js"></script>
+    <script src="~/Scripts/app.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+    <script src="~/Scripts/jquery.slimscroll.min.js"></script>
+    <script src="~/Scripts/gijgo/combined/gijgo.min.js"></script>
+    <script src="~/Scripts/select2.full.min.js"></script>
+    <script src="~/Scripts/select2-i18n/@{@currentLanguage}.js"></script>
+    <script src="~/Scripts/underscore-min.js"></script>
+    <script src="~/Scripts/jquery.form.js"></script>
+    <script src="~/Scripts/lobibox.js"></script>
+    <script src="~/Scripts/layout.js"></script>
+    <script type="text/javascript">
+        var gridConfig = {};
+        gridConfig.notFoundText = "@GridComman.GRID_NO_RECORD_FOUND";
+        gridConfig.url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.SMSCampaignController.ImportDetails),new {area = "",controller= "SMSCampaign" })';
+        var campaignListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.SMSCampaignController.ListCampaigns), new { area = "", controller = "SMSCampaign" })';
+        var contactListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.SMSCampaignController.ListContactMapsSMS), new { area = "", controller = "SMSCampaign" })';
+        var attemptListUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.SMSCampaignController.SMSHistory),new { area="",controller= "SMSCampaign" })';
+        var downloadUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.SMSCampaignController.DetailsReport),new { area="",controller= "SMSCampaign" })';
+        var campaignListOptions = {
+            width: '100%',
+            multiple: false,
+            placeholder: {
+                id: 0,
+                text: 'Select Campaign'
+            },
+            theme: 'bootstrap',
+            ajax: {
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    var url = campaignListUrl;
+                    var q = "";
+                    var page = params.page || 1;
+                    q = 'page=' + page;
+                    q += '&limit=10';
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+                },
+                processResults: function (data, params) {
+                    console.log(data.records);
+                    debugger;
+                  
+                    var obj = {};
+                    obj.results = data.records.map(function (item) {
+                        return {
+                            id: item.Id,
+                            text: item.Name
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true
+        };
+        var mapListOptions = {
+            width: '100%',
+            multiple: false,
+            placeholder: {
+                id: 0,
+                text: 'Select Contact List'
+            },
+            theme: 'bootstrap',
+            ajax: {
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    var url = contactListUrl;
+                    var q = "campaignId=" + $('#campaign_list').val();
+                    var page = params.page || 1;
+                    q += '&page=' + page;
+                    q += '&limit=10';
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+                },
+                processResults: function (data, params) {
+                    var obj = {};
+                    obj.results = data.records.map(function (item) {
+                        return {
+                            id: item.MapId,
+                            text: item.Name
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true
+        };
+        var attemptListOptions = {
+            width: '100%',
+            multiple: false,
+            placeholder: {
+                id: 0,
+                text: 'Attempt'
+            },
+            theme: 'bootstrap',
+            minimumResultsForSearch: Infinity,
+            ajax: {
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    var url = attemptListUrl;
+                    var q = "mapId=" + $('#map_list').val();
+                    var page = params.page || 1;
+                    q += '&page=' + page;
+                    q += '&limit=10&paginate=true';
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+                },
+                processResults: function (data, params) {
+                    var obj = {};
+                    obj.results = data.records.map(function (item) {
+                        return {
+                            id: item.Id,
+                            text: item.AttemptedOn
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true
+        }
+        var statusListOptions = {
+            width: '100%',
+            multiple: false,
+            placeholder: 'Select Status',
+            theme: 'bootstrap',
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true
+        };
+
+        var SMSResultListOptions = {
+            width: '100%',
+            multiple: false,
+            placeholder: 'Select Result',
+            theme: 'bootstrap',
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            tags: false,
+            allowClear: true
+        };
+
+        $(document).ready(function (e) {
+            $('#status_list').val(0);
+            $('#SMSResult_list').val(0);
+            $('#attempt_list').select2(attemptListOptions);
+            $('#map_list').select2(mapListOptions);
+            $('#status_list').select2(statusListOptions);
+            $('#SMSResult_list').select2(SMSResultListOptions);
+            $('#campaign_list').select2(campaignListOptions);
+            $(document).on('change.select2', '#campaign_list', function (e) {
+                var currentVal = $(this).val();
+                if (currentVal == null) {
+                    $('#map_list').val(0).trigger('change.select2')
+                    $('#map_list').attr('disabled', 'disabled');
+                } else {
+                    $('#map_list').removeAttr('disabled');
+                }
+            });
+            $(document).on('change.select2', '#map_list', function (e) {
+                var currentVal = $(this).val();
+                if (currentVal == null) {
+                    $('#attempt_list').val(0).trigger('change.select2');
+                    $('#attempt_list').attr('disabled', 'disabled');
+                } else {
+                    $('#attempt_list').removeAttr('disabled');
+                }
+            });
+
+            $(document).on('change.select2', '#SMSResult_list', function (e) {
+                debugger;
+                var callResult = $(this).val();
+                if (callResult != null && callResult != '') {
+                    var status = $('#status_list').val();
+                    if (status != null && status != '') {
+                        $('#status_list').val(null).trigger('change');
+                    }
+                }
+            });
+
+            $(document).on('change.select2', '#status_list', function (e) {
+                debugger;
+                var status = $(this).val();
+                if (status != null && status != '') {
+                    var callResult = $('#SMSResult_list').val();
+                    if (callResult != null && callResult != '') {
+                        $('#SMSResult_list').val(null).trigger('change');
+                    }
+                }
+            });
+
+
+            $(document).on('click', '#btn_download_report', function (e) {
+                var campaignId = $('#campaign_list').val();
+                if (campaignId == null || campaignId == '') {
+                    return;
+                }
+                var url = downloadUrl;
+                url += "?campaignId=" + $('#campaign_list').val() + "&mapId=" + $('#map_list').val() + "&attemptId=" + $('#attempt_list').val() + "&status=" + $('#status_list').val() + "&SMSResult=" + $('#SMSResult_list').val();
+                var reportWindow = window.open(url, '_blank');
+            });
+            $(document).on('click', '#btn_reset', function (e) {
+                $('#campaign_list').val(null).trigger('change.select2');
+                $('#status_list').val(null).trigger('change.select2');
+                $('#SMSResult_list').val(null).trigger('change.select2');
+                $('#grid').grid('clear', true);
+            });
+            $(document).on('click', '#btn_view_report', function (e) {
+                if ($('#campaign_list').val() == null || $('#campaign_list').val() == '') {
+                    return;
+                }
+                console.log("statuslist",$('#status_list').val(),)
+                var dataSource = {};
+                dataSource.url = gridConfig.url;
+                dataSource.method = "POST";
+                dataSource.data = {
+                    campaignId: $('#campaign_list').val(),
+                    mapId: $('#map_list').val(),
+                    attemptId: $('#attempt_list').val(),
+                    status: $('#status_list').val(),
+                    SMSResult: $('#SMSResult_list').val(),
+
+                };
+                $('#grid').grid('destroy', true, true);
+                grid = $("#grid").grid({
+                    uiLibrary: "bootstrap",
+                    iconsLibrary: 'fontawesome',
+                    primaryKey: "Id",
+                    notFoundText: gridConfig.notFoundText,
+                    dataSource: dataSource,
+                    pager: { enable: true, limit: 30, sizes: [30, 40, 60] },
+                    columns: [
+                        { field: 'PhoneNumber', title: 'Phone Number' },
+                        { field: 'Status', title: 'Status' },
+                        { field: 'SMSResult', title: 'SMS Result' },
+                        { field: 'DateTime', title: 'DateTime' },
+                        { field: 'ProcessedOn', title: 'ProcessedOn' }
+                    ],
+                    showHiddenColumnsAsDetails: true,
+                    detailTemplate: '<div class="row"></div>',
+                    initialized: function (e) {
+                        $(this).addClass('table-striped table-condensed');
+                    }
+                });
+            });
+
+            var currentCampaign = $('#campaign_list').val();
+            if (currentCampaign != null) {
+                $('#campaign_list').trigger('change.select2');
+                $('#btn_view_report').trigger('click');
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1421 @@
+﻿@using UniCampaignE.Web.Localization
+@using UniCampaignE.Core.Models.API;
+@model int?
+@{
+    var callResultDictionary = new Dictionary<string, int>();
+    foreach (var cr in UniCampaignE.Core.Common.UniCampaignCore.CallResultActionMapRepository.Where(kvp => kvp.Key != UniCampaignE.Core.Constants.API.CallResult.AnsweredSuccess && !kvp.Value.IsAutoRetry).Select(kvp => kvp.Key))
+    {
+        callResultDictionary.Add(System.Text.RegularExpressions.Regex.Replace(cr.ToString(), "[A-Z]{1}([a-z]{1})|[A-Z]+", " $&"), (int)cr);
+    }
+    var wrapups = ViewBag.Wrapups as IEnumerable<string>;
+    var ThresholdConfigView = ViewBag.ThresholdConfig as IEnumerable<CampaignExtraDetails.ConditionalThreshold>;
+}
+<div class="modal-dialog modal-lg" id="advanced_campaign_editor">
+    <div class="modal-content">
+        <div class="modal-header bg-primary-dark">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">@ViewBag.ModalTitle</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-lg-12" role="tabpanel">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="active">
+                            <a href="#main" data-toggle="tab">@UniCampaignE.Web.Localization.Campaign.MAIN_TAB</a>
+                        </li>
+                        <li>
+                            <a href="#advanced" data-toggle="tab">Dial Settings</a>
+                        </li>
+                        <li>
+                            <a href="#callback" data-toggle="tab">Callback Settings</a>
+                        </li>
+                        <li id="skill_tab">
+                            <a href="#skill" data-toggle="tab">@UniCampaignE.Web.Localization.Campaign.SKILL_GROUPS</a>
+                        </li>
+                        <li id="extra_tab">
+                            <a href="#extra" data-toggle="tab">Extra</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active b0" role="tabpanel" id="main">
+                            <div class="col-lg-6 pl0">
+                                <div class="panel panel-primary">
+                                    <div class="panel-body pl-md">
+                                        <div class="form-group form-group-sm col-lg-7 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.NAME<span class="error inline">*</span></label>
+                                            <input type="hidden" id="c_id" />
+                                            <input type="text" id="c_name" class="form-control" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-4 p0">
+                                            <label>Purpose</label>
+                                            @Html.DropDownList("Purpose", UniCampaignE.Web.HelperLib.DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.API.CampaignType)), new { @class = "form-control", @id = "c_purpose" })
+                                        </div>
+                                        <div class="form-group form-group-sm">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.DESCRIPTION</label>
+                                            <input type="text" id="c_description" class="form-control" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-4 p0">
+                                            <label class="control-label">@UniCampaignE.Web.Localization.Campaign.STATUS</label>
+                                            <div class="checkbox c-checkbox mt0">
+                                                <label>
+                                                    <input type="checkbox" id="c_status" />
+                                                    <span class="fa fa-check"></span>@UniCampaignE.Web.Localization.Campaign.ENABLE
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-7 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.DIALING_MODE</label>
+                                            @Html.DropDownList("Mode", UniCampaignE.Web.HelperLib.DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.API.DialingMode)), new { @class = "form-control", @id = "c_dialing_mode" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 pl0">
+                                <div class="panel-group" id="accordion">
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#accordion" href="#panel_time" role="button">
+                                            <span class="panel-title">@UniCampaignE.Web.Localization.Campaign.TIME_SETTINGS_TITLE</span>
+                                        </div>
+                                        <div id="panel_time" class="panel-collapse collapse in">
+                                            <div class="panel-body pl-md">
+                                                <div class="form-group form-group-sm">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.TIME_ZONE</label>
+                                                    @Html.DropDownList("TimeZone", UniCampaignE.Web.HelperLib.DropDownHelper.GetTimeZones(), new { @class = "form-control", @id = "c_timezone" })
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.START_DATE</label>
+                                                    <input type="text" class="form-control" id="c_start_date" placeholder="YYYY-MM-DD" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.START_TIME</label>
+                                                    <input type="text" class="form-control" id="c_start_time" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.END_DATE</label>
+                                                    <input type="text" class="form-control" id="c_end_date" placeholder="YYYY-MM-DD" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.END_TIME</label>
+                                                    <input type="text" class="form-control" id="c_end_time" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#accordion" href="#panel_dial_options" role="button">
+                                            <span class="panel-title">
+                                                @UniCampaignE.Web.Localization.Campaign.DIALING_OPTIONS_TITLE
+                                            </span>
+                                        </div>
+                                        <div id="panel_dial_options" class="panel-collapse collapse">
+                                            <div class="panel-body pl-md">
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.LINES_PER_AGENT</label>
+                                                    <input type="text" class="form-control" id="c_lines_per_agent" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.MAXIMUM_LINES_PER_AGENT</label>
+                                                    <input type="text" class="form-control" id="c_max_lines_per_agent" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.ABANDON_CALLS</label>
+                                                    <div class="checkbox c-checkbox">
+                                                        <label>
+                                                            <input type="checkbox" id="c_abandon_status" />
+                                                            <span class="fa fa-check"></span>@UniCampaignE.Web.Localization.Campaign.ENABLED
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.ABANDON_LIMIT</label>
+                                                    <input type="text" class="form-control" id="c_abandon_limit" />
+                                                </div>
+                                                <div class="clearfix"></div>
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.CORRECTION_PACE</label>
+                                                    <input type="text" class="form-control" id="c_predictive_correction_pace" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.PREDICTIVE_GAIN</label>
+                                                    <input type="text" class="form-control" id="c_predictive_gain" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="tab-pane" role="tabpanel" id="advanced">
+                            <div class="col-lg-6 pl0">
+
+                                <div class="panel panel-primary">
+                                    <div class="panel-body">
+                                        <div class="form-group form-group-sm col-lg-5 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.NO_ANSWER_RING_LIMIT</label>
+                                            <input type="text" class="form-control" id="c_no_answer_ring_limit" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.CAMPAIGN_PREFIX</label>
+                                            <input type="text" class="form-control" id="c_prefix" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-5 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.RESERVATION_PERCENTAGE</label>
+                                            <input type="text" class="form-control" id="c_reservation_percentage" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.MINIMUM_CALL_DURATION</label>
+                                            <input type="text" class="form-control" id="c_minimum_call_duration" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-lg-6 pl0">
+                                <div class="panel-group" id="advanced_accordion">
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#advanced_accordion" href="#panel_cpa" role="button">
+                                            <span class="panel-title">
+                                                @UniCampaignE.Web.Localization.Campaign.CALL_PROGRESS_ANALYSIS
+                                            </span>
+                                        </div>
+                                        <div id="panel_cpa" class="panel-collapse collapse">
+                                            <div class="panel-body pl-md">
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label class="control-label">@UniCampaignE.Web.Localization.Campaign.STATUS</label>
+                                                    <div class="checkbox c-checkbox mt0">
+                                                        <label>
+                                                            <input type="checkbox" id="c_cpa_status" /><span class="fa fa-check"></span>@UniCampaignE.Web.Localization.Campaign.ENABLED
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.RECORD_CPA</label>
+                                                    <div class="checkbox c-checkbox mt0">
+                                                        <label>
+                                                            <input type="checkbox" id="c_cpa_record" />
+                                                            <span class="fa fa-check"></span>@UniCampaignE.Web.Localization.Campaign.ENABLED
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.ANALYSIS_PERIOD</label>
+                                                    <input type="text" class="form-control" id="c_cpa_analysis_period" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.MINIMUM_SILENCE_PERIOD</label>
+                                                    <input type="text" class="form-control" id="c_cpa_min_silence_period" />
+                                                </div>
+
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.MAXIMUM_ANALYSIS_TIME</label>
+                                                    <input type="text" class="form-control" id="c_cpa_max_analysis_time" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.MINIMUM_VALID_SPEECH</label>
+                                                    <input type="text" class="form-control" id="c_cpa_min_valid_speech" />
+                                                </div>
+
+                                                <div class="form-group form-group-sm">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.MAXIMUM_TERMINATION_TONE_ANALYSIS</label>
+                                                    <input type="text" class="form-control" id="c_cpa_max_term_tone_analysis" />
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#advanced_accordion" href="#panel_answering_machine" role="button">
+                                            <span class="panel-title">
+                                                Answering Machine
+                                            </span>
+                                        </div>
+                                        <div id="panel_answering_machine" class="panel-collapse collapse in">
+                                            <div class="panel-body pl-md">
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.IP_AMD</label>
+                                                    <div class="checkbox c-checkbox mt0">
+                                                        <label>
+                                                            <input type="checkbox" id="c_ip_amd" />
+                                                            <span class="fa fa-check"></span>@UniCampaignE.Web.Localization.Campaign.ENABLED
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.AMD_TREATMENT_MODE</label>
+                                                    @Html.DropDownList("AMDTreatmentMode", UniCampaignE.Web.HelperLib.DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.API.CallTreatment)), new { @class = "form-control", @id = "c_amd_treatment_mode", @disabled = "disabled" })
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>
+                                                        @UniCampaignE.Web.Localization.Campaign.TERMINATE_BEEP_DETECT
+                                                    </label>
+                                                    <div class="checkbox c-checkbox mt0">
+                                                        <label>
+                                                            <input type="checkbox" id="c_terminate_beep_detect" />
+                                                            <span class="fa fa-check"></span>@UniCampaignE.Web.Localization.Campaign.ENABLED
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="tab-pane" role="tabpanel" id="skill">
+                            <div class="col-lg-6 pl0">
+                                <div class="panel panel-primary">
+                                    <div class="panel-body">
+                                        <div class="form-group input-group">
+                                            <input class="form-control" id="skill_search_term" type="text" placeholder="Search by name">
+                                            <span class="input-group-addon" role="button" id="skill_search_clear">
+                                                <i class="fa fa-close"></i>
+                                            </span>
+                                        </div>
+                                        <div id="scrollable_list" class="panel panel-flat p0 m0">
+                                            <div class="panel-body p0 m0">
+                                                <div id="inner_scrollable_list" class="list-group pb0">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 pl0">
+                                <div class="panel panel-primary hidden" id="skill_group_options">
+                                    <div class="panel-heading">
+                                        <span class="panel-title" id="skill_group_name">@UniCampaignE.Web.Localization.Campaign.NAME</span>
+                                    </div>
+                                    <div class="panel-body pl-md">
+                                        <input type="hidden" id="skill_group_id" />
+                                        <div class="form-group form-group-sm col-lg-5 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.OVERFLOW_AGENTS</label>
+                                            <input type="text" id="c_sg_overflow_agents" class="form-control" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.DIALED_NUMBER</label>
+                                            <input type="text" id="c_sg_dialed_number" class="form-control" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-5 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.RECORDS_TO_CACHE</label>
+                                            <input type="text" id="c_sg_records_to_cache" class="form-control" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.IVR_PORTS</label>
+                                            <input type="text" id="c_sg_ivr_ports" class="form-control" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-5 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.IVR_ROUTE_POINT</label>
+                                            <input type="text" id="c_sg_ivr_route_point" class="form-control" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.ABANDON_ROUTE_POINT</label>
+                                            <input type="text" id="c_sg_abandoned_route_point" class="form-control" />
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-primary pull-right ml-sm" id="btn_save_skill_group">@Comman.SAVE_BUTTON_TEXT</button>
+                                            <button class="btn btn-default pull-right disabled" id="btn_remove_skill_group">@Comman.REMOVE_BUTTON_TEXT</button>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div id="callback" class="tab-pane" role="tabpanel">
+                            <div class="col-lg-6 pl0">
+                                <div class="panel panel-primary">
+                                    <div class="panel-body">
+                                        <div class="form-group form-group-sm col-lg-5 p0">
+                                            <label>Callback Level</label>
+                                            <select class="form-control" id="cc_cbm_level">
+                                                <option value="0">Basic</option>
+                                                <option value="1">Advanced</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.MAXIMUM_ATTEMPTS</label>
+                                            <input type="text" class="form-control" id="c_maximum_attempts" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-5 p0" id="cc_identifier_container" style="display:none">
+                                            <label>Identifier</label>
+                                            <select class="form-control" id="cc_identifier">
+                                                <option value="">Select</option>
+                                                <option value="AccountNumber">Account Number</option>
+                                                <option value="FirstName">First Name</option>
+                                                <option value="LastName">Last Name</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading pt-sm pb-sm">
+                                        <span class="panel-title">Personalized Callback</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="form-group form-group-sm col-lg-5 p0">
+                                            <label>Enabled</label>
+                                            <div class="checkbox c-checkbox">
+                                                <label>
+                                                    <input type="checkbox" id="c_callback" />
+                                                    <span class="fa fa-check"></span>Yes
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.CALL_BACK_MODE</label>
+                                            @Html.DropDownList("CallbackMode", UniCampaignE.Web.HelperLib.DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.API.CallbackMode)), new { @class = "form-control", @id = "c_callback_mode" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 pl0">
+                                <div class="panel-group" id="config_accordion">
+                                    <div class="panel panel-primary" id="cisco_call_result_panel">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#config_accordion" href="#panel_call_results_basic" role="button">
+                                            <span class="panel-title">@UniCampaignE.Web.Localization.Campaign.RETRIES_TITLE <small>@UniCampaignE.Web.Localization.Campaign.ALL_INTERVALS_ARE_IN_MINTUES</small></span>
+                                        </div>
+                                        <div id="panel_call_results_basic" class="panel-collapse collapse in">
+                                            <div class="panel-body pl-md">
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.NO_ANSWR</label>
+                                                    <input type="text" id="c_no_answer_delay" data-cisco-call-result="@Convert.ToInt32(UniCampaignE.Core.Constants.API.CallResult.NoAnswer)" class="form-control cisco-call-result-interval" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.BUSY_SIGNAL</label>
+                                                    <input type="text" id="c_busy_signal_delay" data-cisco-call-result="@Convert.ToInt32(UniCampaignE.Core.Constants.API.CallResult.NumberBusy)" class="form-control cisco-call-result-interval" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.CUSTOMER_ABANDONED</label>
+                                                    <input type="text" id="c_customer_abandoned_delay" data-cisco-call-result="@Convert.ToInt32(UniCampaignE.Core.Constants.API.CallResult.CallDroppedWithinAbandonTime)" class="form-control cisco-call-result-interval" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.DIALER_ABANDONED</label>
+                                                    <input type="text" id="c_dialer_abandoned_delay" data-cisco-call-result="@Convert.ToInt32(UniCampaignE.Core.Constants.API.CallResult.AbandonedByDialer)" class="form-control cisco-call-result-interval" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.ANSWERING_MACHINE</label>
+                                                    <input type="text" id="c_answering_machine_delay" data-cisco-call-result="@Convert.ToInt32(UniCampaignE.Core.Constants.API.CallResult.AnsweringMachine)" class="form-control cisco-call-result-interval" />
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>@UniCampaignE.Web.Localization.Campaign.CUSTOMER_NOT_HOME</label>
+                                                    <input type="text" id="c_customer_not_home_delay" class="form-control" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-primary hidden" id="cbm_call_result_panel">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#config_accordion" href="#panel_call_results_advanced" role="button">
+                                            <span class="panel-title">Call Results</span>
+                                        </div>
+                                        <div id="panel_call_results_advanced" class="panel-collapse collapse">
+                                            <div class="panel-body pl-md">
+                                                <div class="pr-lg inner-panel">
+                                                    @foreach (var kvp in callResultDictionary)
+                                                    {
+                                                        <div class="form-group form-group-sm p0">
+                                                            <label>@kvp.Key</label>
+                                                            <div class="form-group p0 cbm-call-result" data-call-result="@kvp.Value">
+                                                                <div class="col-lg-5 p0">
+                                                                    <input type="text" class="form-control cbm-call-result-interval" />
+                                                                </div>
+                                                                <div class="col-lg-5 p0 pl-sm pr-lg">
+                                                                    @Html.DropDownList("TimeUnit", UniCampaignE.Web.HelperLib.DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.TimeUnit)), new { @class = "form-control cbm-call-result-unit" })
+                                                                </div>
+                                                                <div class="col-lg-2 p0 pl-lg">
+                                                                    <span class="btn btn-danger btn-sm clear-interval" role="button"><i class="fa fa-close"></i></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="clearfix"></div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-primary hidden" id="cbm_wrapup_panel">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#config_accordion" href="#panel_wrapups" role="button">
+                                            <span class="panel-title">Wrapup Codes</span>
+                                        </div>
+                                        <div id="panel_wrapups" class="panel-collapse collapse">
+                                            <div class="panel-body pl-md">
+                                                <div class="pr-lg inner-panel">
+                                                    @foreach (var wrapup in wrapups)
+                                                    {
+                                                        <div class="form-group form-group-sm p0">
+                                                            <label>@wrapup</label>
+                                                            <div class="form-group p0 cbm-wrapup" data-wrapup="@wrapup">
+                                                                <div class="col-lg-5 p0">
+                                                                    <input type="text" class="form-control cbm-wrapup-interval" />
+                                                                </div>
+                                                                <div class="col-lg-5 p0 pl-sm pr-lg">
+                                                                    @Html.DropDownList("TimeUnit", UniCampaignE.Web.HelperLib.DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Constants.TimeUnit)), new { @class = "form-control cbm-wrapup-unit" })
+                                                                </div>
+                                                                <div class="col-lg-2 p0 pl-lg">
+                                                                    <span class="btn btn-danger btn-sm clear-interval" role="button"><i class="fa fa-close"></i></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="clearfix"></div>
+                                                        </div>
+                                                    }
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="clearfix"></div>
+                        </div>
+                        <div id="extra" class="tab-pane">
+                            <div class="col-lg-6 pl0">
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading pt-sm pb-sm hidden">
+                                        <span class="panel-title">
+                                            Prefix Configuration
+                                        </span>
+                                    </div>
+                                    <div class="panel-body pl-md">
+                                        <div class="form-group form-group-sm col-lg-5 p0 ">
+
+                                            <label>@UniCampaignE.Web.Localization.Campaign.FIRST_NAME Prefix</label>
+                                            <input type="text" class="form-control" id="c_ed_firstname_prefix" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-5 p0">
+                                            @*<label>@Campaign.FIRST_NAME Prefix</label>
+                                                <input type="text" class="form-control" id="c_ed_firstname_prefix" />*@
+                                            <label>@UniCampaignE.Web.Localization.Campaign.LAST_NAME Prefix</label>
+                                            <input type="text" class="form-control" id="c_ed_lastname_prefix" />
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-5 p0">
+                                            @*<label>@Campaign.LAST_NAME Prefix</label>
+                                                <input type="text" class="form-control" id="c_ed_lastname_prefix" />*@
+                                            <label class="control-label">TRAI DNC</label>
+                                            <div class="checkbox c-checkbox mt0">
+                                                <label>
+                                                    <input type="checkbox" id="c_dnc_trai" />
+                                                    <span class="fa fa-check"></span>@UniCampaignE.Web.Localization.Campaign.ENABLED
+                                                </label>
+                                            </div>
+                                        </div>
+                                        @*<div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                <label>QuestionProId Separator</label>
+                                                <input type="text" class="form-control" id="c_ed_questionpro_id_separator" />
+                                            </div>*@
+                                        <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                            <label class="control-label">Global DNC</label>
+                                            <div class="checkbox c-checkbox mt0">
+                                                <label>
+                                                    <input type="checkbox" id="c_dncglobal" />
+                                                    <span class="fa fa-check"></span>@UniCampaignE.Web.Localization.Campaign.ENABLED
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group form-group-sm col-lg-6 p0 hidden">
+                                            <label>@UniCampaignE.Web.Localization.Campaign.ACCOUNT_NUMBER Prefix</label>
+                                            <input type="text" class="form-control" id="c_ed_account_number_prefix" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 pl0">
+                                <div class="panel-group" id="report_accordion">
+                                    <div class="panel panel-primary " id="daily_report_panel">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#report_accordion" href="#panel_output_report_basic" role="button">
+                                            <span class="panel-title">Daily Report Settings</span>
+                                        </div>
+                                        <div id="panel_output_report_basic" class="panel-collapse collapse in">
+                                            <div class="panel-body pl-md">
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>Source</label>
+                                                    <select class="form-control" id="c_ed_report_source"></select>
+                                                </div>
+
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>Time</label>
+                                                    <div class="input-group date time-picker">
+                                                        <input type="text" class="form-control" id="c_ed_report_time" />
+                                                        <span class="input-group-addon">
+                                                            <span class="fa fa-clock-o"></span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                    <div class="panel panel-primary " id="wrapup_active_panel">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#report_accordion" href="#panel_output_report_basic1" role="button">
+                                            <span class="panel-title">Wrapup Settings</span>
+                                        </div>
+                                        <div id="panel_output_report_basic1" class="panel-collapse collapse in">
+                                            <div class="panel-body pl-md">
+                                                <div class="form-group form-group-sm col-lg-5 p0">
+                                                    <label>Successful Disposition</label>
+                                                    @*<select class="form-control" id="c_ed_report_source"></select>*@
+
+                                                    @Html.DropDownList("WrapUp_Action", new SelectList(wrapups), "Select Disposition", htmlAttributes: new { @class = "form-control", @id = "c_ed_Wrapupid" })
+                                                </div>
+                                                <div class="form-group form-group-sm col-lg-offset-1 col-lg-6 p0">
+                                                    <label>DNC Disposition</label>
+                                                    @Html.DropDownList("DNCWrapUp_Action", new SelectList(wrapups), "Select DNC Disposition", htmlAttributes: new { @class = "form-control", @id = "dnc_wrapup_id" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-primary " id="threshold_active_panel">
+                                        <div class="panel-heading pt-sm pb-sm" data-toggle="collapse" data-parent="#report_accordion" href="#panel_output_report_basic2" role="button">
+                                            <span class="panel-title"> Threshold Settings</span>
+                                        </div>
+                                        <div id="panel_output_report_basic2" class="panel-collapse collapse in">
+                                            <div class="panel-body pl-md">
+
+                                                @*<div class="form-group">
+                                                        <label class="control-label col-xs-4">Threshold Pacing</label>
+                                                        <div class="col-xs-8 col-lg-7 ">
+                                                            <input type="number" class="form-control" min="1" max="10" id="threshold_pacing" /> <span>Times of threshold value</span>
+                                                        </div>
+                                                        <div class="clearfix"></div>
+                                                    </div>*@
+
+                                                <div class="form-group">
+                                                    <label class="control-label col-xs-4">
+                                                        Threshold Conditions
+                                                    </label>
+                                                    <div class="col-xs-8 col-lg-7 ">
+                                                        <button class="btn btn-sm btn-primary btn-add-threshold pull-right">Add</button>
+                                                    </div>
+                                                    <div class="clearfix"></div>
+                                                </div>
+
+                                                @if (ViewBag.ThresholdConfig == null || ThresholdConfigView.ToList().Count == 0)
+                                                {
+
+                                                    <div class="form-group">
+                                                        <div class="threshold-map" style="max-height:340px; overflow-y:auto">
+                                                            <div class="form-group conditional-threshold pt-lg">
+                                                                <div class="panel panel-primary col-lg-12">
+                                                                    <div class="panel-body">
+                                                                        <div class="row">
+                                                                            <div class="col-xs-3 col-xs-offset-9">
+                                                                                <button class="btn btn-sm btn-danger btn-remove-threshold pull-right hidden"><i class="fa fa-remove"></i></button>
+                                                                            </div>
+                                                                            <div class="clearfix"></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-lg-3">
+                                                                                <strong class="form-control-static">If No. of Records</strong>
+                                                                            </div>
+                                                                            <div class="col-lg-3 col-xs-6">
+                                                                                <select style="width:60px" class="form-control input-sm conditional-operator">
+                                                                                    <option value="1">=</option>
+                                                                                    <option value="3">></option>
+                                                                                    <option value="4"><</option>
+                                                                                    <option value="5">>=</option>
+                                                                                    <option value="6"><=</option>
+
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-xs-5 col-lg-4">
+                                                                                <input type="number" class="form-control input-sm record-count" min="0" max="100" />
+                                                                            </div>
+                                                                            <div class="clearfix"></div>
+                                                                        </div>
+
+                                                                        <div class="row pt-lg">
+                                                                            <div class="col-lg-3">
+                                                                                <strong class="form-control-static">Threshold</strong>
+                                                                            </div>
+                                                                            <div class="col-lg-4 col-xs-5">
+                                                                                <input type="number" class="form-control input-sm threshold-value" min="0" max="100" />
+                                                                            </div>
+                                                                            <div class="col-lg-4">
+                                                                                <select class="form-control input-sm threshold-value-type">
+                                                                                    <option value="2">FixValue</option>
+                                                                                    <option value="1">Percentage</option>
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="clearfix"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="clearfix"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                @if (ViewBag.ThresholdConfig != null && ThresholdConfigView.ToList().Count > 0)
+                                                {
+                                                    foreach (var thr in ThresholdConfigView)
+                                                    {
+
+                                                        <div class="form-group">
+                                                            <div class="threshold-map" style="max-height:340px; overflow-y:auto">
+                                                                <div class="form-group conditional-threshold pt-lg">
+                                                                    <div class="panel panel-primary col-lg-12">
+                                                                        <div class="panel-body">
+                                                                            <div class="row">
+                                                                                <div class="col-xs-3 col-xs-offset-9">
+
+                                                                                    <button class="btn btn-sm btn-danger btn-remove-threshold pull-right "><i class="fa fa-remove"></i></button>
+                                                                                </div>
+                                                                                <div class="clearfix"></div>
+                                                                            </div>
+                                                                            <div class="row">
+                                                                                <div class="col-lg-3">
+                                                                                    <strong class="form-control-static">If No. of Records</strong>
+                                                                                </div>
+                                                                                <div class="col-lg-3 col-xs-6">
+                                                                                    <select style="width:60px" class="form-control input-sm conditional-operator" value="@thr.Condition.OperatorType">
+                                                                                        <option value="1" @("Equal" == @thr.Condition.OperatorType.ToString() ? "selected='selected'" : "")>=</option>
+                                                                                        <option value="3" @("GreaterThan" == @thr.Condition.OperatorType.ToString() ? "selected='selected'" : "")>></option>
+                                                                                        <option value="4" @("LessThan" == @thr.Condition.OperatorType.ToString() ? "selected='selected'" : "")><</option>
+                                                                                        <option value="5" @("GreaterOrEqual" == @thr.Condition.OperatorType.ToString() ? "selected='selected'" : "")>>=</option>
+                                                                                        <option value="6" @("LessOrEqual" == @thr.Condition.OperatorType.ToString() ? "selected='selected'" : "")><=</option>
+
+                                                                                    </select>
+                                                                                </div>
+                                                                                <div class="col-xs-5 col-lg-4">
+                                                                                    <input type="number" class="form-control input-sm record-count" value="@thr.Condition.Value" min="0" max="100" />
+                                                                                </div>
+                                                                                <div class="clearfix"></div>
+                                                                            </div>
+
+                                                                            <div class="row pt-lg">
+                                                                                <div class="col-lg-3">
+                                                                                    <strong class="form-control-static">Threshold</strong>
+                                                                                </div>
+                                                                                <div class="col-lg-4 col-xs-5">
+                                                                                    <input type="number" class="form-control input-sm threshold-value" value="@thr.ThresholdValue" min="0" max="100" />
+                                                                                </div>
+                                                                                <div class="col-lg-4">
+
+                                                                                    <select class="form-control input-sm threshold-value-type">
+                                                                                        <option value="2" @(UniCampaignE.Core.Models.Target.FixValue == @thr.ThresholdType ? "selected='selected'" : "")>FixValue</option>
+                                                                                        <option value="1" @(UniCampaignE.Core.Models.Target.Percentage == @thr.ThresholdType ? "selected='selected'" : "")>Percentage</option>
+                                                                                    </select>
+
+
+                                                                                </div>
+                                                                                <div class="clearfix"></div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="clearfix"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    }
+
+                                                }
+
+
+                                                <div class="form-group">
+                                                    <label class="col-xs-4">
+                                                        Default Threshold
+                                                    </label>
+                                                    <div class="col-xs-4 col-lg-3">
+                                                        @Html.TextBox("defaultthreshold ", "0", new { @Class = "default-threshold form-control", type = "number", min = 0, max = 100 })
+                                                    </div>
+                                                    <div class="col-xs-5 col-lg-4">
+                                                        <select class="form-control input-sm default-threshold-type">
+                                                            <option value="2">FixValue</option>
+                                                            <option value="1">Percentage</option>
+                                                        </select>
+                                                    </div>
+
+                                                </div>
+
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+            <input type="submit" class="btn btn-primary" id="btn_save_campaign" value=@Comman.SAVE_BUTTON_TEXT />
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var ivrPurpose = '@UniCampaignE.Core.Constants.API.CampaignType.IVR';
+    var ivrTreatment = '@UniCampaignE.Core.Constants.API.CallTreatment.TransferToIVRRoutePoint';
+    var campaignGetUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.GetCampaign),new { controller = nameof(UniCampaignE.Web.Controllers.CampaignController).Replace("Controller",""), area = "", id=Model })';
+
+    // var skillGroupUrl = '@Url.Action( nameof(UniCampaignE.Web.Controllers.SkillGroupController.ListSkillGroups), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.SkillGroupController).Replace("Controller",string.Empty)})';
+    //var skillGroupUrl = '@Url.Action( nameof(UniCampaignE.Web.Controllers.DealerSkillGroupsController.ListSkills), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.DealerSkillGroupsController).Replace("Controller",string.Empty)})';
+    var skillGroupUrl = '@Url.Action( nameof(UniCampaignE.Web.Controllers.CampaignController.ListFreeSkillGroups), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.CampaignController).Replace("Controller",string.Empty), campaignId = Model})';
+
+    var saveCampaignUrl = '@Url.Action(nameof(UniCampaignE.Web.Controllers.CampaignController.SaveCampaign), new { controller = nameof(UniCampaignE.Web.Controllers.CampaignController).Replace("Controller",""), area = ""})';
+</script>
+
+<script type="text/javascript">
+    $context = $('#advanced_campaign_editor');
+    var theCampaign = {};
+    theCampaign.SkillGroups = [];
+    theCampaign.CBMConfiguration = {};
+    theCampaign.ExtraDetails = {};
+    var queryParams = {};
+    queryParams.page = 1;
+    queryParams.term = '';
+    queryParams.limit = 7;
+    queryParams.more = false;
+    queryParams.current = 0;
+    function initializeEditor() {
+
+        $('#loader').show();
+        $.ajax({
+            url: campaignGetUrl,
+            success: function (data) {
+                console.log(JSON.stringify(data));
+                var receivedCampaign = data.Campaign;
+                var receivedSkillGroups = data.SkillGroups;
+                theCampaign.SkillGroups = receivedSkillGroups;
+                if (data.Id) {
+                    $('#c_id').val(data.Id);
+                }
+                if (data.ActiveHoliday == true) {
+                    $('#c_status').parentsUntil('div').parent().first().tooltip({
+                        container: 'body',
+                        placement: 'auto',
+                        title: 'Disabled for holiday',
+                        trigger: 'hover'
+                    });
+                    $('#c_status').attr('disabled', 'disabled');
+                }
+                $('#c_name').val(receivedCampaign.Name);
+                $('#c_description').val(receivedCampaign.Description);
+                $('#c_status').prop('checked', receivedCampaign.Enabled);
+                if (receivedCampaign.DialingMode != '') {
+                    $('#c_dialing_mode').val(receivedCampaign.DialingMode);
+                }
+                $('#c_timezone').val(data.TimeZone);
+                $('#c_start_date').val(receivedCampaign.StartDate);
+                $('#c_start_time').val(receivedCampaign.StartTime);
+                $('#c_end_date').val(receivedCampaign.EndDate);
+                $('#c_end_time').val(receivedCampaign.EndTime);
+                $('#c_lines_per_agent').val(receivedCampaign.LinesPerAgent);
+                $('#c_max_lines_per_agent').val(receivedCampaign.MaximumLinesPerAgent);
+                $('#c_abandon_status').prop('checked', receivedCampaign.AbandonEnabled);
+                $('#c_abandon_limit').val(receivedCampaign.AbandonPercent);
+                $('#c_predictive_correction_pace').val(receivedCampaign.PredictiveCorrectionPace);
+                $('#c_predictive_gain').val(receivedCampaign.PredictiveGain);
+                $('#c_no_answer_ring_limit').val(receivedCampaign.NoAnswerRingLimit);
+                $('#c_prefix').val(receivedCampaign.CampaignPrefix);
+                $('#c_reservation_percentage').val(receivedCampaign.ReservationPercentage);
+                $('#c_maximum_attempts').val(receivedCampaign.CBMConfiguration.MaximumAttempts);
+                $('#c_minimum_call_duration').val(receivedCampaign.MinimumCallDuration);
+                $('#c_purpose').val(receivedCampaign.Purpose);
+                $('#c_purpose').trigger('change');
+                $('#c_ip_amd').prop('checked', receivedCampaign.IpAmdEnabled);
+                if (receivedCampaign.IpAmdEnabled) {
+                    $('#c_amd_treatment_mode').val(receivedCampaign.AmdTreatmentMode);
+                }
+                $('#c_ip_amd').trigger('change');
+                $('#c_terminate_beep_detect').prop('checked', receivedCampaign.IpTerminatingBeepDetect);
+                $('#c_no_answer_delay').val(receivedCampaign.NoAnswerDelay);
+                $('#c_busy_signal_delay').val(receivedCampaign.BusySignalDelay);
+                $('#c_customer_abandoned_delay').val(receivedCampaign.CustomerAbandonedDelay);
+                $('#c_dialer_abandoned_delay').val(receivedCampaign.DialerAbandonedDelay);
+                $('#c_answering_machine_delay').val(receivedCampaign.AnsweringMachineDelay);
+                $('#c_customer_not_home_delay').val(receivedCampaign.CustomerNotHomeDelay);
+                $('#c_cpa_status').prop('checked', receivedCampaign.CallProgressAnalysis.Enabled);
+                $('#c_cpa_record').prop('checked', receivedCampaign.CallProgressAnalysis.Record);
+                $('#c_cpa_analysis_period').val(receivedCampaign.CallProgressAnalysis.AnalysisPeriod);
+                $('#c_cpa_min_silence_period').val(receivedCampaign.CallProgressAnalysis.MinSilencePeriod);
+                $('#c_cpa_max_analysis_time').val(receivedCampaign.CallProgressAnalysis.MaximumTimeAnalysis);
+                $('#c_cpa_min_valid_speech').val(receivedCampaign.CallProgressAnalysis.MinimumValidSpeech);
+                $('#c_cpa_max_term_tone_analysis').val(receivedCampaign.CallProgressAnalysis.MaxTermToneAnalysis);
+                $('#c_callback_mode').val(receivedCampaign.RescheduleCallbackMode);
+                $('#c_callback').prop('checked', receivedCampaign.PersonalizedCallbackEnabled);
+                $('#cc_cbm_level').on('change', function (e) {
+                    if ($(this).val() == 0) {
+                        if (!$('#cbm_call_result_panel').hasClass('hidden')) {
+                            $('#cbm_call_result_panel').addClass('hidden');
+                        }
+                        if (!$('#cbm_wrapup_panel').hasClass('hidden')) {
+                            $('#cbm_wrapup_panel').addClass('hidden');
+                        }
+                        $('#cisco_call_result_panel').removeClass('hidden');
+                        $('#panel_call_results_basic').collapse({ toggle: false, parent: '#config_accordion' });
+                        $('#panel_call_results_basic').collapse('show');
+                        $('#cc_identifier_container').addClass('hidden');
+                    } else {
+                        $('#cc_identifier_container').removeClass('hidden');
+                        $('#cbm_call_result_panel').removeClass('hidden');
+                        $('#cbm_wrapup_panel').removeClass('hidden');
+                        if (!$('#cisco_call_result_panel').hasClass('hidden')) {
+                            $('#cisco_call_result_panel').addClass('hidden');
+                        }
+                        $('#panel_call_results_advanced').collapse({ toggle: false, parent: '#config_accordion' });
+                        $('#panel_call_results_advanced').collapse('show');
+                    }
+                });
+                _.each(receivedCampaign.CBMConfiguration.CallResultMap, function (callResultEntry) {
+                    $(".cbm-call-result[data-call-result='" + callResultEntry.CallResult + "']").find('.cbm-call-result-interval').first().val(callResultEntry.Interval);
+                    $(".cbm-call-result[data-call-result='" + callResultEntry.CallResult + "']").find('.cbm-call-result-unit').first().val(callResultEntry.TimeUnit);
+                });
+                _.each(receivedCampaign.CBMConfiguration.WrapupMap, function (wrapupEntry) {
+                    $(".cbm-wrapup[data-wrapup='" + wrapupEntry.Wrapup + "']").find('.cbm-wrapup-interval').first().val(wrapupEntry.Interval);
+                    $(".cbm-wrapup[data-wrapup='" + wrapupEntry.Wrapup + "']").find('.cbm-wrapup-unit').first().val(wrapupEntry.TimeUnit);
+                });
+                $('#cc_cbm_level').val(receivedCampaign.CBMConfiguration.Level).trigger('change');
+                $('#cc_identifier').val(receivedCampaign.CBMConfiguration.Identifier);
+                if (receivedCampaign.ExtraDetails != null) {
+
+                    $('#c_ed_account_number_prefix', $context).val(receivedCampaign.ExtraDetails.AccountNumberPrefix);
+                    $('#c_ed_firstname_prefix', $context).val(receivedCampaign.ExtraDetails.FirstNamePrefix);
+                    $('#c_ed_lastname_prefix', $context).val(receivedCampaign.ExtraDetails.LastNamePrefix);
+                    $('#c_dncglobal').prop('checked', receivedCampaign.ExtraDetails.DncGlobal);
+                    $('#c_dnc_trai').prop('checked', receivedCampaign.ExtraDetails.DncTrai);
+                    $('#c_ed_Wrapupid', $context).val(receivedCampaign.ExtraDetails.WrapUpValue);
+                    $('#dnc_wrapup_id', $context).val(receivedCampaign.ExtraDetails.DNCWrapUpValue);
+                    $('#threshold_pacing', $context).val(receivedCampaign.ExtraDetails.ThresholdPacing);
+                    $('.default-threshold', $context).val(receivedCampaign.ExtraDetails.DefaultThreshold);
+                    $('.default-threshold-type', $context).val(receivedCampaign.ExtraDetails.DefaultThresholdType);
+                    //$('.conditional-threshold', $context).val(receivedCampaign.ExtraDetails.ThresholdConfig);
+                    //  _.each(receivedCampaign.ExtraDetails.ThresholdConfig, function (threshold)
+                    //  {
+
+                    //
+                    //      var id = $(document).createElement('threshold - map');
+                    //      $('.threshold-value', $context).val(threshold.ThresholdValue);
+                    //      $('.threshold-value-type', $context).val(threshold.ThresholdType);
+                    //      $('.conditional-operator', $context).val(threshold.Condition.OperatorType);
+                    //      $('.record-count', $context).val(threshold.Condition.Value);
+
+                    //      $firstConiditionalThreshold = $('.conditional-threshold', $context).last();
+                    //      var newConditionalThreshold = $firstConiditionalThreshold.clone(false);
+                    //      $('.btn-remove-threshold', $(newConditionalThreshold)).removeClass('hidden');
+                    //      $('.threshold-map', $context).append($(newConditionalThreshold));
+
+                    //});
+
+                    //if (receivedCampaign.ExtraDetails.DncGlobal == 'True') {
+                    //    $('#c_dncglobal').prop('checked', receivedCampaign.ExtraDetails.DncGlobal);
+                    //}
+                    //else {
+                    //    $('#c_dncglobal').prop('checked', false);
+                    //}
+                    //$('#c_ed_questionpro_id_separator', $context).val(receivedCampaign.ExtraDetails.QuestionProIdSeparator);
+                    if (receivedCampaign.ExtraDetails.DailyReportTargetDataSource != null) {
+                        $('#c_ed_report_source', $context).append('<option value="' + receivedCampaign.ExtraDetails.DailyReportTargetDataSource.Id + '">' + receivedCampaign.ExtraDetails.DailyReportTargetDataSource.Name + '</option>').trigger('change');
+                        $('#c_ed_report_time', $context).val(receivedCampaign.ExtraDetails.DailyReportTime);
+                    }
+                }
+                $('#loader').hide();
+            },
+            error: globalAjaxErrorHandler
+        });
+    }
+
+    $('#advanced_campaign_editor').on('change', '#c_ip_amd', function () {
+        if ($(this).is(':checked')) {
+            //$('#c_amd_treatment_mode').removeAttr('disabled');
+            $('#c_amd_treatment_mode').attr('disabled', 'disabled');
+        } else if (!$(this).is(':checked')) {
+            $('#c_amd_treatment_mode').attr('disabled', 'disabled');
+        }
+    });
+
+    $('#advanced_campaign_editor').on('click', '.clear-interval', function (e) {
+        $(this).parentsUntil('.form-group').parent().find('input').first().val('');
+        $(this).parentsUntil('.form-group').parent().find('select').first().val(1);
+    });
+
+    function getSingleSkillGroup(id) {
+        var sg = {};
+        sg.index = -1;
+        sg.value = null;
+        for (var i = 0; i < theCampaign.SkillGroups.length; i++) {
+            if (theCampaign.SkillGroups[i].Id == id) {
+                sg.index = i;
+                sg.value = theCampaign.SkillGroups[i];
+                break;
+            }
+        }
+        return sg;
+    }
+
+    function getSkillGroups() {
+        if (!$('#scrollable_list').hasClass('whirl standard')) {
+            $('#scrollable_list').addClass('whirl standard');
+        }
+        if (!$('#skill_group_options').hasClass('hidden')) {
+            $('#skill_group_options').addClass('hidden');
+        }
+        var generateUrl = function () {
+
+            var url = skillGroupUrl;
+            var q = "";
+            var page = queryParams.page || 1;
+            var limit = queryParams.limit || 7;
+            q = 'page=' + page
+            q += '&limit=' + limit;
+            if (queryParams.term) {
+                q += '&searchString=' + encodeURIComponent(queryParams.term);
+            }
+            url += "?" + q;
+            return url;
+        };
+        $.ajax({
+            url: generateUrl(),
+            success: function (data) {
+
+                $('#scrollable_list').removeClass('whirl standard');
+                queryParams.more = (queryParams.limit * queryParams.page) < data.total;
+                if (queryParams.page == 1) {
+                    $('#inner_scrollable_list').html('');
+                }
+                $.each(data.records, function (idx, item) {
+
+                    var assigned = ' hidden';
+                    var sg = getSingleSkillGroup(item.SkillTargetID);
+                    if (sg.value != null) {
+                        assigned = "";
+                    }
+                    var elem = $('<div class="list-group-item skill-group" data-identity="' + item.SkillTargetID + '" data-name="' + item.EnterpriseName + '" role="button">' + item.EnterpriseName + '<span class="label label-primary pull-right pv-sm' + assigned + '"><span class="fa fa-check"></span></span></div>');
+                    $('#inner_scrollable_list').append(elem);
+                });
+            },
+            error: globalAjaxErrorHandler
+        });
+    }
+
+    $(document).ready(function (e) {
+        $('.inner-panel').slimScroll({ height: '230px' });
+        $('#advanced_campaign_editor').on('change', '#c_purpose', function (e) {
+            var purpose = $(this).val();
+            var options = $('#c_dialing_mode').find("option");
+            if (purpose == 'ivrCampaign') {
+                for (var i = 2; i < options.length; i++) {
+                    $(options[i]).attr('disabled', 'disabled');
+                }
+            } else {
+                for (var i = 0; i < options.length; i++) {
+                    $(options[i]).removeAttr('disabled');
+                }
+            }
+        });
+        initializeEditor();
+        $('#skill_search_clear').on('click', function (e) {
+            $('#skill_search_term').val('');
+            $('#skill_search_term').trigger('keyup');
+            $('#scrollable_list').slimScroll({ scrollTo: '0px' });
+        });
+
+        $('#advanced_campaign_editor').on('click', '.skill-group', function (e) {
+            if ($(this).hasClass('bg-gray-lighter')) {
+                $(this).removeClass('bg-gray-lighter');
+                $('#skill_group_options').addClass('hidden');
+                $('#skill_group_name').text('');
+                $('#skill_group_id').val(0);
+            } else {
+                $('.skill-group').each(function (idx, elem) {
+                    $(elem).removeClass('bg-gray-lighter');
+                });
+                $(this).addClass('bg-gray-lighter');
+                $('#skill_group_options').removeClass('hidden');
+                var name = $(this).attr('data-name');
+                $('#skill_group_name').text(name);
+                var id = $(this).attr('data-identity');
+                $('#skill_group_id').val(id);
+                var sg = getSingleSkillGroup(id);
+                var isIvrCampaign = $('#c_purpose').val() == ivrPurpose;
+                var usesIvrTreatment = $('#c_amd_treatment_mode').val() == ivrTreatment;
+                var isIvr = isIvrCampaign || usesIvrTreatment;
+                if (sg.value != null) {
+                    var theSkillGroup = sg.value;
+                    $('#c_sg_overflow_agents').val(theSkillGroup.OverflowAgents);
+                    $('#c_sg_ivr_ports').val(theSkillGroup.IvrPorts);
+                    $('#c_sg_dialed_number').val(theSkillGroup.DialedNumber);
+                    $('#c_sg_records_to_cache').val(theSkillGroup.RecordsToCache);
+                    $('#c_sg_ivr_route_point').val(theSkillGroup.IvrRoutePoint);
+                    $('#c_sg_abandoned_route_point').val(theSkillGroup.AbandonedRoutePoint);
+                    $('#btn_remove_skill_group').removeClass('disabled');
+                    $('#btn_save_skill_group').text('@Comman.SAVE_BUTTON_TEXT');
+                } else {
+                    $('#btn_remove_skill_group').addClass('disabled');
+                    $('#c_sg_overflow_agents').val(0);
+                    $('#c_sg_ivr_ports').val(0);
+                    $('#c_sg_dialed_number').val('');
+                    $('#c_sg_records_to_cache').val(1);
+                    $('#c_sg_ivr_route_point').val('');
+                    $('#c_sg_abandoned_route_point').val('');
+                    if (!$('#btn_remove_skill_group').hasClass('disabled')) {
+                        $('#btn_remove_skill_group').addClass('disabled');
+                    }
+                    $('#btn_save_skill_group').text('@Comman.ADD_BUTTON_TEXT');
+                }
+
+                if (!isIvrCampaign) {
+                    $('#c_sg_ivr_route_point').attr('disabled', 'disabled');
+                    $('#c_sg_ivr_route_point').val('');
+                } else {
+                    $('#c_sg_ivr_route_point').removeAttr('disabled');
+                }
+
+                if (!usesIvrTreatment) {
+                    $('#c_sg_abandoned_route_point').attr('disabled', 'disabled');
+                    $('#c_sg_abandoned_route_point').val('');
+                } else {
+                    $('#c_sg_abandoned_route_point').removeAttr('disabled');
+                }
+
+            }
+        });
+
+        $('#skill_search_term').on('keyup', function (e) {
+
+            var regex = new RegExp("^[a-zA-Z0-9\./\_/]{2,32}$");
+            var str = $(this).val();
+            if (str.length <= 2) {
+                queryParams.term = "";
+                queryParams.page = 1;
+            } else if (regex.test(str)) {
+                queryParams.term = str;
+            }
+            getSkillGroups();
+        });
+
+        $('#advanced_campaign_editor').on('click', '#btn_save_skill_group', function (e) {
+            debugger;
+            var id = $('#skill_group_id').val();
+            var previous = getSingleSkillGroup(id);
+            var currentSkillGroup = {};
+            currentSkillGroup.Id = id;
+            currentSkillGroup.OverflowAgents = $('#c_sg_overflow_agents').val();
+            currentSkillGroup.IvrPorts = $('#c_sg_ivr_ports').val();
+            currentSkillGroup.DialedNumber = $('#c_sg_dialed_number').val();
+            currentSkillGroup.RecordsToCache = $('#c_sg_records_to_cache').val();
+            currentSkillGroup.IvrRoutePoint = $('#c_sg_ivr_route_point').val();
+            currentSkillGroup.AbandonedRoutePoint = $('#c_sg_abandoned_route_point').val();
+            if ($('#c_sg_ivr_route_point').is(':disabled')) {
+                delete currentSkillGroup.IvrRoutePoint;
+            }
+            if ($('#c_sg_abandoned_route_point').is(':disabled')) {
+                delete currentSkillGroup.AbandonedRoutePoint;
+            }
+            if (previous.value == null) {
+                theCampaign.SkillGroups.push(currentSkillGroup);
+                $(this).text('@Comman.SAVE_BUTTON_TEXT');
+            } else {
+                theCampaign.SkillGroups[previous.index] = currentSkillGroup;
+            }
+            var assignedLabel = $('.skill-group[data-identity="' + id + '"]').find('.label-primary').first();
+            if (assignedLabel && assignedLabel.hasClass('hidden')) {
+                assignedLabel.removeClass('hidden');
+            }
+            if ($('#btn_remove_skill_group').hasClass('disabled')) {
+                $('#btn_remove_skill_group').removeClass('disabled');
+            }
+        });
+        $('#advanced_campaign_editor').on('click', '#btn_remove_skill_group', function (e) {
+            var id = $('#skill_group_id').val();
+            var obj = getSingleSkillGroup(id);
+            var sg = obj.value;
+            if (sg != null && sg !== undefined) {
+                theCampaign.SkillGroups.splice(obj.index, 1);
+                var elem = $('.skill-group[data-identity="' + id + '"]').find('.label-primary').first();
+                if (!elem.hasClass('hidden')) {
+                    elem.addClass('hidden');
+                }
+                $('#btn_save_skill_group').text('@Comman.ADD_BUTTON_TEXT');
+                $(this).addClass('disabled');
+                $('#c_sg_overflow_agents').val('');
+                $('#c_sg_ivr_ports').val('');
+                $('#c_sg_dialed_number').val('');
+                $('#c_sg_records_to_cache').val('');
+                $('#c_sg_ivr_route_point').val('');
+                $('#c_sg_abandoned_route_point').val('');
+            }
+        });
+
+        $('#advanced_campaign_editor').on('click', '#skill_tab', function (e) {
+            queryParams.page = 1;
+            queryParams.term = '';
+            queryParams.limit = 7;
+            queryParams.more = false;
+            queryParams.current = 0;
+            getSkillGroups();
+        });
+
+
+        $('#scrollable_list').slimScroll({ height: '195px' }).bind('slimscroll', function (e, pos) {
+            if (pos == 'bottom' && queryParams.more) {
+                queryParams.page++;
+                getSkillGroups();
+            }
+        });
+
+        var timePickerOptions = {
+            icons: globalDateTimePickerIcons,
+            format: 'HH:mm',
+            sideBySide: true,
+            //minDate: moment().subtract(0, 'days'),
+            //defaultDate: moment(),
+            showClear: true,
+            showClose: true,
+            useCurrent: true,
+            keepInvalid: false,
+            useStrict: true,
+            toolbarPlacement: 'bottom',
+            widgetPositioning: {
+                horizontal: 'auto',
+                vertical: 'bottom'
+            }
+        };
+        var datePickerOptions = {
+            icons: globalDateTimePickerIcons,
+            format: 'YYYY-MM-DD',
+            sideBySide: true,
+            //minDate: moment().subtract(0, 'days'),
+            defaultDate: moment(),
+            showClear: true,
+            showClose: true,
+            useCurrent: true,
+            keepInvalid: false,
+            useStrict: true,
+            toolbarPlacement: 'bottom',
+            widgetPositioning: {
+                horizontal: 'auto',
+                vertical: 'bottom'
+            }
+        };
+
+        var sourceOptions = {
+            language: '@System.Globalization.CultureInfo.CurrentCulture.Name',
+            placeholder: '@ContactList.SELECT_SOURCE_PLACE_HOLDER',
+            width: '100%',
+            theme: 'bootstrap',
+            multiple: false,
+            ajax: {
+                cache: true,
+                dataType: 'json',
+                url: function (params) {
+                    var url = '@Url.Action(nameof(UniCampaignE.Web.Controllers.SourceController.ListSources), new { area = "", controller = nameof(UniCampaignE.Web.Controllers.SourceController).Replace("Controller", "") })';
+                    var q = "";
+                    var page = params.page || 1;
+                    var type = 'SFTP';
+                    q = 'page=' + page
+                    q += '&limit=10';
+                    q += '&type=' + type;
+                    if (params.term) {
+                        q += '&searchString=' + encodeURIComponent(params.term);
+                    }
+                    url += "?" + q;
+                    return url;
+                },
+                processResults: function (data, params) {
+                    var obj = {};
+                    obj.results = data.records.map(function (item) {
+                        return {
+                            id: item.Id,
+                            text: item.Name
+                        }
+                    });
+                    if (!params.page) {
+                        params.page = 1;
+                    }
+                    obj.pagination = {
+                        more: (10 * params.page) < data.total
+                    }
+                    return obj;
+                }
+            },
+            escapeMarkup: function (markup) { return markup; },
+            closeOnSelect: true,
+            allowClear: true,
+            dropdownParent: $('#modal_editor'),
+            minimumResultsForSearch: 0
+        };
+        $('#c_ed_report_source', $context).select2(sourceOptions);
+        $('.time-picker', $context).datetimepicker(timePickerOptions);
+        $('.date-picker', $context).datetimepicker(datePickerOptions);
+        $('#btn_save_campaign').on('click', function (e) {
+            theCampaign.Id = $('#c_id').val();
+            theCampaign.Name = $('#c_name').val();
+            theCampaign.Description = $('#c_description').val() || '';
+            theCampaign.Enabled = $('#c_status').is(':checked');
+            theCampaign.DialingMode = $('#c_dialing_mode').val();
+            theCampaign.TimeZone = $('#c_timezone').val();
+            theCampaign.StartDate = $('#c_start_date').val();
+            theCampaign.StartTime = $('#c_start_time').val();
+            theCampaign.EndDate = $('#c_end_date').val();
+            theCampaign.EndTime = $('#c_end_time').val();
+            theCampaign.LinesPerAgent = $('#c_lines_per_agent').val();
+            theCampaign.MaximumLinesPerAgent = $('#c_max_lines_per_agent').val();
+            theCampaign.AbandonCalls = $('#c_abandon_status').is(':checked');
+            theCampaign.AbandonLimit = $('#c_abandon_limit').val();
+            theCampaign.PredictiveCorrectionPace = $('#c_predictive_correction_pace').val();
+            theCampaign.PredictiveGain = $('#c_predictive_gain').val();
+            theCampaign.NoAnswerRingLimit = $('#c_no_answer_ring_limit').val();
+            theCampaign.Prefix = $('#c_prefix').val();
+            theCampaign.ReservationPercentage = $('#c_reservation_percentage').val();
+            theCampaign.MaximumAttempts = $('#c_maximum_attempts').val();
+            theCampaign.MinimumCallDuration = $('#c_minimum_call_duration').val();
+            theCampaign.Purpose = $('#c_purpose').val();
+            theCampaign.IpAmdEnabled = $('#c_ip_amd').is(':checked');
+            if (theCampaign.IpAmdEnabled) {
+                theCampaign.AmdTreatmentMode = $('#c_amd_treatment_mode').val();
+            }
+            theCampaign.TerminateToneDetect = $('#c_terminate_beep_detect').is(':checked');
+            theCampaign.NoAnswerDelay = $('#c_no_answer_delay').val();
+            theCampaign.BusySignalDelay = $('#c_busy_signal_delay').val();
+            theCampaign.CustomerAbandonedDelay = $('#c_customer_abandoned_delay').val();
+            theCampaign.DialerAbandonedDelay = $('#c_dialer_abandoned_delay').val();
+            theCampaign.AnsweringMachineDelay = $('#c_answering_machine_delay').val();
+            theCampaign.CustomerNotHomeDelay = $('#c_customer_not_home_delay').val();
+            theCampaign.CallProgressAnalysis = {};
+            theCampaign.CallProgressAnalysis.Enabled = $('#c_cpa_status').is(':checked');
+            theCampaign.CallProgressAnalysis.Record = $('#c_cpa_record').is(':checked');
+            theCampaign.CallProgressAnalysis.AnalysisPeriod = $('#c_cpa_analysis_period').val();
+            theCampaign.CallProgressAnalysis.MinimumSilencePeriod = $('#c_cpa_min_silence_period').val();
+            theCampaign.CallProgressAnalysis.MaximumAnalysisTime = $('#c_cpa_max_analysis_time').val();
+            theCampaign.CallProgressAnalysis.MinimumValidSpeech = $('#c_cpa_min_valid_speech').val();
+            theCampaign.CallProgressAnalysis.MaximumTerminationToneAnalysis = $('#c_cpa_max_term_tone_analysis').val();
+            theCampaign.CallbackMode = $('#c_callback_mode').val();
+            theCampaign.PersonalCallback = $('#c_callback').is(':checked');
+            theCampaign.CBMConfiguration.Level = $('#cc_cbm_level').val();
+            theCampaign.CBMConfiguration.MaximumAttempts = theCampaign.MaximumAttempts;
+            theCampaign.CBMConfiguration.Identifier = $('#cc_identifier').val();
+            theCampaign.CBMConfiguration.CallResultMap = [];
+            theCampaign.CBMConfiguration.WrapupMap = [];
+            $('.cbm-call-result').each(function (idx, elem) {
+                var interval = $(this).find('.cbm-call-result-interval').first().val().trim();
+                if (interval != '') {
+                    var entry = {
+                        Interval: interval,
+                        CallResult: $(this).attr('data-call-result'),
+                        TimeUnit: $(this).find('.cbm-call-result-unit').first().val()
+                    };
+                    theCampaign.CBMConfiguration.CallResultMap.push(entry);
+                }
+            });
+            $('.cbm-wrapup').each(function (idx, elem) {
+                var interval = $(this).find('.cbm-wrapup-interval').first().val().trim();
+                if (interval != '') {
+                    var entry = {
+                        Interval: interval,
+                        Wrapup: $(this).attr('data-wrapup'),
+                        TimeUnit: $(this).find('.cbm-wrapup-unit').first().val()
+                    };
+                    theCampaign.CBMConfiguration.WrapupMap.push(entry);
+                }
+            });
+
+            var thresholdConditions = [];
+            $('.conditional-threshold', $context).each(function (e) {
+                var condition = {};
+                condition.OperatorType = $('.conditional-operator', $(this)).val();
+                condition.Attribute = 'Count';
+                condition.Value = $('.record-count', $(this)).val();
+
+                var conditionalThreshold = {};
+                conditionalThreshold.Condition = condition;
+                conditionalThreshold.ThresholdType = $('.threshold-value-type', $(this)).val();
+                conditionalThreshold.ThresholdValue = $('.threshold-value', $(this)).val();
+                thresholdConditions.push(conditionalThreshold);
+            });
+            debugger;
+            if (thresholdConditions[0].ThresholdValue != "") {
+                theCampaign.ExtraDetails.ThresholdConfig = thresholdConditions;
+                theCampaign.ExtraDetails.DefaultThreshold = $('.default-threshold', $context).val();
+                theCampaign.ExtraDetails.DefaultThresholdType = $('.default-threshold-type', $context).val();
+
+                if (theCampaign.ExtraDetails.DefaultThreshold == '0' || theCampaign.ExtraDetails.DefaultThreshold == '') {
+
+                    showGlobalNotification('error', 'Enter the default threshold value');
+                    $('.default-threshold', $context).focus();
+                    return false;
+                }
+            }
+
+
+
+            theCampaign.ExtraDetails.AccountNumberPrefix = $('#c_ed_account_number_prefix', $context).val();
+            theCampaign.ExtraDetails.FirstNamePrefix = $('#c_ed_firstname_prefix', $context).val();
+            theCampaign.ExtraDetails.LastNamePrefix = $('#c_ed_lastname_prefix', $context).val();
+            theCampaign.ExtraDetails.DncGlobal = $('#c_dncglobal').is(':checked');
+            theCampaign.ExtraDetails.DncTrai = $('#c_dnc_trai').is(':checked');
+            theCampaign.ExtraDetails.WrapUpValue = $('#c_ed_Wrapupid', $context).val();
+            theCampaign.ExtraDetails.dncWrapUpValue = $('#dnc_wrapup_id', $context).val();
+            theCampaign.ExtraDetails.ThresholdPacing = $('#threshold_pacing', $context).val();
+            if ($('#c_ed_report_source', $context).val() != null) {
+                theCampaign.ExtraDetails.DailyReportTargetDataSource = {
+                    Id: $('#c_ed_report_source', $context).val(),
+                    Name: $('#c_ed_report_source>option:selected', $context).text()
+                };
+                theCampaign.ExtraDetails.DailyReportTime = $('#c_ed_report_time', $context).val();
+            }
+            $.ajax({
+                type: 'POST',
+                beforeSend: function () {
+                    $('#loader').show();
+                },
+                data: JSON.stringify(theCampaign),
+                url: saveCampaignUrl,
+                success: globalAjaxSuccessHandler,
+                error: globalAjaxErrorHandler
+            });
+        });
+    });
+
+    $context.on('click', '.btn-add-threshold', function (e) {
+        debugger;
+        e.preventDefault();
+        $firstConiditionalThreshold = $('.conditional-threshold', $context).first();
+        var count = $('.conditional-threshold', $context).length;
+        if (count == 5)
+        {
+            showGlobalNotification('error', 'Threshold configuration limit exceeded, Allow only 5');
+            return false;
+        }
+        var newConditionalThreshold = $firstConiditionalThreshold.clone(false);
+        $('.btn-remove-threshold', $(newConditionalThreshold)).removeClass('hidden');
+        $('.threshold-map', $context).append($(newConditionalThreshold));
+
+    });
+
+    $context.on('click', '.btn-remove-threshold', function (e) {
+
+        e.preventDefault();
+        var thresholdConditions = [];
+        $('.conditional-threshold', $context).each(function (e) {
+            var condition = {};
+            condition.OperatorType = $('.conditional-operator', $(this)).val();
+            condition.Attribute = 'Count';
+            condition.Value = $('.record-count', $(this)).val();
+
+            var conditionalThreshold = {};
+            conditionalThreshold.Condition = condition;
+            conditionalThreshold.ThresholdType = $('.threshold-value-type', $(this)).val();
+            conditionalThreshold.ThresholdValue = $('.threshold-value', $(this)).val();
+            thresholdConditions.push(conditionalThreshold);
+        });
+        if (thresholdConditions.length > 1)
+        { $(this).parentsUntil('.conditional-threshold').parent().remove(); }
+
+
+    });
+
+
+
+</script>
+

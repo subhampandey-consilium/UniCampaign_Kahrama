@@ -1,0 +1,40 @@
+﻿@using UniCampaignE.Web.Localization
+<div class="modal-dialog">
+    <div class="modal-content">
+        <form action="@Url.RouteUrl(new { area = "", controller = "Holiday", action = "AddBulkHoliday" })" method="post" id="bulkHolidayForm">
+            <div class="modal-header bg-primary-dark">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@Holiday.HOLIDAY_COLUMN_BULKUPLOAD_TITLE</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizantal" role="form">
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">@Holiday.HOLIDAY_LIST_TITLE <span class="error inline"></span></label>
+                        <div class="col-xs-8 col-lg-7">
+                            <input type="file" name="holidayList" />
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@Comman.CANCEL_BUTTON_TEXT</button>
+                <input type="submit" class="btn btn-primary" id="saveButton" value="@Comman.UPLOAD_TEXT" />
+            </div>
+        </form>
+    </div>
+
+</div>
+<script type="text/javascript">
+    $(document).ready(function (e) {
+        $('#bulkHolidayForm').ajaxForm({
+            target: "#modal_editor",
+            success: showModalEditor,
+            error: globalAjaxErrorHandler,
+            beforeSubmit: function (e) {
+                $('#loader').show();
+                return true;
+            }
+        });
+    });
+</script>

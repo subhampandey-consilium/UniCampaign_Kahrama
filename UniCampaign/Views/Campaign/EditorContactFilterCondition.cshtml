@@ -1,0 +1,47 @@
+﻿@using UniCampaignE.Web.HelperLib
+@model List<UniCampaignE.Core.Models.ConditionalExpression>
+
+@if (Model != null && Model.Count > 0)
+{
+
+    for (int i = 0; i < Model.Count; i++)
+    {
+        string hiddenClass = "hidden";
+<div class="form-group form-group-sm filter-condition">
+    <div class="control-label col-xs-4">
+        <select class="form-control filter-condition-attribute" data-selected-attribute="@Model[i].Attribute"></select>
+    </div>
+    <div class="col-xs-3 p-sm">
+        @Html.EnumDropDownListFor(mod => mod[i].OperatorType, new { @class = "form-control filter-condition-operator disabled", @disabled = "disabled" })
+    </div>
+    <div class="col-xs-3 p-sm">
+        @Html.TextBoxFor(mod => mod[i].Value, new { @class = "form-control filter-condition-value readonly", @disabled = "disabled" })
+    </div>
+    <div class="col-xs-2 p-sm pl0">
+        <span class="btn btn-link btn-remove-filter-condition @hiddenClass">Remove</span>
+    </div>
+    <div class="clearfix"></div>
+
+</div>
+        hiddenClass = string.Empty;
+    }
+   
+}
+else
+{
+    <div class="form-group form-group-sm filter-condition">
+        <div class="col-xs-4 p-sm">
+            <select class="form-control filter-condition-attribute"></select>
+        </div>
+        <div class="col-xs-3 p-sm">
+            @Html.DropDownList("ConditionalOperator_0", DropDownHelper.GetConstants(typeof(UniCampaignE.Core.Models.ConditionalOperator)), new { @class = "form-control filter-condition-operator" })
+        </div>
+        <div class="col-xs-3 p-sm">
+            <input type="text" class="form-control filter-condition-value" />
+        </div>
+        <div class="col-xs-2 p-sm pl0">
+            <span class="btn btn-link btn-remove-filter-condition hidden">Remove</span>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+}

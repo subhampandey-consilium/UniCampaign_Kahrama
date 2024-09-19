@@ -1,0 +1,74 @@
+﻿@using UniCampaignE.Web.Localization
+@{
+    Layout = "~/Views/Shared/_UniCampaignAdminLayout.cshtml";
+}
+@section page_content{
+    <div class="content-heading">
+        @Comman.GROUP_TITLE Management
+        <div class="pull-right">
+            <div class="btn-group">
+                <a class="btn btn-primary bg-primary-dark text-bold" data-ajax="true" data-ajax-loading="#loader" data-ajax-failure="globalAjaxErrorHandler" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new {area="admin",controller="Dealer",action="Add" })">
+                    <span>@Comman.ADD_BUTTON_TEXT</span> &nbsp;&nbsp;<i class="fa fa-plus"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-flat panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        @Comman.GROUP_TITLE Management
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive p0 mt-sm">
+                        <table id="grid" class="table table-striped table-bordered table-condensed" data-source="@Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.DealerController.ListDealers))"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section page_scripts{
+    <script>
+        var gridConfig = {};
+        debugger;
+        gridConfig.AgentAssignUrl = '@Url.RouteUrl(new { area = "admin", controller = nameof(UniCampaignE.Web.Areas.Admin.Controllers.DealerController).Replace("Controller", ""), action = nameof(UniCampaignE.Web.Areas.Admin.Controllers.DealerController.AssignSkills), dealerId = UrlParameter.Optional })';
+
+        $(document).ready(function (e) {
+            var gridOptions = {
+                primaryKey: "UserId",
+                uiLibrary: "bootstrap",
+                iconsLibrary: 'fontawesome',
+                notFoundText: "@Comman.NO_RECORDS",
+                columns: [
+                   // {field:'DealerId' ,hiden:true},
+                    { field: "DealerName", title: "@Comman.GROUP_TITLE Name" },
+                    { field: "DealerCode", title: "@Comman.GROUP_TITLE Code" },
+                    { field: 'CreatedOn', title: 'Created On' },
+                    { field: 'LastUpdatedOn', title: 'Last Updated On' },
+                    { field: 'Status', title: 'Status' },
+                   {
+                       title: 'Skills',
+                       field: '',
+                       align: 'center',
+                       tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-failure="globalAjaxErrorHandler" ' +
+                               'data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" ' +
+                               'href="@Url.RouteUrl(new { area="admin",controller= "Dealer", action= "AssignSkills"})/{DealerId}"">' +
+                               '<small>@GridComman.GRID_ASSIGN</small></a>   |   <a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-failure="globalAjaxErrorHandler" ' +
+                               'data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" ' +
+                               'href="@Url.RouteUrl(new { area="admin",controller= "Dealer", action= "AssignedSkills", dealerId = UrlParameter.Optional})/{DealerId}"">' +
+                               '<small>@GridComman.GRID_VIEW</small></a>'
+                   },
+                     { title: "", minWidth: 10, priority: 2, field: "Edit", width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace"  data-ajax-success="showModalEditor" data-ajax-failure="globalAjaxErrorHandler" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area="admin",controller= "Dealer", action="Edit",id = UrlParameter.Optional})/{DealerId}"><span class="fa fa-edit"></span></a>', tooltip: "@GridComman.GRID_EDIT" },
+                    { title: "", minWidth: 10, priority: 3, field: "Delete", width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-confirm="Do you want to delete @Comman.GROUP_TITLE {DealerName}" data-ajax-success="globalAjaxSuccessHandler" data-ajax-failure="globalAjaxErrorHandler" data-ajax-method="DELETE" href="@Url.RouteUrl(new { area="admin",controller= "Dealer", action="Delete",id = UrlParameter.Optional})/{DealerId}"><span class="fa fa-trash-o"></span></a>', tooltip: "@GridComman.GRID_DELETE" }
+
+                ],
+                pager: { enable: true, limit: 5, sizes: [2, 5, 10, 20] }
+            };
+            grid = $("#grid").grid(gridOptions);
+
+        });
+    </script>
+}

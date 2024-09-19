@@ -1,0 +1,51 @@
+﻿@using UniCampaignE.Web.Localization
+@{
+    Layout = "~/Views/Shared/_UniCampaignAdminLayout.cshtml";
+}
+@section page_content{
+    <div class="content-heading">
+       Configuration Management
+        <div class="pull-right">
+            <div class="btn-group">
+                <a class="btn btn-primary bg-primary-dark text-bold" data-ajax="true" data-ajax-loading="#loader" data-ajax-failure="globalAjaxErrorHandler" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-success="showModalEditor" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new {area="admin",controller="Tenant",action="Add" })">
+                    <span>Add Configuration</span> &nbsp;&nbsp;<i class="fa fa-plus"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-flat panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        Configuration
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive p0">
+                        <table id="grid" class="table table-striped table-bordered table-condensed" data-source="@Url.Action(nameof(UniCampaignE.Web.Areas.Admin.Controllers.TenantController.ListTenants))"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section page_scripts{
+    <script>
+        $(document).ready(function (e) {
+            var gridOptions = {
+                primaryKey: "TenantId",
+                uiLibrary: "bootstrap",
+                iconsLibrary:'fontawesome',
+                notFoundText: '@GridComman.GRID_NO_RECORD_FOUND',
+                columns: [
+                    { field: "Name", title: "@Tenant.GRID_NAME" },
+                    { title: "", priority: 2, field: "Edit", width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-method="GET" data-ajax-mode="replace"  data-ajax-success="showModalEditor" data-ajax-failure="globalAjaxErrorHandler" data-ajax-update="#modal_editor" href="@Url.RouteUrl(new { area="admin",controller= "Tenant", action="Edit",id = UrlParameter.Optional})/{TenantId}"><span class="fa fa-edit"></span></a>', tooltip: '@GridComman.GRID_EDIT' },
+                    { title: "", priority: 3, field: "Delete", width: 34, tmpl: '<a data-ajax="true" data-ajax-loading="#loader" data-ajax-confirm="@Tenant.TENANT_DELETE" data-ajax-success="globalAjaxSuccessHandler" data-ajax-failure="globalAjaxErrorHandler" data-ajax-method="DELETE" href="@Url.RouteUrl(new { area="admin",controller= "Tenant", action="Delete",id = UrlParameter.Optional})/{TenantId}"><span class="fa fa-trash-o"></span></a>', tooltip: '@GridComman.GRID_DELETE' }
+                ],
+                pager: { enable: true, limit: 5, sizes: [2,5, 10, 20] }
+            };
+            grid = $("#grid").grid(gridOptions);
+        });
+    </script>
+}
